@@ -40,7 +40,6 @@ import (
 	"strconv"
 
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v4/errors"
 )
 
 type VirgilSigner interface {
@@ -85,7 +84,7 @@ func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature 
 
 func signInternal(hash []byte, key PrivateKey) ([]byte, error) {
 	if key == nil || key.Empty() {
-		return nil, errors.New("No private key for signing")
+		return nil, CryptoError("No private key for signing")
 	}
 	private := new([ed25519.PrivateKeySize]byte)
 	copy(private[:], key.Contents())
@@ -102,10 +101,10 @@ func signInternal(hash []byte, key PrivateKey) ([]byte, error) {
 }
 func verifyInternal(hash []byte, key PublicKey, signature []byte) (bool, error) {
 	if key == nil || key.Empty() {
-		return false, errors.New("public key for verification is not provided")
+		return false, CryptoError("public key for verification is not provided")
 	}
 	if len(key.Contents()) != ed25519.PublicKeySize {
-		return false, errors.New("Invalid key size for signature")
+		return false, CryptoError("Invalid key size for signature")
 	}
 
 	sign, err := decodeSignature(signature)
@@ -115,7 +114,7 @@ func verifyInternal(hash []byte, key PublicKey, signature []byte) (bool, error) 
 	}
 
 	if len(sign) != ed25519.SignatureSize {
-		return false, errors.New("Invalid signature size " + strconv.Itoa(len(sign)))
+		return false, CryptoError("Invalid signature size " + strconv.Itoa(len(sign)))
 	}
 
 	signatureBytes := new([ed25519.SignatureSize]byte)
@@ -125,7 +124,7 @@ func verifyInternal(hash []byte, key PublicKey, signature []byte) (bool, error) 
 
 	res := ed25519.Verify(pub, hash, signatureBytes)
 	if !res {
-		return false, errors.New("signature validation failed")
+		return false, CryptoError("signature validation failed")
 	}
 	return true, nil
 }

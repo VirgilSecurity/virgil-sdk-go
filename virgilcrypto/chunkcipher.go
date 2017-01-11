@@ -5,7 +5,6 @@ import (
 	"crypto/cipher"
 	"io"
 
-	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/virgilcrypto/gcm"
 )
 
@@ -25,7 +24,7 @@ const (
 func (c *aesGCMChunkStreamCipher) Encrypt(key, nonce, ad []byte, chunkSize int, in io.Reader, out io.Writer) error {
 
 	if chunkSize < 1 {
-		return errors.New("chunk size too small")
+		return CryptoError("chunk size too small")
 	}
 
 	buf := make([]byte, chunkSize+gcmTagSize)
@@ -43,7 +42,7 @@ func (c *aesGCMChunkStreamCipher) Encrypt(key, nonce, ad []byte, chunkSize int, 
 
 		written, err := out.Write(res)
 		if written != len(res) || err != nil {
-			return errors.New("Could not write to output buffer")
+			return CryptoError("Could not write to output buffer")
 		}
 
 		increment(counter)
@@ -57,7 +56,7 @@ func (c *aesGCMChunkStreamCipher) Encrypt(key, nonce, ad []byte, chunkSize int, 
 }
 func (c *aesGCMChunkStreamCipher) Decrypt(key, nonce, ad []byte, chunkSize int, in io.Reader, out io.Writer) error {
 	if chunkSize < 1 {
-		return errors.New("chunk size too small")
+		return CryptoError("chunk size too small")
 	}
 
 	buf := make([]byte, chunkSize+gcmTagSize)
@@ -77,7 +76,7 @@ func (c *aesGCMChunkStreamCipher) Decrypt(key, nonce, ad []byte, chunkSize int, 
 		}
 		written, err := out.Write(res)
 		if written != len(res) || err != nil {
-			return errors.New("Could not write to output buffer")
+			return CryptoError("Could not write to output buffer")
 		}
 		increment(counter)
 		n, err = in.Read(buf)

@@ -38,8 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 import (
 	"bytes"
 	"encoding/asn1"
-
-	"gopkg.in/virgil.v4/errors"
 )
 
 type publicKeyRecipient struct {
@@ -61,7 +59,7 @@ func (kr *publicKeyRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, e
 }
 func (p *publicKeyRecipient) decryptKey(id []byte, privateKey []byte) ([]byte, error) {
 	if len(id) == 0 || !bytes.Equal(id, p.ID) {
-		return nil, errors.New("Wrong recepient")
+		return nil, CryptoError("Wrong recepient")
 	}
 	return decryptSymmetricKeyWithECIES(p.encryptedKey, p.tag, p.PublicKey, p.iv, privateKey)
 }

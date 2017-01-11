@@ -35,12 +35,9 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-import (
-	"gopkg.in/virgil.v4/errors"
-)
 
 func unsupported(msg string) error {
-	return errors.New("Unsupported " + msg)
+	return CryptoError("Unsupported " + msg)
 }
 
 func (envelope *Envelope) Validate() error {

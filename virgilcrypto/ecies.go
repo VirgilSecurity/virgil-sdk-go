@@ -11,7 +11,6 @@ import (
 	"github.com/agl/ed25519/extra25519"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/ed25519"
-	"gopkg.in/virgil.v4/errors"
 )
 
 /*
@@ -57,11 +56,11 @@ const Curve25519SharedKeySize = 32
 func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privateKey []byte) ([]byte, error) {
 
 	if len(ephPub) != ed25519.PublicKeySize {
-		return nil, errors.New("invalid ed25519 public key size")
+		return nil, CryptoError("invalid ed25519 public key size")
 	}
 
 	if len(privateKey) != ed25519.PrivateKeySize {
-		return nil, errors.New("invalid ed25519 private key size")
+		return nil, CryptoError("invalid ed25519 private key size")
 	}
 
 	common := new([Curve25519SharedKeySize]byte)
@@ -79,7 +78,7 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 	curve25519.ScalarMult(common, myCurveSecret, hisCurvePublic)
 	err := checkSharedSecret(common[:])
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return nil, err
 	}
 	//derive keys
@@ -95,30 +94,30 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 		//decrypt symmetric key
 		ciph, err := aes.NewCipher(keys[:32])
 		if err != nil {
-			return nil, errors.Wrap(err, "")
+			return nil, cryptoError(err, "")
 		}
 		aesCBC := cipher.NewCBCDecrypter(ciph, iv)
 		deciphered := make([]byte, len(encryptedSymmetricKey))
 		aesCBC.CryptBlocks(deciphered, encryptedSymmetricKey)
 		ciphertextKey, err := pkcs7Unpad(deciphered, aesCBC.BlockSize())
 		if err != nil {
-			return nil, errors.Wrap(err, "")
+			return nil, cryptoError(err, "")
 		}
 		return ciphertextKey, nil
 	}
-	return nil, errors.New("Tag does not match")
+	return nil, CryptoError("Tag does not match")
 }
 
 func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSymmetricKey, tag, ephPub, iv []byte, err error) {
 
 	if len(public_key) != ed25519.PublicKeySize {
-		err = errors.New(fmt.Sprintf("invalid ed25519 key size %d", len(public_key)))
+		err = CryptoError(fmt.Sprintf("invalid ed25519 key size %d", len(public_key)))
 		return
 	}
 
 	keypair, err := NewKeypair()
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 	ephPub = keypair.PublicKey().Contents()
@@ -131,7 +130,7 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 	iv = make([]byte, aes.BlockSize)
 	_, err = rand.Reader.Read(iv)
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 	copy(hisPublic[:], public_key)
@@ -144,7 +143,7 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 	curve25519.ScalarMult(sharedSecret, ephCurvePrivate, hisCurvePublic)
 	err = checkSharedSecret(sharedSecret[:])
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 	//derive keys
@@ -153,13 +152,13 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 	//encrypt symmetric key
 	ciph, err := aes.NewCipher(keys[:32])
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 	aesCBC := cipher.NewCBCEncrypter(ciph, iv)
 	paddedKey, err := pkcs7Pad(symmetricKey, ciph.BlockSize())
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 	encryptedSymmetricKey = make([]byte, len(paddedKey))
@@ -179,7 +178,7 @@ func checkSharedSecret(sk []byte) error {
 		b |= skb
 	}
 	if b == 0 {
-		return errors.New("invalid DH result")
+		return CryptoError("invalid DH result")
 	}
 	return nil
 }

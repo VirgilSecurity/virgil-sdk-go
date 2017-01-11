@@ -43,7 +43,6 @@ import (
 	"crypto/subtle"
 
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v4/errors"
 )
 
 type Keypair interface {
@@ -70,7 +69,7 @@ func generateEd25519Keypair() (Keypair, error) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	pub := &ed25519PublicKey{key: publicKey[:]}
@@ -81,7 +80,7 @@ func generateEd25519Keypair() (Keypair, error) {
 
 	snapshot, err := pub.Encode()
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	fp := DefaultCrypto.CalculateFingerprint(snapshot)
 
@@ -105,7 +104,7 @@ func (e *ed25519Keypair) PrivateKey() PrivateKey {
 
 func unwrapKey(key []byte) ([]byte, string, error) {
 	if len(key) < len(PEM_START) {
-		return nil, "", errors.New("Key is too small")
+		return nil, "", CryptoError("Key is too small")
 	}
 	start := key[:len(PEM_START)]
 	if subtle.ConstantTimeCompare(start, PEM_START) == 0 {
@@ -123,7 +122,7 @@ func unwrapKey(key []byte) ([]byte, string, error) {
 	if block != nil {
 		return block.Bytes, block.Type, nil
 	}
-	return nil, "", errors.New("could not decode PEM structure")
+	return nil, "", CryptoError("could not decode PEM structure")
 }
 
 func init() {

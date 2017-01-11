@@ -38,8 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
-
-	"gopkg.in/virgil.v4/errors"
 )
 
 var (
@@ -220,7 +218,7 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 	}
 	contentBytes, err := asn1.Marshal(content)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	recipient := publicKeyRecipientInfo{
@@ -232,7 +230,7 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 
 	raw, err := asn1.Marshal(recipient)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	return &asn1.RawValue{
@@ -255,7 +253,7 @@ func makePasswordRecipient(kdfIv []byte, iterations int, key, keyIv []byte) (*as
 
 	recBytes, err := asn1.Marshal(recipient)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	res := &asn1.RawValue{
 		Class:      asn1.ClassContextSpecific,
@@ -270,7 +268,7 @@ func makeSignature(sign []byte) ([]byte, error) {
 	signature := signature{O: pkix.AlgorithmIdentifier{Algorithm: oidSha384, Parameters: asn1Null}, S: sign}
 	sBytes, err := asn1.Marshal(signature)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	return sBytes, nil
 }
@@ -280,7 +278,7 @@ func decodeSignature(signatureBytes []byte) ([]byte, error) {
 
 	_, err := asn1.Unmarshal(signatureBytes, signature)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 
 	}
 	return signature.S, nil
@@ -299,7 +297,7 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 	for _, r := range recipients {
 		serializedRecipient, err := asn1.Marshal(*r)
 		if err != nil {
-			return nil, errors.Wrap(err, "")
+			return nil, cryptoError(err, "")
 		}
 		serializedRecipients = append(serializedRecipients, serializedRecipient...)
 
@@ -332,7 +330,7 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 		for k, v := range customParams {
 			param, err := makeParam(k, v)
 			if err != nil {
-				return nil, errors.Wrap(err, "")
+				return nil, cryptoError(err, "")
 			}
 			params = append(params, param)
 		}
@@ -342,14 +340,14 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 
 	resBytes, err = asn1.Marshal(res)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	return resBytes, nil
 }
 func makeParam(key string, v interface{}) (CustomParam, error) {
 	asnValue, err := asn1.Marshal(v)
 	if err != nil {
-		return CustomParam{}, errors.Wrap(err, "")
+		return CustomParam{}, cryptoError(err, "")
 	}
 
 	tag := 0
@@ -468,7 +466,7 @@ func decodeRecipients(value *asn1.RawValue) (models []recipient, err error) {
 	}
 
 	if len(models) == 0 {
-		return nil, errors.New("No valid recipients found")
+		return nil, CryptoError("No valid recipients found")
 	}
 
 	return models, nil
@@ -477,7 +475,7 @@ func decodeKeyRecipient(value *asn1.RawValue) (recipient, error) {
 	recipient := &publicKeyRecipientInfo{}
 	_, err := asn1.Unmarshal(value.FullBytes, recipient)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	if err = recipient.Validate(); err != nil {
 		return nil, err
@@ -487,7 +485,7 @@ func decodeKeyRecipient(value *asn1.RawValue) (recipient, error) {
 	_, err = asn1.Unmarshal(recipient.EncryptedKey, encryptedKey)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	if err = encryptedKey.Validate(); err != nil {
@@ -508,7 +506,7 @@ func decodePasswordRecipient(value *asn1.RawValue) (recipient, error) {
 	recipient := &passwordRecipientInfo{}
 	_, err := asn1.Unmarshal(value.Bytes, recipient)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	if err = recipient.Validate(); err != nil {
 		return nil, err
@@ -537,7 +535,7 @@ func encodeKeyEncryptionAlgorithm(kdfIv []byte, iterations int, keyIv []byte) (*
 	serializedKeyDerivationParameters, err := asn1.Marshal(keyDerivationParameters)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	keyDerivationFunc := pkix.AlgorithmIdentifier{
@@ -557,7 +555,7 @@ func encodeKeyEncryptionAlgorithm(kdfIv []byte, iterations int, keyIv []byte) (*
 
 	serializedKeyEncryptionParameters, err := asn1.Marshal(keyEncryptionParameters)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	return &pkix.AlgorithmIdentifier{
 		Algorithm:  oidPbeS2,
@@ -572,7 +570,7 @@ func decodeKeyEncryptionAlgorithm(alg *pkix.AlgorithmIdentifier) (keyIv, kdfIv [
 
 	_, err = asn1.Unmarshal(algo.Parameters.FullBytes, keyParams)
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 	if err = keyParams.Validate(); err != nil {
@@ -585,7 +583,7 @@ func decodeKeyEncryptionAlgorithm(alg *pkix.AlgorithmIdentifier) (keyIv, kdfIv [
 
 	_, err = asn1.Unmarshal(keyParams.KeyDerivationFunc.Parameters.FullBytes, kdfParams)
 	if err != nil {
-		err = errors.Wrap(err, "")
+		err = cryptoError(err, "")
 		return
 	}
 
@@ -657,7 +655,7 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 	// parseTagAndLength should not be called without at least a single
 	// byte to read. Thus this check is for robustness:
 	if offset >= len(bytes) {
-		err = errors.New("asn1: internal error in parseTagAndLength")
+		err = CryptoError("asn1: internal error in parseTagAndLength")
 		return
 	}
 	b := bytes[offset]

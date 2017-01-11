@@ -5,7 +5,6 @@ import (
 	"encoding/pem"
 
 	"golang.org/x/crypto/ed25519"
-	"gopkg.in/virgil.v4/errors"
 )
 
 type PublicKey interface {
@@ -33,7 +32,7 @@ func DecodePublicKey(keyBytes []byte) (PublicKey, error) {
 	publicKey := &publicKey{}
 	_, err = asn1.Unmarshal(unwrappedKey, publicKey)
 	if err != nil {
-		return nil, errors.New("invalid data")
+		return nil, CryptoError("invalid data")
 	}
 	err = publicKey.Validate()
 	if err != nil {
@@ -72,7 +71,7 @@ func (k *ed25519PublicKey) Encode() ([]byte, error) {
 	key.Key = asn1.BitString{Bytes: k.key}
 	rawKey, err := asn1.Marshal(key)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	if !encodeToPem {
 		return rawKey, nil

@@ -41,8 +41,6 @@ import (
 	"crypto/rand"
 	"encoding/asn1"
 	"io"
-
-	"gopkg.in/virgil.v4/errors"
 )
 
 type Cipher interface {
@@ -80,7 +78,7 @@ type recipient interface {
 func (c *defaultCipher) AddKeyRecipient(key PublicKey) error {
 
 	if key == nil || key.Empty() {
-		return errors.New("no public key provided")
+		return CryptoError("no public key provided")
 	}
 
 	recipient := &publicKeyRecipient{
@@ -99,7 +97,7 @@ func (c *defaultCipher) AddPasswordRecipient(password []byte) {
 }
 func (c *defaultCipher) Encrypt(data []byte) ([]byte, error) {
 	if len(c.recipients) == 0 {
-		return nil, errors.New("No recipients specified")
+		return nil, CryptoError("No recipients specified")
 	}
 
 	var models []*asn1.RawValue
@@ -124,7 +122,7 @@ func (c *defaultCipher) Encrypt(data []byte) ([]byte, error) {
 
 func (c *defaultCipher) SignThenEncrypt(data []byte, signer PrivateKey) ([]byte, error) {
 	if len(c.recipients) == 0 {
-		return nil, errors.New("No recipients specified")
+		return nil, CryptoError("No recipients specified")
 	}
 
 	signature, err := Signer.Sign(data, signer)
@@ -166,12 +164,12 @@ func (c *defaultCipher) DecryptWithPassword(data []byte, password []byte) ([]byt
 			return decryptData(ciphertext, key, nonce)
 		}
 	}
-	return nil, errors.New("Could not decrypt the symmetric key. Wrong password?")
+	return nil, CryptoError("Could not decrypt the symmetric key. Wrong password?")
 }
 func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key PrivateKey) ([]byte, error) {
 
 	if key == nil || len(key.Contents()) == 0 {
-		return nil, errors.New("no keypair provided")
+		return nil, CryptoError("no keypair provided")
 	}
 
 	_, ciphertext, nonce, recipients, err := decodeCMSMessage(data)
@@ -185,13 +183,13 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key PrivateKey) ([]by
 		}
 
 	}
-	return nil, errors.New("Could not decrypt the symmetric key. Wrong private key?")
+	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
 
 func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierPublicKey PublicKey) ([]byte, error) {
 
 	if decryptionKey == nil || decryptionKey.Empty() {
-		return nil, errors.New("no keypair provided")
+		return nil, CryptoError("no keypair provided")
 	}
 
 	customParams, ciphertext, nonce, recipients, err := decodeCMSMessage(data)
@@ -206,7 +204,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey PrivateKey,
 			if tmp, ok := signatureValue.(*[]byte); ok {
 				signature = *tmp
 			} else {
-				return nil, errors.New("got signature but could not decode")
+				return nil, CryptoError("got signature but could not decode")
 			}
 
 		}
@@ -220,7 +218,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey PrivateKey,
 			}
 			res, err := Verifier.Verify(data, verifierPublicKey, signature)
 			if !res {
-				return nil, errors.New("signature validation failed")
+				return nil, CryptoError("signature validation failed")
 			}
 			if err != nil {
 				return nil, err
@@ -229,12 +227,12 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey PrivateKey,
 		}
 
 	}
-	return nil, errors.New("Could not decrypt the symmetric key. Wrong private key?")
+	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
 
 func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 	if len(c.recipients) == 0 {
-		return errors.New("No recipients specified")
+		return CryptoError("No recipients specified")
 	}
 
 	var models []*asn1.RawValue
@@ -260,7 +258,7 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 	}
 	written, err := out.Write(envelope)
 	if err != nil || written < len(envelope) {
-		return errors.Wrap(err, "could not write to the output stream")
+		return cryptoError(err, "could not write to the output stream")
 	}
 
 	return c.chunkCipher.Encrypt(symmetricKey, nonce, nil, DefaultChunkSize, in, out)
@@ -268,18 +266,18 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) error {
 
 	if key == nil || len(key.Contents()) == 0 {
-		return errors.New("no keypair provided")
+		return CryptoError("no keypair provided")
 	}
 
 	//read header
 	buf := make([]byte, 16)
 	read, err := in.Read(buf)
 	if read != len(buf) {
-		return errors.Wrap(err, "Could not read from stream")
+		return cryptoError(err, "Could not read from stream")
 	}
 	ret, offset, err := parseTagAndLength(buf, 0)
 	if err != nil {
-		return errors.Wrap(err, "Error while parsing stream header")
+		return cryptoError(err, "Error while parsing stream header")
 	}
 	if offset < len(buf) {
 		ret.length -= len(buf) - offset
@@ -288,7 +286,7 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key PrivateKe
 	header := make([]byte, ret.length)
 	read, err = in.Read(header)
 	if read != len(header) {
-		return errors.Wrap(err, "Could not read from stream")
+		return cryptoError(err, "Could not read from stream")
 	}
 	header = append(buf, header...)
 	customParams, rest, nonce, recipients, err := decodeCMSMessage(header)
@@ -298,7 +296,7 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key PrivateKe
 			if tmp, ok := chunkValue.(*int); ok {
 				chunkSize = *tmp
 			} else {
-				return errors.New("got chunkSize but could not decode")
+				return CryptoError("got chunkSize but could not decode")
 			}
 
 		}
@@ -308,7 +306,7 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key PrivateKe
 		return err
 	}
 	if len(rest) != 0 {
-		return errors.New("Some data is left after header parsing")
+		return CryptoError("Some data is left after header parsing")
 	}
 	for _, r := range recipients {
 		key, err := r.decryptKey(key.ReceiverID(), key.Contents())
@@ -322,7 +320,7 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key PrivateKe
 		}
 
 	}
-	return errors.New("Could not decrypt the symmetric key. Wrong private key?")
+	return CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
 
 func encryptData(data []byte) (cipherText, symmetricKey, nonce []byte) {
@@ -341,18 +339,18 @@ func decryptData(ciphertext, key, nonce []byte) ([]byte, error) {
 	ciph, err := aes.NewCipher(key)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	aesgcm, err := cipher.NewGCM(ciph)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 	return plaintext, nil
 }

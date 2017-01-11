@@ -43,7 +43,6 @@ import (
 	"math/big"
 
 	"golang.org/x/crypto/pbkdf2"
-	"gopkg.in/virgil.v4/errors"
 )
 
 type passwordRecipient struct {
@@ -59,7 +58,7 @@ func (p *passwordRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, err
 }
 func (p *passwordRecipient) decryptKey(id []byte, password []byte) ([]byte, error) {
 	if len(id) > 0 {
-		return nil, errors.New("Wrong recepient")
+		return nil, CryptoError("Wrong recepient")
 	}
 	return decryptKeyWithPassword(p.encryptedKey, p.keyIv, p.kdfIv, p.iterations, password)
 }

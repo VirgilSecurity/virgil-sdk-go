@@ -5,8 +5,6 @@ import (
 	"crypto/rand"
 	"io"
 	"testing"
-
-	"gopkg.in/virgil.v4/errors"
 )
 
 type badReader struct {
@@ -18,7 +16,7 @@ func (r *badReader) Read(p []byte) (n int, err error) {
 	if err != nil {
 		return n, err // not our error
 	}
-	return n, errors.New("bad reader read one byte less")
+	return n, CryptoError("bad reader read one byte less")
 }
 
 func TestSignatures(t *testing.T) {

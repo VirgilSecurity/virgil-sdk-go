@@ -6,7 +6,6 @@ import (
 	"encoding/pem"
 
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v4/errors"
 )
 
 type PrivateKey interface {
@@ -79,7 +78,7 @@ func encodePrivateKey(privateKey *ed25519PrivateKey, encodeToPem bool) ([]byte, 
 	serializedKey, err := asn1.Marshal(key)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	if !encodeToPem {
@@ -114,7 +113,7 @@ func encodePrivateKeyEncrypted(privateKey *ed25519PrivateKey, password []byte, e
 	envelopeBytes, err := asn1.Marshal(asnKey)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	if !encodeToPem {
@@ -132,7 +131,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 	key := &privateKeyAsn{}
 	_, err := asn1.Unmarshal(keyBytes, key)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid data")
+		return nil, cryptoError(err, "invalid data")
 	}
 
 	err = key.Validate()
@@ -145,7 +144,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 
 	pub, priv, err := ed25519.GenerateKey(buf)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not generate key")
+		return nil, cryptoError(err, "could not generate key")
 	}
 
 	edPub := &ed25519PublicKey{key: pub[:]}
@@ -153,7 +152,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 
 	snapshot, err := edPub.Encode()
 	if err != nil {
-		return nil, errors.Wrap(err, "")
+		return nil, cryptoError(err, "")
 	}
 
 	fp := DefaultCrypto.CalculateFingerprint(snapshot)
@@ -166,7 +165,7 @@ func loadEncryptedPrivateKey(keyBytes, password []byte) (*ed25519PrivateKey, err
 	parsedEncryptedKey := &envelopeKey{}
 	_, err := asn1.Unmarshal(keyBytes, parsedEncryptedKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not parse encrypted key")
+		return nil, cryptoError(err, "could not parse encrypted key")
 	}
 
 	keyIv, kdfIv, iterations, err := decodeKeyEncryptionAlgorithm(&parsedEncryptedKey.Algorithm)
@@ -176,7 +175,7 @@ func loadEncryptedPrivateKey(keyBytes, password []byte) (*ed25519PrivateKey, err
 
 	decryptedKey, err := decryptKeyWithPassword(parsedEncryptedKey.CipherText, keyIv, kdfIv, iterations, password)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not decrypt private key")
+		return nil, &WrongPasswordError{"could not decrypt key with password"}
 	}
 	key, err := loadPlainPrivateKey(decryptedKey)
 	if err != nil {
@@ -191,14 +190,14 @@ func (k *ed25519PrivateKey) Empty() bool {
 
 func (k *ed25519PrivateKey) ExtractPublicKey() (PublicKey, error) {
 	if k.Empty() {
-		return nil, errors.New("private key is empty")
+		return nil, CryptoError("private key is empty")
 	}
 
 	buf := bytes.NewBuffer(k.key)
 
 	pub, _, err := ed25519.GenerateKey(buf)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not generate key")
+		return nil, cryptoError(err, "could not generate key")
 	}
 
 	edPub := &ed25519PublicKey{key: pub[:]}
