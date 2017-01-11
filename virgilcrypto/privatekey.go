@@ -175,7 +175,7 @@ func loadEncryptedPrivateKey(keyBytes, password []byte) (*ed25519PrivateKey, err
 
 	decryptedKey, err := decryptKeyWithPassword(parsedEncryptedKey.CipherText, keyIv, kdfIv, iterations, password)
 	if err != nil {
-		return nil, &WrongPasswordError{"could not decrypt key with password"}
+		return nil, err
 	}
 	key, err := loadPlainPrivateKey(decryptedKey)
 	if err != nil {

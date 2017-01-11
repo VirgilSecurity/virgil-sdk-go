@@ -95,7 +95,7 @@ func decryptKeyWithPassword(encryptedKey, keyIv, kdfIv []byte, iterations int, p
 
 	unpaddedKey, err := pkcs7Unpad(paddedKey, aesCBC.BlockSize())
 	if err != nil {
-		return nil, err
+		return nil, &WrongPasswordError{"could not decrypt key with password"}
 	}
 	return unpaddedKey, nil
 }
