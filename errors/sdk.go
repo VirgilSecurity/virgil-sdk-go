@@ -26,30 +26,30 @@ type SDKError struct {
 	Message string
 }
 
-func (e *SDKError) Error() string {
+func (e SDKError) Error() string {
 	return e.Message
 }
 
 // IsHTTPError checks if an error is HTTP status code based error.
-func (e *SDKError) IsHTTPError() bool {
+func (e SDKError) IsHTTPError() bool {
 	return e.HTTPError.code != 0
 }
 
 // IsServiceError checks if an error is Service error.
-func (e *SDKError) IsServiceError() bool {
+func (e SDKError) IsServiceError() bool {
 	return e.ServiceError.code != 0
 }
 
 // New returns an error that formats as the given text.
 func New(message string) error {
-	return &SDKError{
+	return SDKError{
 		Message: message,
 	}
 }
 
 // NewServiceError returns an Service error.
 func NewServiceError(serviceErrorCode int, httpCode int, message string) error {
-	return &SDKError{
+	return SDKError{
 		Message: message,
 		ServiceError: ServiceError{
 			code: serviceErrorCode,
@@ -62,7 +62,7 @@ func NewServiceError(serviceErrorCode int, httpCode int, message string) error {
 
 // NewHttpError returns an error based on HTTP status code.
 func NewHttpError(httpCode int, message string) error {
-	return &SDKError{
+	return SDKError{
 		Message: message,
 		HTTPError: HTTPError{
 			code: httpCode,
@@ -70,7 +70,7 @@ func NewHttpError(httpCode int, message string) error {
 	}
 }
 
-func ToSdkError(err error) (*SDKError, bool) {
-	e, ok := Cause(err).(*SDKError)
+func ToSdkError(err error) (SDKError, bool) {
+	e, ok := Cause(err).(SDKError)
 	return e, ok
 }
