@@ -40,8 +40,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
-	"crypto/subtle"
-
 	"github.com/agl/ed25519"
 )
 
@@ -58,7 +56,7 @@ const EC_PRIVATE_KEY = "PRIVATE KEY"
 const ENCRYPTED_PRIVATE_KEY = "ENCRYPTED PRIVATE KEY"
 const PUBLIC_KEY = "PUBLIC KEY"
 
-var PEM_START = []byte("-----BEGIN ")
+const MINIMAL_KEY_LENGTH = 32
 
 type ed25519Keypair struct {
 	publicKey  *ed25519PublicKey
@@ -103,26 +101,25 @@ func (e *ed25519Keypair) PrivateKey() PrivateKey {
 }
 
 func unwrapKey(key []byte) ([]byte, string, error) {
-	if len(key) < len(PEM_START) {
-		return nil, "", CryptoError("Key is too small")
-	}
-	start := key[:len(PEM_START)]
-	if subtle.ConstantTimeCompare(start, PEM_START) == 0 {
 
-		//try unbase64
-		decoded, err := base64.StdEncoding.DecodeString(string(key))
-		if err == nil {
-			return decoded, "", nil
-		}
-
-		return key, "", nil //already DER
+	if len(key) < MINIMAL_KEY_LENGTH {
+		return nil, "", CryptoError("key length is too small")
 	}
 
 	block, _ := pem.Decode(key)
 	if block != nil {
 		return block.Bytes, block.Type, nil
+	} else {
+		buf := make([]byte, base64.StdEncoding.DecodedLen(len(key)))
+
+		read, err := base64.StdEncoding.Decode(buf, key)
+
+		if err == nil {
+			return buf[:read], "", nil
+		}
+
+		return key, "", nil //already DER
 	}
-	return nil, "", CryptoError("could not decode PEM structure")
 }
 
 func init() {
