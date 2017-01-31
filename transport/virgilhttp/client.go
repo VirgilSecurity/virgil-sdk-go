@@ -143,9 +143,6 @@ func (c *TransportClient) getBody(resp *http.Response, err error) ([]byte, error
 }
 
 func (c *TransportClient) do(method, url string, model interface{}) (*http.Response, error) {
-	if c.token == "" {
-		return nil, errors.New("Access token is not set")
-	}
 
 	var reader io.Reader
 	if model != nil {
@@ -160,7 +157,9 @@ func (c *TransportClient) do(method, url string, model interface{}) (*http.Respo
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("VIRGIL %s", c.token))
+	if len(c.token) > 0 {
+		req.Header.Set("Authorization", fmt.Sprintf("VIRGIL %s", c.token))
+	}
 
 	return c.client.Do(req)
 }
