@@ -77,7 +77,7 @@ func NewClient(accessToken string, opts ...func(*Client)) (*Client, error) {
 			"https://cards.virgilsecurity.com",
 			"https://cards-ro.virgilsecurity.com",
 			"https://identity.virgilsecurity.com",
-			"https://registration-authority.virgilsecurity.com"),
+			"https://ra.virgilsecurity.com"),
 		cardsValidator: v,
 	}
 

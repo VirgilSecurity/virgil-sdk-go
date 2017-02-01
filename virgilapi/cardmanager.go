@@ -2,6 +2,7 @@ package virgilapi
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/errors"
@@ -73,7 +74,9 @@ func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypt
 		return nil, err
 	}
 
+	id := hex.EncodeToString(c.Context.Crypto.CalculateFingerprint(req.Snapshot))
 	resp := &virgil.CardResponse{
+		ID:       id,
 		Snapshot: req.Snapshot,
 		Meta: virgil.ResponseMeta{
 			Signatures: req.Meta.Signatures,
@@ -114,8 +117,9 @@ func (c *cardManager) Import(card string) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	id := hex.EncodeToString(c.Context.Crypto.CalculateFingerprint(req.Snapshot))
 	resp := &virgil.CardResponse{
+		ID:       id,
 		Snapshot: req.Snapshot,
 		Meta: virgil.ResponseMeta{
 			Signatures: req.Meta.Signatures,

@@ -147,6 +147,7 @@ func (c *TransportClient) do(method, url string, model interface{}) (*http.Respo
 	var reader io.Reader
 	if model != nil {
 		reqBody, err := json.Marshal(model)
+		fmt.Printf("%s", reqBody)
 		if err != nil {
 			return nil, errors.Wrap(err, "Cannot marshal model")
 		}

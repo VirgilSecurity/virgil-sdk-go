@@ -11,4 +11,5 @@ type Context struct {
 	Storage       virgil.KeyStorage
 	Credentials   AppCredentials
 	RequestSigner *virgil.RequestSigner
+	CardVerifiers map[string]Buffer
 }
