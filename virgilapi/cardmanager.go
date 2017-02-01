@@ -163,6 +163,10 @@ func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) 
 	req := &virgil.ConfirmRequest{
 		ActionId:         actionId,
 		ConfirmationCode: confirmationCode,
+		Params: virgil.ValidationTokenParams{
+			CountToLive: 12,
+			TimeToLive:  3600,
+		},
 	}
 	resp, err := c.Context.Client.ConfirmIdentity(req)
 	if err != nil {
