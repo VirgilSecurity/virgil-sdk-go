@@ -11,11 +11,11 @@ type Card struct {
 }
 
 func (c *Card) Encrypt(data Buffer) (Buffer, error) {
-	return c.Context.Crypto.Encrypt(data, c.Model.PublicKey)
+	return virgil.Crypto().Encrypt(data, c.Model.PublicKey)
 }
 
 func (c *Card) Verify(data Buffer, signature Buffer) (bool, error) {
-	return c.Context.Crypto.Verify(data, signature, c.Model.PublicKey)
+	return virgil.Crypto().Verify(data, signature, c.Model.PublicKey)
 }
 
 type cards []*Card
@@ -29,9 +29,9 @@ func (c cards) ToRecipients() []virgilcrypto.PublicKey {
 }
 
 func (c cards) Encrypt(data Buffer, context *Context) (Buffer, error) {
-	return context.Crypto.Encrypt(data, c.ToRecipients()...)
+	return virgil.Crypto().Encrypt(data, c.ToRecipients()...)
 }
 
 func (c cards) SignThenEncrypt(data Buffer, signerKey *Key, context *Context) (Buffer, error) {
-	return context.Crypto.SignThenEncrypt(data, signerKey.PrivateKey, c.ToRecipients()...)
+	return virgil.Crypto().SignThenEncrypt(data, signerKey.PrivateKey, c.ToRecipients()...)
 }

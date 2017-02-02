@@ -2,6 +2,7 @@ package virgilapi
 
 import (
 	"gopkg.in/virgil.v4"
+	"gopkg.in/virgil.v4/transport/virgilhttp"
 )
 
 type Api struct {
@@ -17,10 +18,42 @@ func New(accessToken string) (*Api, error) {
 		return nil, err
 	}
 	context := &Context{
-		Client:        cli,
-		Crypto:        virgil.Crypto(),
-		Storage:       &virgil.FileStorage{RootDir: "."},
-		RequestSigner: &virgil.RequestSigner{},
+		client:        cli,
+		storage:       &virgil.FileStorage{RootDir: "."},
+		requestSigner: &virgil.RequestSigner{},
+	}
+
+	return &Api{
+		Context: context,
+		Cards:   &cardManager{Context: context},
+		Keys:    &keyManager{Context: context},
+	}, nil
+}
+
+func NewWithConfig(config *Config) (_ *Api, err error) {
+	var cli *virgil.Client
+	if config.ClientParams != nil {
+		params := config.ClientParams
+		cli, err = virgil.NewClient(config.Token, virgil.ClientTransport(virgilhttp.NewTransportClient(params.CardServiceURL,
+			params.ReadOnlyCardServiceURL, params.IdentityServiceURL, params.VRAServiceURL)))
+	} else {
+		cli, err = virgil.NewClient(config.Token)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var root string
+	if config.KeyStoragePath != "" {
+		root = config.KeyStoragePath
+	} else {
+		root = "."
+	}
+
+	context := &Context{
+		client:        cli,
+		storage:       &virgil.FileStorage{RootDir: root},
+		requestSigner: &virgil.RequestSigner{},
 	}
 
 	return &Api{

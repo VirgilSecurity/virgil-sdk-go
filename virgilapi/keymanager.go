@@ -2,28 +2,30 @@ package virgilapi
 
 import (
 	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
 type KeyManager interface {
-	Generate() (virgilcrypto.PrivateKey, error)
-	Store(keypair virgilcrypto.PrivateKey, alias string, password string) error
-	Load(alias string, password string) (virgilcrypto.PrivateKey, error)
+	Generate() (*Key, error)
+	Store(keypair *Key, alias string, password string) error
+	Load(alias string, password string) (*Key, error)
 }
 
 type keyManager struct {
 	Context *Context
 }
 
-func (k *keyManager) Generate() (virgilcrypto.PrivateKey, error) {
-	key, err := k.Context.Crypto.GenerateKeypair()
+func (k *keyManager) Generate() (*Key, error) {
+	key, err := virgil.Crypto().GenerateKeypair()
 	if err != nil {
 		return nil, err
 	}
-	return key.PrivateKey(), nil
+	return &Key{
+		Context:    k.Context,
+		PrivateKey: key.PrivateKey(),
+	}, nil
 }
-func (k *keyManager) Store(privateKey virgilcrypto.PrivateKey, alias string, password string) error {
-	key, err := k.Context.Crypto.ExportPrivateKey(privateKey, password)
+func (k *keyManager) Store(privateKey *Key, alias string, password string) error {
+	key, err := virgil.Crypto().ExportPrivateKey(privateKey.PrivateKey, password)
 	if err != nil {
 		return err
 	}
@@ -31,18 +33,21 @@ func (k *keyManager) Store(privateKey virgilcrypto.PrivateKey, alias string, pas
 		Data: key,
 		Name: alias,
 	}
-	return k.Context.Storage.Store(item)
+	return k.Context.storage.Store(item)
 }
-func (k *keyManager) Load(alias string, password string) (virgilcrypto.PrivateKey, error) {
-	item, err := k.Context.Storage.Load(alias)
+func (k *keyManager) Load(alias string, password string) (*Key, error) {
+	item, err := k.Context.storage.Load(alias)
 	if err != nil {
 		return nil, err
 	}
 
-	key, err := k.Context.Crypto.ImportPrivateKey(item.Data, password)
+	key, err := virgil.Crypto().ImportPrivateKey(item.Data, password)
 	if err != nil {
 		return nil, err
 	}
 
-	return key, nil
+	return &Key{
+		Context:    k.Context,
+		PrivateKey: key,
+	}, nil
 }

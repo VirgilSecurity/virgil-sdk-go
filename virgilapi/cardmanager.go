@@ -11,8 +11,8 @@ import (
 
 type CardManager interface {
 	Get(id string) (*Card, error)
-	Create(identity string, identityType string, key virgilcrypto.PrivateKey) (*Card, error)
-	CreateGlobal(identity string, identityType string, keypair virgilcrypto.PrivateKey) (*Card, error)
+	Create(identity string, identityType string, key *Key) (*Card, error)
+	CreateGlobal(identity string, identityType string, key *Key) (*Card, error)
 	Export(card *Card) (string, error)
 	Import(card string) (*Card, error)
 	VerifyIdentity(card *Card) (actionId string, err error)
@@ -28,7 +28,7 @@ type cardManager struct {
 }
 
 func (c *cardManager) Get(id string) (*Card, error) {
-	card, err := c.Context.Client.GetCard(id)
+	card, err := c.Context.client.GetCard(id)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +38,8 @@ func (c *cardManager) Get(id string) (*Card, error) {
 	}, nil
 }
 
-func (c *cardManager) Create(identity string, identityType string, key virgilcrypto.PrivateKey) (*Card, error) {
-	publicKey, err := key.ExtractPublicKey()
+func (c *cardManager) Create(identity string, identityType string, key *Key) (*Card, error) {
+	publicKey, err := key.PrivateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +49,11 @@ func (c *cardManager) Create(identity string, identityType string, key virgilcry
 		return nil, err
 	}
 
-	return c.requestToCard(req, key)
+	return c.requestToCard(req, key.PrivateKey)
 }
 
-func (c *cardManager) CreateGlobal(identity string, identityType string, key virgilcrypto.PrivateKey) (*Card, error) {
-	publicKey, err := key.ExtractPublicKey()
+func (c *cardManager) CreateGlobal(identity string, identityType string, key *Key) (*Card, error) {
+	publicKey, err := key.PrivateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *cardManager) CreateGlobal(identity string, identityType string, key vir
 		return nil, err
 	}
 
-	return c.requestToCard(req, key)
+	return c.requestToCard(req, key.PrivateKey)
 }
 
 // requestToCard converts createCardRequest to Card instance with context & model
@@ -74,7 +74,7 @@ func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypt
 		return nil, err
 	}
 
-	id := hex.EncodeToString(c.Context.Crypto.CalculateFingerprint(req.Snapshot))
+	id := hex.EncodeToString(virgil.Crypto().CalculateFingerprint(req.Snapshot))
 	resp := &virgil.CardResponse{
 		ID:       id,
 		Snapshot: req.Snapshot,
@@ -117,7 +117,7 @@ func (c *cardManager) Import(card string) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	id := hex.EncodeToString(c.Context.Crypto.CalculateFingerprint(req.Snapshot))
+	id := hex.EncodeToString(virgil.Crypto().CalculateFingerprint(req.Snapshot))
 	resp := &virgil.CardResponse{
 		ID:       id,
 		Snapshot: req.Snapshot,
@@ -151,7 +151,7 @@ func (c *cardManager) VerifyIdentity(card *Card) (actionId string, err error) {
 		Value: createReq.Identity,
 	}
 
-	resp, err := c.Context.Client.VerifyIdentity(req)
+	resp, err := c.Context.client.VerifyIdentity(req)
 	if err != nil {
 		return "", err
 	}
@@ -168,7 +168,7 @@ func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) 
 			TimeToLive:  3600,
 		},
 	}
-	resp, err := c.Context.Client.ConfirmIdentity(req)
+	resp, err := c.Context.client.ConfirmIdentity(req)
 	if err != nil {
 		return "", err
 	}
@@ -178,8 +178,8 @@ func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) 
 // Publish will sign request with app signature and try to publish it to the server
 // The signature will be added to request
 func (c *cardManager) Publish(card *Card) (*Card, error) {
-	pk := c.Context.Credentials.Key
-	if pk == nil {
+	pk := c.Context.Config.Credentials.Key
+	if pk == nil || pk.PrivateKey == nil {
 		return nil, errors.New("No app private key provided for request signing")
 	}
 
@@ -191,12 +191,12 @@ func (c *cardManager) Publish(card *Card) (*Card, error) {
 		return nil, err
 	}
 
-	err = signer.AuthoritySign(req, c.Context.Credentials.AppId, pk)
+	err = signer.AuthoritySign(req, c.Context.Config.Credentials.AppId, pk.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.Context.Client.CreateCard(req)
+	res, err := c.Context.client.CreateCard(req)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, 
 
 	req.Meta.Validation.Token = validationToken
 
-	res, err := c.Context.Client.CreateCard(req)
+	res, err := c.Context.client.CreateCard(req)
 	if err != nil {
 		return nil, err
 	}
@@ -238,12 +238,17 @@ func (c *cardManager) Revoke(card *Card, reason virgil.Enum) error {
 
 	signer := &virgil.RequestSigner{}
 
-	err = signer.AuthoritySign(req, c.Context.Credentials.AppId, c.Context.Credentials.Key)
+	pk := c.Context.Config.Credentials.Key
+	if pk == nil || pk.PrivateKey == nil {
+		return errors.New("No app private key provided for request signing")
+	}
+
+	err = signer.AuthoritySign(req, c.Context.Config.Credentials.AppId, pk.PrivateKey)
 	if err != nil {
 		return err
 	}
 
-	return c.Context.Client.RevokeCard(req)
+	return c.Context.client.RevokeCard(req)
 }
 
 func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Key, validationToken string) error {
@@ -262,5 +267,5 @@ func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Ke
 	req.Meta.Validation = &virgil.ValidationInfo{}
 	req.Meta.Validation.Token = validationToken
 
-	return c.Context.Client.RevokeCard(req)
+	return c.Context.client.RevokeCard(req)
 }

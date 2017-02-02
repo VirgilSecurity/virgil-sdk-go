@@ -49,7 +49,7 @@ var (
 	ErrNotFound = transport.ErrNotFound
 )
 
-// ClientTransport set card service protocol for a Virgil client
+// ClientTransport sets card service protocol for a Virgil client
 //
 func ClientTransport(transportClient transport.Client) func(*Client) {
 	return func(client *Client) {
@@ -57,7 +57,7 @@ func ClientTransport(transportClient transport.Client) func(*Client) {
 	}
 }
 
-// ClientCardsValidator set custom card validaor for a Virgil client
+// ClientCardsValidator sets custom card validaor for a Virgil client
 //
 func ClientCardsValidator(validator CardsValidator) func(*Client) {
 	return func(client *Client) {
