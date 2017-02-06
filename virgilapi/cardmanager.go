@@ -12,7 +12,7 @@ import (
 type CardManager interface {
 	Get(id string) (*Card, error)
 	Create(identity string, identityType string, key *Key) (*Card, error)
-	CreateGlobal(identity string, identityType string, key *Key) (*Card, error)
+	CreateGlobal(identity string, key *Key) (*Card, error)
 	Export(card *Card) (string, error)
 	Import(card string) (*Card, error)
 	VerifyIdentity(card *Card) (actionId string, err error)
@@ -33,7 +33,7 @@ func (c *cardManager) Get(id string) (*Card, error) {
 		return nil, err
 	}
 	return &Card{
-		Model:   card,
+		Card:    card,
 		Context: c.Context,
 	}, nil
 }
@@ -52,13 +52,13 @@ func (c *cardManager) Create(identity string, identityType string, key *Key) (*C
 	return c.requestToCard(req, key.PrivateKey)
 }
 
-func (c *cardManager) CreateGlobal(identity string, identityType string, key *Key) (*Card, error) {
+func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 	publicKey, err := key.PrivateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := virgil.NewCreateCardRequest(identity, identityType, publicKey, virgil.CardParams{Scope: virgil.CardScope.Global})
+	req, err := virgil.NewCreateCardRequest(email, "email", publicKey, virgil.CardParams{Scope: virgil.CardScope.Global})
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +91,12 @@ func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypt
 
 	return &Card{
 		Context: c.Context,
-		Model:   card,
+		Card:    card,
 	}, nil
 }
 
 func (c *cardManager) Export(card *Card) (string, error) {
-	req, err := card.Model.ToRequest()
+	req, err := card.ToRequest()
 	if err != nil {
 		return "", err
 	}
@@ -134,14 +134,14 @@ func (c *cardManager) Import(card string) (*Card, error) {
 
 	return &Card{
 		Context: c.Context,
-		Model:   model,
+		Card:    model,
 	}, nil
 }
 
 func (c *cardManager) VerifyIdentity(card *Card) (actionId string, err error) {
 
 	createReq := &virgil.CardModel{}
-	err = json.Unmarshal(card.Model.Snapshot, createReq)
+	err = json.Unmarshal(card.Snapshot, createReq)
 	if err != nil {
 		return "", errors.Wrap(err, "Cannot unwrap request snapshot")
 	}
@@ -185,7 +185,7 @@ func (c *cardManager) Publish(card *Card) (*Card, error) {
 
 	signer := &virgil.RequestSigner{}
 
-	req, err := card.Model.ToRequest()
+	req, err := card.ToRequest()
 
 	if err != nil {
 		return nil, err
@@ -203,12 +203,12 @@ func (c *cardManager) Publish(card *Card) (*Card, error) {
 
 	return &Card{
 		Context: c.Context,
-		Model:   res,
+		Card:    res,
 	}, nil
 }
 
 func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, error) {
-	req, err := card.Model.ToRequest()
+	req, err := card.ToRequest()
 
 	if err != nil {
 		return nil, err
@@ -225,13 +225,13 @@ func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, 
 
 	return &Card{
 		Context: c.Context,
-		Model:   res,
+		Card:    res,
 	}, nil
 }
 
 func (c *cardManager) Revoke(card *Card, reason virgil.Enum) error {
 
-	req, err := virgil.NewRevokeCardRequest(card.Model.ID, reason)
+	req, err := virgil.NewRevokeCardRequest(card.ID, reason)
 	if err != nil {
 		return err
 	}
@@ -253,14 +253,14 @@ func (c *cardManager) Revoke(card *Card, reason virgil.Enum) error {
 
 func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Key, validationToken string) error {
 
-	req, err := virgil.NewRevokeCardRequest(card.Model.ID, reason)
+	req, err := virgil.NewRevokeCardRequest(card.ID, reason)
 	if err != nil {
 		return err
 	}
 
 	signer := &virgil.RequestSigner{}
 
-	err = signer.AuthoritySign(req, card.Model.ID, signerKey.PrivateKey)
+	err = signer.AuthoritySign(req, card.ID, signerKey.PrivateKey)
 	if err != nil {
 		return err
 	}

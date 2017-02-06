@@ -8,7 +8,6 @@ import (
 )
 
 type PublicKey interface {
-	Contents() []byte
 	ReceiverID() []byte
 	Encode() ([]byte, error)
 	Empty() bool

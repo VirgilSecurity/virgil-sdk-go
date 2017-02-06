@@ -120,7 +120,7 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 		err = cryptoError(err, "")
 		return
 	}
-	ephPub = keypair.PublicKey().Contents()
+	ephPub = keypair.PublicKey().(*ed25519PublicKey).Contents()
 	ephPrivate := new([ed25519.PrivateKeySize]byte)
 	ephCurvePrivate := new([Curve25519PrivateKeySize]byte)
 	sharedSecret := new([Curve25519SharedKeySize]byte)
@@ -134,7 +134,7 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 		return
 	}
 	copy(hisPublic[:], public_key)
-	copy(ephPrivate[:], keypair.PrivateKey().Contents())
+	copy(ephPrivate[:], keypair.PrivateKey().(*ed25519PrivateKey).Contents())
 
 	extra25519.PrivateKeyToCurve25519(ephCurvePrivate, ephPrivate)
 	extra25519.PublicKeyToCurve25519(hisCurvePublic, hisPublic)

@@ -2,20 +2,27 @@ package virgilapi
 
 import (
 	"gopkg.in/virgil.v4"
+	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
 type Card struct {
+	*virgil.Card
 	Context *Context
-	Model   *virgil.Card
 }
 
 func (c *Card) Encrypt(data Buffer) (Buffer, error) {
-	return virgil.Crypto().Encrypt(data, c.Model.PublicKey)
+	if c == nil {
+		return nil, errors.New("Card model is nil")
+	}
+	return virgil.Crypto().Encrypt(data, c.PublicKey)
 }
 
 func (c *Card) Verify(data Buffer, signature Buffer) (bool, error) {
-	return virgil.Crypto().Verify(data, signature, c.Model.PublicKey)
+	if c == nil {
+		return false, errors.New("Card model is nil")
+	}
+	return virgil.Crypto().Verify(data, signature, c.PublicKey)
 }
 
 type cards []*Card
@@ -23,7 +30,7 @@ type cards []*Card
 func (c cards) ToRecipients() []virgilcrypto.PublicKey {
 	res := make([]virgilcrypto.PublicKey, len(c))
 	for i, r := range c {
-		res[i] = r.Model.PublicKey
+		res[i] = r.PublicKey
 	}
 	return res
 }

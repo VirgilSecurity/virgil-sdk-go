@@ -40,6 +40,7 @@ import (
 	"strconv"
 
 	"github.com/agl/ed25519"
+	"gopkg.in/virgil.v4/errors"
 )
 
 type VirgilSigner interface {
@@ -59,30 +60,42 @@ type ed25519Signer struct{}
 type ed25519Verifier struct{}
 
 func (s *ed25519Signer) Sign(data []byte, signer PrivateKey) ([]byte, error) {
+	if signer == nil || signer.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	hash := Hash.Sum(data)
-	return signInternal(hash[:], signer)
+	return signInternal(hash[:], signer.(*ed25519PrivateKey))
 
 }
 func (s *ed25519Verifier) Verify(data []byte, key PublicKey, signature []byte) (bool, error) {
+	if key == nil || key.Empty() {
+		return false, errors.New("key is nil")
+	}
 	hash := Hash.Sum(data)
-	return verifyInternal(hash[:], key, signature)
+	return verifyInternal(hash[:], key.(*ed25519PublicKey), signature)
 }
 func (s *ed25519Signer) SignStream(data io.Reader, signer PrivateKey) ([]byte, error) {
+	if signer == nil || signer.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	h, err := hashStream(data)
 	if err != nil {
 		return nil, err
 	}
-	return signInternal(h, signer)
+	return signInternal(h, signer.(*ed25519PrivateKey))
 }
 func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature []byte) (bool, error) {
+	if key == nil || key.Empty() {
+		return false, errors.New("key is nil")
+	}
 	h, err := hashStream(data)
 	if err != nil {
 		return false, err
 	}
-	return verifyInternal(h, key, signature)
+	return verifyInternal(h, key.(*ed25519PublicKey), signature)
 }
 
-func signInternal(hash []byte, key PrivateKey) ([]byte, error) {
+func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
 	if key == nil || key.Empty() {
 		return nil, CryptoError("No private key for signing")
 	}
@@ -99,7 +112,7 @@ func signInternal(hash []byte, key PrivateKey) ([]byte, error) {
 
 	return sBytes, nil
 }
-func verifyInternal(hash []byte, key PublicKey, signature []byte) (bool, error) {
+func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) (bool, error) {
 	if key == nil || key.Empty() {
 		return false, CryptoError("public key for verification is not provided")
 	}

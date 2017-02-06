@@ -37,6 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 import (
 	"crypto/sha256"
+	"gopkg.in/virgil.v4/errors"
 	"io"
 )
 
@@ -92,17 +93,26 @@ func (c *VirgilCrypto) ImportPublicKey(data []byte) (PublicKey, error) {
 }
 
 func (c *VirgilCrypto) ExportPrivateKey(key PrivateKey, password string) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	return key.Encode([]byte(password))
 }
 
 func (c *VirgilCrypto) ExportPublicKey(key PublicKey) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	return key.Encode()
 }
 
 func (c *VirgilCrypto) Encrypt(data []byte, recipients ...PublicKey) ([]byte, error) {
 	cipher := c.Cipher()
 	for _, k := range recipients {
-		cipher.AddKeyRecipient(k)
+		if k == nil || k.Empty() {
+			return nil, errors.New("key is nil")
+		}
+		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
 	}
 	return cipher.Encrypt(data)
 }
@@ -110,28 +120,46 @@ func (c *VirgilCrypto) Encrypt(data []byte, recipients ...PublicKey) ([]byte, er
 func (c *VirgilCrypto) EncryptStream(in io.Reader, out io.Writer, recipients ...PublicKey) error {
 	cipher := c.Cipher()
 	for _, k := range recipients {
-		cipher.AddKeyRecipient(k)
+		if k == nil || k.Empty() {
+			return errors.New("key is nil")
+		}
+		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
 	}
 	return cipher.EncryptStream(in, out)
 }
 
 func (c *VirgilCrypto) Decrypt(data []byte, key PrivateKey) ([]byte, error) {
-	return c.Cipher().DecryptWithPrivateKey(data, key)
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
+	}
+	return c.Cipher().DecryptWithPrivateKey(data, key.(*ed25519PrivateKey))
 }
 
 func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) error {
-	return c.Cipher().DecryptStream(in, out, key)
+	if key == nil || key.Empty() {
+		return errors.New("key is nil")
+	}
+	return c.Cipher().DecryptStream(in, out, key.(*ed25519PrivateKey))
 }
 
 func (c *VirgilCrypto) Sign(data []byte, signer PrivateKey) ([]byte, error) {
+	if signer == nil || signer.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	return Signer.Sign(data, signer)
 }
 
 func (c *VirgilCrypto) Verify(data []byte, signature []byte, key PublicKey) (bool, error) {
+	if key == nil || key.Empty() {
+		return false, errors.New("key is nil")
+	}
 	return Verifier.Verify(data, key, signature)
 }
 
 func (c *VirgilCrypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, error) {
+	if signer == nil || signer.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	res, err := Signer.SignStream(in, signer)
 	if err != nil {
 		return nil, err
@@ -140,6 +168,9 @@ func (c *VirgilCrypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, erro
 }
 
 func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) (bool, error) {
+	if key == nil || key.Empty() {
+		return false, errors.New("key is nil")
+	}
 	return Verifier.VerifyStream(in, key, signature)
 }
 func (c *VirgilCrypto) CalculateFingerprint(data []byte) []byte {
@@ -148,18 +179,31 @@ func (c *VirgilCrypto) CalculateFingerprint(data []byte) []byte {
 }
 
 func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey PrivateKey, recipients ...PublicKey) ([]byte, error) {
+	if signerKey == nil || signerKey.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	cipher := c.Cipher()
 	for _, k := range recipients {
-		cipher.AddKeyRecipient(k)
+		if k == nil || k.Empty() {
+			return nil, errors.New("key is nil")
+		}
+		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
 	}
-	return cipher.SignThenEncrypt(data, signerKey)
+	return cipher.SignThenEncrypt(data, signerKey.(*ed25519PrivateKey))
 }
 
 func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierKey PublicKey) ([]byte, error) {
-	return c.Cipher().DecryptThenVerify(data, decryptionKey, verifierKey)
+
+	if decryptionKey == nil || decryptionKey.Empty() || verifierKey == nil || verifierKey.Empty() {
+		return nil, errors.New("key is nil")
+	}
+	return c.Cipher().DecryptThenVerify(data, decryptionKey.(*ed25519PrivateKey), verifierKey.(*ed25519PublicKey))
 }
 
 func (c *VirgilCrypto) ExtractPublicKey(key PrivateKey) (PublicKey, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
+	}
 	return key.ExtractPublicKey()
 }
 

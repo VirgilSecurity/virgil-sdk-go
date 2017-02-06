@@ -27,7 +27,7 @@ func (k *Key) SignThenEncrypt(data Buffer, recipients ...*Card) (Buffer, error) 
 }
 
 func (k *Key) DecryptThenVerify(data Buffer, card *Card) (Buffer, error) {
-	return virgil.Crypto().DecryptThenVerify(data, k.PrivateKey, card.Model.PublicKey)
+	return virgil.Crypto().DecryptThenVerify(data, k.PrivateKey, card.PublicKey)
 }
 
 func (k *Key) Save(name string, password string) error {

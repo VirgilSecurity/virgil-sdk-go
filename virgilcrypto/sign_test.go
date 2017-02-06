@@ -73,8 +73,8 @@ func TestSignatures(t *testing.T) {
 	}
 
 	//corrupt key
-	keypair.PublicKey().Contents()[0] = ^keypair.PublicKey().Contents()[0]
-	keypair.PublicKey().Contents()[1] = ^keypair.PublicKey().Contents()[1]
+	keypair.PublicKey().(*ed25519PublicKey).Contents()[0] = ^keypair.PublicKey().(*ed25519PublicKey).Contents()[0]
+	keypair.PublicKey().(*ed25519PublicKey).Contents()[1] = ^keypair.PublicKey().(*ed25519PublicKey).Contents()[1]
 
 	result, err = Verifier.Verify(data, keypair.PublicKey(), signature)
 
@@ -119,8 +119,8 @@ func TestStreamSignatures(t *testing.T) {
 	}
 
 	//corrupt key
-	keypair.PublicKey().Contents()[0] = ^keypair.PublicKey().Contents()[0]
-	keypair.PublicKey().Contents()[1] = ^keypair.PublicKey().Contents()[1]
+	keypair.PublicKey().(*ed25519PublicKey).Contents()[0] = ^keypair.PublicKey().(*ed25519PublicKey).Contents()[0]
+	keypair.PublicKey().(*ed25519PublicKey).Contents()[1] = ^keypair.PublicKey().(*ed25519PublicKey).Contents()[1]
 	buf = bytes.NewBuffer(data)
 	result, err = Verifier.VerifyStream(buf, keypair.PublicKey(), signature)
 

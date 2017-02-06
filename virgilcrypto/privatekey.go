@@ -9,7 +9,6 @@ import (
 )
 
 type PrivateKey interface {
-	Contents() []byte
 	ReceiverID() []byte
 	ExtractPublicKey() (PublicKey, error)
 	Encode(password []byte) ([]byte, error)

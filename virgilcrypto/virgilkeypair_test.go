@@ -31,14 +31,14 @@ func TestKeys(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !bytes.Equal(keypair.PublicKey().Contents(), dPub.Contents()) {
-		fmt.Println(keypair.PublicKey().Contents())
-		fmt.Println(dPub.Contents())
+	if !bytes.Equal(keypair.PublicKey().(*ed25519PublicKey).Contents(), dPub.(*ed25519PublicKey).Contents()) {
+		fmt.Println(keypair.PublicKey().(*ed25519PublicKey).Contents())
+		fmt.Println(dPub.(*ed25519PublicKey).Contents())
 
 		t.Fatal("deserialized & original public keys do not match")
 	}
 
-	if !bytes.Equal(keypair.PrivateKey().Contents(), dPriv.Contents()) {
+	if !bytes.Equal(keypair.PrivateKey().(*ed25519PrivateKey).Contents(), dPriv.(*ed25519PrivateKey).Contents()) {
 		t.Fatal("deserialized & original private keys do not match")
 	}
 
@@ -54,7 +54,7 @@ func TestKeys(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(keypair.PrivateKey().Contents(), dPriv.Contents()) {
+	if !bytes.Equal(keypair.PrivateKey().(*ed25519PrivateKey).Contents(), dPriv.(*ed25519PrivateKey).Contents()) {
 		t.Fatal("keys do not match")
 	}
 }

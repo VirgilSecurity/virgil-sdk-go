@@ -44,15 +44,15 @@ import (
 )
 
 type Cipher interface {
-	AddKeyRecipient(key PublicKey) error
+	AddKeyRecipient(key *ed25519PublicKey) error
 	AddPasswordRecipient(password []byte)
 	Encrypt(data []byte) ([]byte, error)
 	DecryptWithPassword(data []byte, password []byte) ([]byte, error)
-	DecryptWithPrivateKey(data []byte, key PrivateKey) ([]byte, error)
+	DecryptWithPrivateKey(data []byte, key *ed25519PrivateKey) ([]byte, error)
 	EncryptStream(in io.Reader, out io.Writer) error
-	DecryptStream(in io.Reader, out io.Writer, key PrivateKey) error
-	SignThenEncrypt(data []byte, signerKey PrivateKey) ([]byte, error)
-	DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierKey PublicKey) ([]byte, error)
+	DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error
+	SignThenEncrypt(data []byte, signerKey *ed25519PrivateKey) ([]byte, error)
+	DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierKey *ed25519PublicKey) ([]byte, error)
 }
 
 type defaultCipher struct {
@@ -75,7 +75,7 @@ type recipient interface {
 	decryptKey(id []byte, key []byte) ([]byte, error)
 }
 
-func (c *defaultCipher) AddKeyRecipient(key PublicKey) error {
+func (c *defaultCipher) AddKeyRecipient(key *ed25519PublicKey) error {
 
 	if key == nil || key.Empty() {
 		return CryptoError("no public key provided")
@@ -120,7 +120,7 @@ func (c *defaultCipher) Encrypt(data []byte) ([]byte, error) {
 	return append(envelope, ciphertext...), nil
 }
 
-func (c *defaultCipher) SignThenEncrypt(data []byte, signer PrivateKey) ([]byte, error) {
+func (c *defaultCipher) SignThenEncrypt(data []byte, signer *ed25519PrivateKey) ([]byte, error) {
 	if len(c.recipients) == 0 {
 		return nil, CryptoError("No recipients specified")
 	}
@@ -166,7 +166,7 @@ func (c *defaultCipher) DecryptWithPassword(data []byte, password []byte) ([]byt
 	}
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong password?")
 }
-func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key PrivateKey) ([]byte, error) {
+func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKey) ([]byte, error) {
 
 	if key == nil || len(key.Contents()) == 0 {
 		return nil, CryptoError("no keypair provided")
@@ -186,7 +186,7 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key PrivateKey) ([]by
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
 
-func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierPublicKey PublicKey) ([]byte, error) {
+func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierPublicKey *ed25519PublicKey) ([]byte, error) {
 
 	if decryptionKey == nil || decryptionKey.Empty() {
 		return nil, CryptoError("no keypair provided")
@@ -263,7 +263,7 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 
 	return c.chunkCipher.Encrypt(symmetricKey, nonce, nil, DefaultChunkSize, in, out)
 }
-func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) error {
+func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error {
 
 	if key == nil || len(key.Contents()) == 0 {
 		return CryptoError("no keypair provided")
