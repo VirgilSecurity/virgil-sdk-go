@@ -260,7 +260,7 @@ func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Ke
 
 	signer := &virgil.RequestSigner{}
 
-	err = signer.SelfSign(req, signerKey.PrivateKey)
+	err = signer.AuthoritySign(req, card.Model.ID, signerKey.PrivateKey)
 	if err != nil {
 		return err
 	}
