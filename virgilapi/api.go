@@ -30,15 +30,30 @@ func New(accessToken string) (*Api, error) {
 	}, nil
 }
 
-func NewWithConfig(config *Config) (_ *Api, err error) {
-	var cli *virgil.Client
+func NewWithConfig(config Config) (_ *Api, err error) {
+
+	params := make([]func(client *virgil.Client), 0)
+
 	if config.ClientParams != nil {
-		params := config.ClientParams
-		cli, err = virgil.NewClient(config.Token, virgil.ClientTransport(virgilhttp.NewTransportClient(params.CardServiceURL,
-			params.ReadOnlyCardServiceURL, params.IdentityServiceURL, params.VRAServiceURL)))
-	} else {
-		cli, err = virgil.NewClient(config.Token)
+		clientParams := config.ClientParams
+		params = append(params, virgil.ClientTransport(virgilhttp.NewTransportClient(clientParams.CardServiceURL,
+			clientParams.ReadOnlyCardServiceURL, clientParams.IdentityServiceURL, clientParams.VRAServiceURL)))
 	}
+
+	if config.CardVerifiers != nil {
+		validator := virgil.NewCardsValidator()
+		for id, v := range config.CardVerifiers {
+			key, err := virgil.Crypto().ImportPublicKey(v)
+			if err != nil {
+				return nil, err
+			}
+			validator.AddVerifier(id, key)
+		}
+		params = append(params, virgil.ClientCardsValidator(validator))
+	}
+
+	cli, err := virgil.NewClient(config.Token, params...)
+
 	if err != nil {
 		return nil, err
 	}
