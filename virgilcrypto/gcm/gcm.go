@@ -1,7 +1,7 @@
 package gcm
 
 /*
-Copyright (C) 2015-2016 Virgil Security Inc.
+Copyright (C) 2016-2017 Virgil Security Inc.
 
 Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
 
