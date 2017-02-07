@@ -8,7 +8,7 @@ import (
 
 type Card struct {
 	*virgil.Card
-	Context *Context
+	context *Context
 }
 
 func (c *Card) Encrypt(data Buffer) (Buffer, error) {
@@ -40,5 +40,5 @@ func (c cards) Encrypt(data Buffer, context *Context) (Buffer, error) {
 }
 
 func (c cards) SignThenEncrypt(data Buffer, signerKey *Key, context *Context) (Buffer, error) {
-	return virgil.Crypto().SignThenEncrypt(data, signerKey.PrivateKey, c.ToRecipients()...)
+	return virgil.Crypto().SignThenEncrypt(data, signerKey.privateKey, c.ToRecipients()...)
 }

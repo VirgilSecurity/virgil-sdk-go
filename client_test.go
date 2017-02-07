@@ -254,7 +254,7 @@ func TestSearchCards_CardsValidated_ReturnCard(t *testing.T) {
 }
 
 func TestSearchCards_CheckPassedParameter(t *testing.T) {
-	criteria := Criteria{
+	criteria := &Criteria{
 		Identities: []string{
 			"test1",
 			"test2",

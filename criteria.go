@@ -8,8 +8,8 @@ type Criteria struct {
 
 // SearchCriteriaByIdentities create search criteria by identities in application scope
 //
-func SearchCriteriaByIdentities(identites ...string) Criteria {
-	return Criteria{
+func SearchCriteriaByIdentities(identites ...string) *Criteria {
+	return &Criteria{
 		Scope:      CardScope.Application,
 		Identities: identites,
 	}
@@ -17,8 +17,8 @@ func SearchCriteriaByIdentities(identites ...string) Criteria {
 
 // SearchCriteriaByAppBundle create search criteria by bundle name in global scope
 //
-func SearchCriteriaByAppBundle(bundle ...string) Criteria {
-	return Criteria{
+func SearchCriteriaByAppBundle(bundle ...string) *Criteria {
+	return &Criteria{
 		Scope:        CardScope.Global,
 		Identities:   bundle,
 		IdentityType: "application",

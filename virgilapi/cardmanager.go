@@ -11,7 +11,7 @@ import (
 
 type CardManager interface {
 	Get(id string) (*Card, error)
-	Create(identity string, identityType string, key *Key) (*Card, error)
+	Create(identity string, key *Key, customFields map[string]string) (*Card, error)
 	CreateGlobal(identity string, key *Key) (*Card, error)
 	Export(card *Card) (string, error)
 	Import(card string) (*Card, error)
@@ -21,39 +21,45 @@ type CardManager interface {
 	PublishGlobal(card *Card, validationToken string) (*Card, error)
 	Revoke(card *Card, reason virgil.Enum) error
 	RevokeGlobal(card *Card, reason virgil.Enum, key *Key, validationToken string) error
+	Find(identities []string) ([]*Card, error)
+	FindGlobal(identityType string, identities []string) ([]*Card, error)
 }
 
 type cardManager struct {
-	Context *Context
+	context *Context
 }
 
 func (c *cardManager) Get(id string) (*Card, error) {
-	card, err := c.Context.client.GetCard(id)
+	card, err := c.context.client.GetCard(id)
 	if err != nil {
 		return nil, err
 	}
 	return &Card{
 		Card:    card,
-		Context: c.Context,
+		context: c.context,
 	}, nil
 }
 
-func (c *cardManager) Create(identity string, identityType string, key *Key) (*Card, error) {
-	publicKey, err := key.PrivateKey.ExtractPublicKey()
+func (c *cardManager) Create(identity string, key *Key, customFields map[string]string) (*Card, error) {
+	publicKey, err := key.privateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := virgil.NewCreateCardRequest(identity, identityType, publicKey, virgil.CardParams{})
+	req, err := virgil.NewCreateCardRequest(identity, "unknown", publicKey, virgil.CardParams{Data: customFields})
 	if err != nil {
 		return nil, err
 	}
 
-	return c.requestToCard(req, key.PrivateKey)
+	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	if err != nil {
+		return nil, err
+	}
+	return c.requestToCard(req, key.privateKey)
 }
 
 func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
-	publicKey, err := key.PrivateKey.ExtractPublicKey()
+	publicKey, err := key.privateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
 	}
@@ -63,17 +69,11 @@ func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 		return nil, err
 	}
 
-	return c.requestToCard(req, key.PrivateKey)
+	return c.requestToCard(req, key.privateKey)
 }
 
 // requestToCard converts createCardRequest to Card instance with context & model
 func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypto.PrivateKey) (*Card, error) {
-	signer := &virgil.RequestSigner{}
-	err := signer.SelfSign(req, key)
-	if err != nil {
-		return nil, err
-	}
-
 	id := hex.EncodeToString(virgil.Crypto().CalculateFingerprint(req.Snapshot))
 	resp := &virgil.CardResponse{
 		ID:       id,
@@ -90,7 +90,7 @@ func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypt
 	}
 
 	return &Card{
-		Context: c.Context,
+		context: c.context,
 		Card:    card,
 	}, nil
 }
@@ -133,7 +133,7 @@ func (c *cardManager) Import(card string) (*Card, error) {
 	}
 
 	return &Card{
-		Context: c.Context,
+		context: c.context,
 		Card:    model,
 	}, nil
 }
@@ -151,7 +151,7 @@ func (c *cardManager) VerifyIdentity(card *Card) (actionId string, err error) {
 		Value: createReq.Identity,
 	}
 
-	resp, err := c.Context.client.VerifyIdentity(req)
+	resp, err := c.context.client.VerifyIdentity(req)
 	if err != nil {
 		return "", err
 	}
@@ -168,7 +168,7 @@ func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) 
 			TimeToLive:  3600,
 		},
 	}
-	resp, err := c.Context.client.ConfirmIdentity(req)
+	resp, err := c.context.client.ConfirmIdentity(req)
 	if err != nil {
 		return "", err
 	}
@@ -178,12 +178,9 @@ func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) 
 // Publish will sign request with app signature and try to publish it to the server
 // The signature will be added to request
 func (c *cardManager) Publish(card *Card) (*Card, error) {
-	pk := c.Context.Config.Credentials.Key
-	if pk == nil || pk.PrivateKey == nil {
+	if c.context.appKey == nil || c.context.appKey.key == nil {
 		return nil, errors.New("No app private key provided for request signing")
 	}
-
-	signer := &virgil.RequestSigner{}
 
 	req, err := card.ToRequest()
 
@@ -191,18 +188,18 @@ func (c *cardManager) Publish(card *Card) (*Card, error) {
 		return nil, err
 	}
 
-	err = signer.AuthoritySign(req, c.Context.Config.Credentials.AppId, pk.PrivateKey)
+	err = c.context.requestSigner.AuthoritySign(req, c.context.appKey.id, c.context.appKey.key)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.Context.client.CreateCard(req)
+	res, err := c.context.client.CreateCard(req)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Card{
-		Context: c.Context,
+		context: c.context,
 		Card:    res,
 	}, nil
 }
@@ -218,37 +215,33 @@ func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, 
 
 	req.Meta.Validation.Token = validationToken
 
-	res, err := c.Context.client.CreateCard(req)
+	res, err := c.context.client.CreateCard(req)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Card{
-		Context: c.Context,
+		context: c.context,
 		Card:    res,
 	}, nil
 }
 
 func (c *cardManager) Revoke(card *Card, reason virgil.Enum) error {
+	if c.context.appKey == nil || c.context.appKey.key == nil {
+		return errors.New("No app private key provided for request signing")
+	}
 
 	req, err := virgil.NewRevokeCardRequest(card.ID, reason)
 	if err != nil {
 		return err
 	}
 
-	signer := &virgil.RequestSigner{}
-
-	pk := c.Context.Config.Credentials.Key
-	if pk == nil || pk.PrivateKey == nil {
-		return errors.New("No app private key provided for request signing")
-	}
-
-	err = signer.AuthoritySign(req, c.Context.Config.Credentials.AppId, pk.PrivateKey)
+	err = c.context.requestSigner.AuthoritySign(req, c.context.appKey.id, c.context.appKey.key)
 	if err != nil {
 		return err
 	}
 
-	return c.Context.client.RevokeCard(req)
+	return c.context.client.RevokeCard(req)
 }
 
 func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Key, validationToken string) error {
@@ -258,14 +251,50 @@ func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Ke
 		return err
 	}
 
-	signer := &virgil.RequestSigner{}
-
-	err = signer.AuthoritySign(req, card.ID, signerKey.PrivateKey)
+	err = c.context.requestSigner.AuthoritySign(req, card.ID, signerKey.privateKey)
 	if err != nil {
 		return err
 	}
 	req.Meta.Validation = &virgil.ValidationInfo{}
 	req.Meta.Validation.Token = validationToken
 
-	return c.Context.client.RevokeCard(req)
+	return c.context.client.RevokeCard(req)
+}
+
+func (c *cardManager) Find(identities []string) ([]*Card, error) {
+
+	cards, err := c.context.client.SearchCards(virgil.SearchCriteriaByIdentities(identities...))
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]*Card, len(cards))
+	for i, card := range cards {
+		res[i] = &Card{
+			context: c.context,
+			Card:    card,
+		}
+	}
+	return res, nil
+}
+
+func (c *cardManager) FindGlobal(identityType string, identities []string) ([]*Card, error) {
+
+	cards, err := c.context.client.SearchCards(&virgil.Criteria{
+		IdentityType: identityType,
+		Identities:   identities,
+		Scope:        virgil.CardScope.Global,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]*Card, len(cards))
+	for i, card := range cards {
+		res[i] = &Card{
+			context: c.context,
+			Card:    card,
+		}
+	}
+	return res, nil
 }

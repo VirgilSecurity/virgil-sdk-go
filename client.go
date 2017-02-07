@@ -128,16 +128,12 @@ func (c *Client) RevokeCard(request *SignableRequest) error {
 	return c.transportClient.Call(endpoints.RevokeCard, request, nil, req.ID)
 }
 
-func (c *Client) SearchCards(criteria Criteria) ([]*Card, error) {
-	if len(criteria.Identities) == 0 {
-		return nil, errors.New("identites cannot be empty")
+func (c *Client) SearchCards(criteria *Criteria) ([]*Card, error) {
+	if criteria == nil || len(criteria.Identities) == 0 {
+		return nil, errors.New("search criteria cannot be empty")
 	}
 	var res []*CardResponse
-	err := c.transportClient.Call(endpoints.SearchCards, &Criteria{
-		Identities:   criteria.Identities,
-		IdentityType: criteria.IdentityType,
-		Scope:        criteria.Scope,
-	}, &res)
+	err := c.transportClient.Call(endpoints.SearchCards, criteria, &res)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 func TestSearchCriteriaByIdentities_CheckStruct(t *testing.T) {
-	expected := Criteria{
+	expected := &Criteria{
 		Identities: []string{
 			"Test1",
 			"Test2",
@@ -20,7 +20,7 @@ func TestSearchCriteriaByIdentities_CheckStruct(t *testing.T) {
 }
 
 func TestSearchCriteriaByAppBundle_CheckStruct(t *testing.T) {
-	expected := Criteria{
+	expected := &Criteria{
 		Identities: []string{
 			"Test1",
 			"Test2",

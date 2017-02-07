@@ -6,7 +6,7 @@ import (
 )
 
 type Api struct {
-	Context *Context
+	context *Context
 	Cards   CardManager
 	Keys    KeyManager
 }
@@ -24,13 +24,13 @@ func New(accessToken string) (*Api, error) {
 	}
 
 	return &Api{
-		Context: context,
-		Cards:   &cardManager{Context: context},
+		context: context,
+		Cards:   &cardManager{context: context},
 		Keys:    &keyManager{Context: context},
 	}, nil
 }
 
-func NewWithConfig(config Config) (_ *Api, err error) {
+func NewWithConfig(config Config) (*Api, error) {
 
 	params := make([]func(client *virgil.Client), 0)
 
@@ -64,22 +64,31 @@ func NewWithConfig(config Config) (_ *Api, err error) {
 	} else {
 		root = "."
 	}
+	var key *appKey
+	if config.Credentials != nil {
+		k, err := virgil.Crypto().ImportPrivateKey(config.Credentials.PrivateKey, config.Credentials.PrivateKeyPassword)
+		if err != nil {
+			return nil, err
+		}
+		key = &appKey{id: config.Credentials.AppId, key: k}
+	}
 
 	context := &Context{
 		client:        cli,
 		storage:       &virgil.FileStorage{RootDir: root},
 		requestSigner: &virgil.RequestSigner{},
+		appKey:        key,
 	}
 
 	return &Api{
-		Context: context,
-		Cards:   &cardManager{Context: context},
+		context: context,
+		Cards:   &cardManager{context: context},
 		Keys:    &keyManager{Context: context},
 	}, nil
 }
 
 func (a *Api) Encrypt(data Buffer, recipients ...*Card) (Buffer, error) {
-	return cards(recipients).Encrypt(data, a.Context)
+	return cards(recipients).Encrypt(data, a.context)
 }
 
 func (a *Api) Decrypt(data Buffer, key *Key) (Buffer, error) {

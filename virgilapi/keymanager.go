@@ -20,12 +20,12 @@ func (k *keyManager) Generate() (*Key, error) {
 		return nil, err
 	}
 	return &Key{
-		Context:    k.Context,
-		PrivateKey: key.PrivateKey(),
+		context:    k.Context,
+		privateKey: key.PrivateKey(),
 	}, nil
 }
 func (k *keyManager) Store(privateKey *Key, alias string, password string) error {
-	key, err := virgil.Crypto().ExportPrivateKey(privateKey.PrivateKey, password)
+	key, err := virgil.Crypto().ExportPrivateKey(privateKey.privateKey, password)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (k *keyManager) Load(alias string, password string) (*Key, error) {
 	}
 
 	return &Key{
-		Context:    k.Context,
-		PrivateKey: key,
+		context:    k.Context,
+		privateKey: key,
 	}, nil
 }
