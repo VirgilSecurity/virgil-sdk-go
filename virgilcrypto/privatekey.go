@@ -38,7 +38,7 @@ func DecodePrivateKey(keyBytes, password []byte) (key PrivateKey, err error) {
 	return
 }
 
-func (k *ed25519PrivateKey) Contents() []byte {
+func (k *ed25519PrivateKey) contents() []byte {
 	return k.key
 }
 

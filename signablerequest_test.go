@@ -66,7 +66,7 @@ func (k *FakePublicKey) ReceiverID() []byte {
 	return make([]byte, 0)
 }
 
-func (k *FakePublicKey) Contents() []byte {
+func (k *FakePublicKey) contents() []byte {
 	return make([]byte, 0)
 }
 

@@ -20,13 +20,13 @@ func TestECIES(t *testing.T) {
 
 	rand.Read(symmetricKey)
 
-	encryptedSymmetricKey, tag, ephPub, iv, err := encryptSymmetricKeyWithECIES(kp.PublicKey().(*ed25519PublicKey).Contents(), symmetricKey)
+	encryptedSymmetricKey, tag, ephPub, iv, err := encryptSymmetricKeyWithECIES(kp.PublicKey().(*ed25519PublicKey).contents(), symmetricKey)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	decryptedKey, err := decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, kp.PrivateKey().(*ed25519PrivateKey).Contents())
+	decryptedKey, err := decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, kp.PrivateKey().(*ed25519PrivateKey).contents())
 
 	if err != nil {
 		t.Fatal(err)
@@ -56,10 +56,10 @@ func TestEdToCurve(t *testing.T) {
 	hisPublic := new([ed25519.PublicKeySize]byte)
 	hisCurvePublic := new([Curve25519PublicKeySize]byte)
 
-	copy(hisPrivate[:], hisKeypair.PrivateKey().(*ed25519PrivateKey).Contents())
-	copy(hisPublic[:], hisKeypair.PublicKey().(*ed25519PublicKey).Contents())
-	copy(ephPrivate[:], ephKeypair.PrivateKey().(*ed25519PrivateKey).Contents())
-	copy(ephPublic[:], ephKeypair.PublicKey().(*ed25519PublicKey).Contents())
+	copy(hisPrivate[:], hisKeypair.PrivateKey().(*ed25519PrivateKey).contents())
+	copy(hisPublic[:], hisKeypair.PublicKey().(*ed25519PublicKey).contents())
+	copy(ephPrivate[:], ephKeypair.PrivateKey().(*ed25519PrivateKey).contents())
+	copy(ephPublic[:], ephKeypair.PublicKey().(*ed25519PublicKey).contents())
 
 	extra25519.PrivateKeyToCurve25519(ephCurvePrivate, ephPrivate)
 	extra25519.PublicKeyToCurve25519(hisCurvePublic, hisPublic)

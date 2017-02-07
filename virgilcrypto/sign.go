@@ -100,7 +100,7 @@ func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
 		return nil, CryptoError("No private key for signing")
 	}
 	private := new([ed25519.PrivateKeySize]byte)
-	copy(private[:], key.Contents())
+	copy(private[:], key.contents())
 
 	sign := ed25519.Sign(private, hash[:])
 
@@ -116,7 +116,7 @@ func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) (bool,
 	if key == nil || key.Empty() {
 		return false, CryptoError("public key for verification is not provided")
 	}
-	if len(key.Contents()) != ed25519.PublicKeySize {
+	if len(key.contents()) != ed25519.PublicKeySize {
 		return false, CryptoError("Invalid key size for signature")
 	}
 
@@ -133,7 +133,7 @@ func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) (bool,
 	signatureBytes := new([ed25519.SignatureSize]byte)
 	pub := new([ed25519.PublicKeySize]byte)
 	copy(signatureBytes[:], sign)
-	copy(pub[:], key.Contents())
+	copy(pub[:], key.contents())
 
 	res := ed25519.Verify(pub, hash, signatureBytes)
 	if !res {

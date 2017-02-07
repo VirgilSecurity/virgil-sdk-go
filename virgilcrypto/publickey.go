@@ -51,7 +51,7 @@ func DecodePublicKey(keyBytes []byte) (PublicKey, error) {
 	return edPublicKey, nil
 }
 
-func (k *ed25519PublicKey) Contents() []byte {
+func (k *ed25519PublicKey) contents() []byte {
 	return k.key
 }
 

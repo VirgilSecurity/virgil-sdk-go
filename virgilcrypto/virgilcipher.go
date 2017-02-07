@@ -83,7 +83,7 @@ func (c *defaultCipher) AddKeyRecipient(key *ed25519PublicKey) error {
 
 	recipient := &publicKeyRecipient{
 		ID:        key.ReceiverID(),
-		PublicKey: key.Contents(),
+		PublicKey: key.contents(),
 	}
 
 	c.recipients = append(c.recipients, recipient)
@@ -168,7 +168,7 @@ func (c *defaultCipher) DecryptWithPassword(data []byte, password []byte) ([]byt
 }
 func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKey) ([]byte, error) {
 
-	if key == nil || len(key.Contents()) == 0 {
+	if key == nil || len(key.contents()) == 0 {
 		return nil, CryptoError("no keypair provided")
 	}
 
@@ -177,7 +177,7 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKe
 		return nil, err
 	}
 	for _, r := range recipients {
-		key, err := r.decryptKey(key.ReceiverID(), key.Contents())
+		key, err := r.decryptKey(key.ReceiverID(), key.contents())
 		if err == nil {
 			return decryptData(ciphertext, key, nonce)
 		}
@@ -210,7 +210,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 		}
 	}
 	for _, r := range recipients {
-		key, err := r.decryptKey(decryptionKey.ReceiverID(), decryptionKey.Contents())
+		key, err := r.decryptKey(decryptionKey.ReceiverID(), decryptionKey.contents())
 		if err == nil {
 			data, err := decryptData(ciphertext, key, nonce)
 			if err != nil {
@@ -265,7 +265,7 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 }
 func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error {
 
-	if key == nil || len(key.Contents()) == 0 {
+	if key == nil || len(key.contents()) == 0 {
 		return CryptoError("no keypair provided")
 	}
 
@@ -309,7 +309,7 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519P
 		return CryptoError("Some data is left after header parsing")
 	}
 	for _, r := range recipients {
-		key, err := r.decryptKey(key.ReceiverID(), key.Contents())
+		key, err := r.decryptKey(key.ReceiverID(), key.contents())
 		if err == nil {
 
 			if chunkSize > 0 {
