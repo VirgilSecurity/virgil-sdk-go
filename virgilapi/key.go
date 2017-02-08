@@ -23,7 +23,7 @@ func (k *Key) Decrypt(data Buffer) (Buffer, error) {
 }
 
 func (k *Key) SignThenEncrypt(data Buffer, recipients ...*Card) (Buffer, error) {
-	return virgil.Crypto().SignThenEncrypt(data, k.privateKey, cards(recipients).ToRecipients()...)
+	return virgil.Crypto().SignThenEncrypt(data, k.privateKey, Cards(recipients).ToRecipients()...)
 }
 
 func (k *Key) DecryptThenVerify(data Buffer, card *Card) (Buffer, error) {
@@ -38,4 +38,16 @@ func (k *Key) ExportPublicKey() (Buffer, error) {
 	}
 
 	return virgil.Crypto().ExportPublicKey(pub)
+}
+
+func (k *Key) Save(alias string, password string) error {
+	key, err := virgil.Crypto().ExportPrivateKey(k.privateKey, password)
+	if err != nil {
+		return err
+	}
+	item := &virgil.StorageItem{
+		Data: key,
+		Name: alias,
+	}
+	return k.context.storage.Store(item)
 }

@@ -26,7 +26,7 @@ func New(accessToken string) (*Api, error) {
 	return &Api{
 		context: context,
 		Cards:   &cardManager{context: context},
-		Keys:    &keyManager{Context: context},
+		Keys:    &keyManager{context: context},
 	}, nil
 }
 
@@ -83,12 +83,12 @@ func NewWithConfig(config Config) (*Api, error) {
 	return &Api{
 		context: context,
 		Cards:   &cardManager{context: context},
-		Keys:    &keyManager{Context: context},
+		Keys:    &keyManager{context: context},
 	}, nil
 }
 
 func (a *Api) Encrypt(data Buffer, recipients ...*Card) (Buffer, error) {
-	return cards(recipients).Encrypt(data, a.context)
+	return Cards(recipients).Encrypt(data)
 }
 
 func (a *Api) Decrypt(data Buffer, key *Key) (Buffer, error) {

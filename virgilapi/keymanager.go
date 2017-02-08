@@ -6,12 +6,11 @@ import (
 
 type KeyManager interface {
 	Generate() (*Key, error)
-	Store(keypair *Key, alias string, password string) error
 	Load(alias string, password string) (*Key, error)
 }
 
 type keyManager struct {
-	Context *Context
+	context *Context
 }
 
 func (k *keyManager) Generate() (*Key, error) {
@@ -20,23 +19,13 @@ func (k *keyManager) Generate() (*Key, error) {
 		return nil, err
 	}
 	return &Key{
-		context:    k.Context,
+		context:    k.context,
 		privateKey: key.PrivateKey(),
 	}, nil
 }
-func (k *keyManager) Store(privateKey *Key, alias string, password string) error {
-	key, err := virgil.Crypto().ExportPrivateKey(privateKey.privateKey, password)
-	if err != nil {
-		return err
-	}
-	item := &virgil.StorageItem{
-		Data: key,
-		Name: alias,
-	}
-	return k.Context.storage.Store(item)
-}
+
 func (k *keyManager) Load(alias string, password string) (*Key, error) {
-	item, err := k.Context.storage.Load(alias)
+	item, err := k.context.storage.Load(alias)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +36,7 @@ func (k *keyManager) Load(alias string, password string) (*Key, error) {
 	}
 
 	return &Key{
-		context:    k.Context,
+		context:    k.context,
 		privateKey: key,
 	}, nil
 }

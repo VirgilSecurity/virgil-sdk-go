@@ -3,26 +3,23 @@ package virgilapi
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
+	"fmt"
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/errors"
-	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
 type CardManager interface {
 	Get(id string) (*Card, error)
 	Create(identity string, key *Key, customFields map[string]string) (*Card, error)
 	CreateGlobal(identity string, key *Key) (*Card, error)
-	Export(card *Card) (string, error)
 	Import(card string) (*Card, error)
-	VerifyIdentity(card *Card) (actionId string, err error)
 	ConfirmIdentity(actionId string, confirmationCode string) (validationToken string, err error)
 	Publish(card *Card) (*Card, error)
 	PublishGlobal(card *Card, validationToken string) (*Card, error)
 	Revoke(card *Card, reason virgil.Enum) error
 	RevokeGlobal(card *Card, reason virgil.Enum, key *Key, validationToken string) error
-	Find(identities []string) ([]*Card, error)
-	FindGlobal(identityType string, identities []string) ([]*Card, error)
+	Find(identities ...string) (Cards, error)
+	FindGlobal(identityType string, identities ...string) (Cards, error)
 }
 
 type cardManager struct {
@@ -41,6 +38,9 @@ func (c *cardManager) Get(id string) (*Card, error) {
 }
 
 func (c *cardManager) Create(identity string, key *Key, customFields map[string]string) (*Card, error) {
+	if key == nil || key.privateKey == nil || key.privateKey.Empty() {
+		return nil, errors.New("nil key")
+	}
 	publicKey, err := key.privateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
@@ -55,10 +55,13 @@ func (c *cardManager) Create(identity string, key *Key, customFields map[string]
 	if err != nil {
 		return nil, err
 	}
-	return c.requestToCard(req, key.privateKey)
+	return c.requestToCard(req)
 }
 
 func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
+	if key == nil || key.privateKey == nil || key.privateKey.Empty() {
+		return nil, errors.New("nil key")
+	}
 	publicKey, err := key.privateKey.ExtractPublicKey()
 	if err != nil {
 		return nil, err
@@ -69,11 +72,11 @@ func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 		return nil, err
 	}
 
-	return c.requestToCard(req, key.privateKey)
+	return c.requestToCard(req)
 }
 
 // requestToCard converts createCardRequest to Card instance with context & model
-func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypto.PrivateKey) (*Card, error) {
+func (c *cardManager) requestToCard(req *virgil.SignableRequest) (*Card, error) {
 	id := hex.EncodeToString(virgil.Crypto().CalculateFingerprint(req.Snapshot))
 	resp := &virgil.CardResponse{
 		ID:       id,
@@ -93,18 +96,6 @@ func (c *cardManager) requestToCard(req *virgil.SignableRequest, key virgilcrypt
 		context: c.context,
 		Card:    card,
 	}, nil
-}
-
-func (c *cardManager) Export(card *Card) (string, error) {
-	req, err := card.ToRequest()
-	if err != nil {
-		return "", err
-	}
-	data, err := req.Export()
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(data), nil
 }
 
 func (c *cardManager) Import(card string) (*Card, error) {
@@ -136,26 +127,6 @@ func (c *cardManager) Import(card string) (*Card, error) {
 		context: c.context,
 		Card:    model,
 	}, nil
-}
-
-func (c *cardManager) VerifyIdentity(card *Card) (actionId string, err error) {
-
-	createReq := &virgil.CardModel{}
-	err = json.Unmarshal(card.Snapshot, createReq)
-	if err != nil {
-		return "", errors.Wrap(err, "Cannot unwrap request snapshot")
-	}
-
-	req := &virgil.VerifyRequest{
-		Type:  createReq.IdentityType,
-		Value: createReq.Identity,
-	}
-
-	resp, err := c.context.client.VerifyIdentity(req)
-	if err != nil {
-		return "", err
-	}
-	return resp.ActionId, nil
 }
 
 func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) (validationToken string, err error) {
@@ -214,7 +185,8 @@ func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, 
 	req.Meta.Validation = &virgil.ValidationInfo{}
 
 	req.Meta.Validation.Token = validationToken
-
+	e, _ := req.Export()
+	fmt.Printf("%s\n", e)
 	res, err := c.context.client.CreateCard(req)
 	if err != nil {
 		return nil, err
@@ -261,7 +233,7 @@ func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Ke
 	return c.context.client.RevokeCard(req)
 }
 
-func (c *cardManager) Find(identities []string) ([]*Card, error) {
+func (c *cardManager) Find(identities ...string) (Cards, error) {
 
 	cards, err := c.context.client.SearchCards(virgil.SearchCriteriaByIdentities(identities...))
 	if err != nil {
@@ -278,7 +250,7 @@ func (c *cardManager) Find(identities []string) ([]*Card, error) {
 	return res, nil
 }
 
-func (c *cardManager) FindGlobal(identityType string, identities []string) ([]*Card, error) {
+func (c *cardManager) FindGlobal(identityType string, identities ...string) (Cards, error) {
 
 	cards, err := c.context.client.SearchCards(&virgil.Criteria{
 		IdentityType: identityType,
