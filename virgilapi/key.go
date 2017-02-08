@@ -30,21 +30,6 @@ func (k *Key) DecryptThenVerify(data Buffer, card *Card) (Buffer, error) {
 	return virgil.Crypto().DecryptThenVerify(data, k.privateKey, card.PublicKey)
 }
 
-func (k *Key) Save(name string, password string) error {
-
-	data, err := virgil.Crypto().ExportPrivateKey(k.privateKey, password)
-	if err != nil {
-		return err
-	}
-
-	item := &virgil.StorageItem{
-		Name: name,
-		Data: data,
-	}
-
-	return k.context.storage.Store(item)
-}
-
 func (k *Key) ExportPublicKey() (Buffer, error) {
 
 	pub, err := virgil.Crypto().ExtractPublicKey(k.privateKey)

@@ -1,17 +1,16 @@
 package virgilhttp
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/valyala/fasthttp"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/transport"
 	"gopkg.in/virgil.v4/transport/endpoints"
+	"time"
 )
 
 // TransportClientDoer set a doer to Http Transport client
@@ -29,7 +28,7 @@ func NewTransportClient(serviceURL string, roServiceURL string, identityServiceU
 		roCardServiceURL:   strings.TrimRight(roServiceURL, "/"),
 		identityServiceURL: strings.TrimRight(identityServiceURL, "/"),
 		vraServiceURL:      strings.TrimRight(vraServiceURL, "/"),
-		client:             &http.Client{},
+		client:             &fasthttp.Client{MaxIdleConnDuration: 24 * time.Hour},
 	}
 	for _, option := range opts {
 		option(t)
@@ -39,7 +38,7 @@ func NewTransportClient(serviceURL string, roServiceURL string, identityServiceU
 
 // Doer is a simple interface for wrap request
 type Doer interface {
-	Do(*http.Request) (*http.Response, error)
+	Do(*fasthttp.Request, *fasthttp.Response) error
 }
 
 // TransportClient is implementation for virgil client transport protocol
@@ -112,54 +111,52 @@ type responseError struct {
 	Code int `json:"code"`
 }
 
-func (c *TransportClient) getBody(resp *http.Response, err error) ([]byte, error) {
-	if resp != nil {
-		defer resp.Body.Close()
+func (c *TransportClient) getBody(resp *fasthttp.Response, err error) ([]byte, error) {
+	if resp == nil {
+		return nil, errors.New("nil response")
 	}
 
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	body := resp.Body()
 
-	if resp.StatusCode == http.StatusNotFound {
+	if resp.Header.StatusCode() == http.StatusNotFound {
 		return nil, errors.Wrap(transport.ErrNotFound, "")
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.Header.StatusCode() != http.StatusOK {
 		verr := &responseError{}
 		err = json.Unmarshal(body, verr)
 		if err != nil {
-			return nil, errors.Wrap(transport.ErrByTransportCode(resp.StatusCode, string(body)), "")
+			return nil, errors.Wrap(transport.ErrByTransportCode(resp.Header.StatusCode(), string(body)), "")
 		}
-		return nil, errors.Wrap(transport.GetErrByCode(resp.StatusCode, verr.Code), "")
+		return nil, errors.Wrap(transport.GetErrByCode(resp.Header.StatusCode(), verr.Code), "")
 
 	}
 	return body, nil
 }
 
-func (c *TransportClient) do(method, url string, model interface{}) (*http.Response, error) {
+func (c *TransportClient) do(method, url string, model interface{}) (*fasthttp.Response, error) {
 
-	var reader io.Reader
+	var req fasthttp.Request
+	req.Header.SetMethod(method)
+	req.Header.SetRequestURI(url)
+
 	if model != nil {
 		reqBody, err := json.Marshal(model)
 		if err != nil {
 			return nil, errors.Wrap(err, "Cannot marshal model")
 		}
-		reader = bytes.NewReader(reqBody)
+		req.SetBody(reqBody)
 	}
 
-	req, err := http.NewRequest(method, url, reader)
-	if err != nil {
-		return nil, err
-	}
 	if len(c.token) > 0 {
 		req.Header.Set("Authorization", fmt.Sprintf("VIRGIL %s", c.token))
 	}
 
-	return c.client.Do(req)
+	var resp fasthttp.Response
+	err := c.client.Do(&req, &resp)
+	return &resp, err
 }
