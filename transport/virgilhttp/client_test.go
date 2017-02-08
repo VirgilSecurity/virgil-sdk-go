@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/valyala/fasthttp"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/transport/endpoints"
 )
@@ -20,16 +21,19 @@ func TestNewTransportClient_InitByDefault_DoerIsHttpClient(t *testing.T) {
 	v := NewTransportClient(expectedService, expectedRoService, expectedIdentityService, expectedVRAService)
 	assert.Equal(t, expectedService, v.cardServiceURL)
 	assert.Equal(t, expectedRoService, v.roCardServiceURL)
-	assert.IsType(t, &http.Client{}, v.client)
+	assert.IsType(t, &fasthttp.Client{}, v.client)
 }
 
 type CustomClient struct {
 	mock.Mock
 }
 
-func (c *CustomClient) Do(req *http.Request) (resp *http.Response, err error) {
+func (c *CustomClient) Do(req *fasthttp.Request, resp *fasthttp.Response) (err error) {
 	args := c.Called(req)
-	resp, _ = args.Get(0).(*http.Response)
+	if a, ok := args.Get(0).(func(response *fasthttp.Response)); ok {
+		a(resp)
+	}
+	//resp, _ = args.Get(1).(*fasthttp.Response)
 	err = args.Error(1)
 	return
 }
@@ -74,21 +78,11 @@ func makeFakeInvokes(c *TransportClient) []func() error {
 
 }
 
-func Test_TokenNotSet_ReturnErr(t *testing.T) {
-	c := NewTransportClient("serviceURL", "roServiceURL", "identityUrl", "vraurl")
-	tab := makeFakeInvokes(c)
-	for _, f := range tab {
-		err := f()
-		assert.NotNil(t, err)
-	}
-}
-
 func Test_ClientReturnErr_ReturnErr(t *testing.T) {
 	c := &CustomClient{}
 	c.On("Do", mock.Anything).Return(nil, errors.New("format"))
 
 	tc := NewTransportClient("serviceURL", "roServiceURL", "identityUrl", "vraurl", TransportClientDoer(c))
-	tc.SetToken("token")
 
 	tab := makeFakeInvokes(tc)
 	for _, f := range tab {
@@ -98,20 +92,25 @@ func Test_ClientReturnErr_ReturnErr(t *testing.T) {
 }
 
 func Test_ClientReturnStatusNotOk_ReturnDecodedErr(t *testing.T) {
-	resp := http.Response{
-		Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"code":10000}`))),
-		StatusCode: http.StatusBadRequest,
-	}
+
 	c := &CustomClient{}
-	c.On("Do", mock.Anything).Return(&resp, nil)
+
+	fn := func(resp *fasthttp.Response) {
+		resp.SetBody([]byte(`{"code":10000}`))
+		resp.SetStatusCode(http.StatusBadRequest)
+	}
+
+	c.On("Do", mock.Anything).Return(fn, nil)
 
 	tc := NewTransportClient("serviceURL", "roServiceURL", "identityUrl", "vraurl", TransportClientDoer(c))
-	tc.SetToken("token")
 
 	tab := makeFakeInvokes(tc)
 	for _, f := range tab {
 		err := f()
-		assert.NotNil(t, err)
+		assert.Error(t, err)
+		sdkerr, ok := errors.ToSdkError(err)
+		assert.True(t, ok)
+		assert.Equal(t, sdkerr.ServiceError.ServiceErrorCode(), 10000)
 	}
 }
 
@@ -130,5 +129,6 @@ func Test_ClientReturnStatusNotOkAndBodyBroken_ReturnErr(t *testing.T) {
 	for _, f := range tab {
 		err := f()
 		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "unmarshal")
 	}
 }
