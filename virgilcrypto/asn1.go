@@ -443,7 +443,12 @@ func decodeRecipients(value *asn1.RawValue) (models []recipient, err error) {
 			return nil, SyntaxError{"truncated sequence"}
 		}
 
-		values = append(values, &asn1.RawValue{t.class, t.tag, t.isCompound, bytes[offset : offset+t.length], bytes[initOffset : offset+t.length]})
+		values = append(values, &asn1.RawValue{
+			Class:      t.class,
+			Tag:        t.tag,
+			IsCompound: t.isCompound,
+			Bytes:      bytes[offset : offset+t.length],
+			FullBytes:  bytes[initOffset : offset+t.length]})
 
 		offset += t.length
 		numElements++
