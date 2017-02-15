@@ -19,7 +19,7 @@ func (k *Key) Sign(data Buffer) (Buffer, error) {
 }
 
 func (k *Key) Decrypt(data Buffer) (Buffer, error) {
-	return virgil.Crypto().Sign(data, k.privateKey)
+	return virgil.Crypto().Decrypt(data, k.privateKey)
 }
 
 func (k *Key) SignThenEncrypt(data Buffer, recipients ...*Card) (Buffer, error) {
