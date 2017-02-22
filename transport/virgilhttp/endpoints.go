@@ -1,8 +1,9 @@
 package virgilhttp
 
 import (
-	. "gopkg.in/virgil.v4/transport/endpoints"
 	"net/http"
+
+	. "gopkg.in/virgil.v4/transport/endpoints"
 )
 
 type ServiceType int
@@ -58,5 +59,17 @@ var HTTPEndpoints = map[Endpoint]*HTTPEndpoint{
 		Method:      http.MethodPost,
 		URL:         "%s/v1/validate",
 		ServiceType: IdentityService,
+	},
+	AddRelation: {
+		Method:      http.MethodPost,
+		URL:         "%s/v4/card/%s/collections/relations",
+		ServiceType: Cardservice,
+		Params:      1,
+	},
+	DeleteRelation: {
+		Method:      http.MethodDelete,
+		URL:         "%s/v4/card/%s/collections/relations",
+		ServiceType: Cardservice,
+		Params:      1,
 	},
 }

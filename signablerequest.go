@@ -155,3 +155,30 @@ func (r *SignableRequest) Export() ([]byte, error) {
 	base64.StdEncoding.Encode(b, res)
 	return b, nil
 }
+
+func NewAddRelationRequest(relationCard *Card) (*SignableRequest, error) {
+	return &SignableRequest{
+		Snapshot: relationCard.Snapshot,
+		Meta: RequestMeta{
+			Signatures: make(map[string][]byte, 0),
+		},
+	}, nil
+}
+
+func NewDeleteRelationRequest(relationCardId string) (*SignableRequest, error) {
+
+	b, err := json.Marshal(&RevokeCardRequest{
+		ID:               relationCardId,
+		RevocationReason: "unspecified",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &SignableRequest{
+		Snapshot: b,
+		Meta: RequestMeta{
+			Signatures: make(map[string][]byte, 0),
+		},
+	}, nil
+}

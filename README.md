@@ -13,6 +13,7 @@ In this guide you will find code for every task you need to implement in order t
 * [Getting a Virgil Card](#getting-a-virgil-card)
 * [Validating Virgil cards](#validating-virgil-cards)
 * [Revoking a Virgil Card](#revoking-a-virgil-card)
+* [Adding card relation](#adding-card-relation)
 * [Operations with Crypto Keys](#operations-with-crypto-keys)
   * [Generate Keys](#generate-keys)
   * [Import and Export Keys](#import-and-export-keys)
@@ -33,7 +34,7 @@ The Virgil SDK is provided as a package named *virgil*. The package is distribut
 
 ### Prerequisites
 
-* Go 1.7.1 or newer
+* Go 1.7 or newer
 
 ### Installing the package
 
@@ -64,7 +65,10 @@ you can also customize initialization using your own parameters
 
 ```go
 client, err := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]",
-  virgil.ClientTransport(virgilhttp.NewTransportClient("https://cards.virgilsecurity.com", "https://cards-ro.virgilsecurity.com")),
+  virgil.ClientTransport(virgilhttp.NewTransportClient("https://cards.virgilsecurity.com", 
+                                                       "https://cards-ro.virgilsecurity.com",
+                                                       "https://identity.virgilsecurity.com",
+                                                       "https://ra.virgilsecurity.com")),
   virgil.ClientCardsValidator(virgil.NewCardsValidator()))
 
 ```
@@ -132,7 +136,7 @@ Performs the `Virgil Card`s search by criteria:
 - the *Scope* optional request parameter specifies the scope to perform search on. Either 'global' or 'application'. The default value is 'application';
 
 ```go
-criteria := virgil.Criteria{
+criteria := &virgil.Criteria{
 		Scope:virgil.CardScope.Global,
 		IdentityType:"application",
 		Identities: []string{"com.virgilsecurity.cards"},
@@ -158,10 +162,9 @@ This sample uses *built-in* ```CardValidator``` to validate cards. By default ``
 // Initialize crypto API
 crypto := virgil.Crypto()
 
-validator := virgil.NewCardsValidator()
-
-// Your can also add another Public Key for verification.
-// validator.AddVerifier("[HERE_VERIFIER_CARD_ID]", [HERE_VERIFIER_PUBLIC_KEY])
+// Your can also use another public key for verification.
+validator := virgil.NewCardsValidator() // initialize empty validator
+validator.AddVerifier("[VERIFIER_CARD_ID]", [VERIFIER_PUBLIC_KEY])
 
 // Initialize service client
     client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]",virgil.ClientCardsValidator(validator))
@@ -196,8 +199,48 @@ cardId := "[YOUR_CARD_ID_HERE]"
 revokeRequest := virgil.NewRevokeCardRequest(cardId, enums.RevocationReason.Unspecified)
 requestSigner.AuthoritySign(revokeRequest, appID, appKey)
 
-err = client.RevokeCard(revokeRequest)
+err := client.RevokeCard(revokeRequest)
 ```
+
+
+## Adding card relation
+Create request
+
+```go
+req, err := virgil.NewAddRelationRequest(trustedCard)
+```
+
+sign request with trustor card 
+
+```go
+ signer.AuthoritySign(req, aliceCard.ID, aliceKeys.PrivateKey())
+```
+
+publish request 
+
+```go
+updatedCard, err := client.AddRelation(req)
+```
+
+## Deleting card relation
+Create request
+
+```go
+req, err := virgil.NewDeleteRelationRequest(trustedCard.ID)
+```
+
+sign request with trustor card
+
+```go
+ signer.AuthoritySign(req, aliceCard.ID, aliceKeys.PrivateKey())
+```
+
+publish request 
+
+```go
+updatedCard, err := client.DeleteRelation(req)
+```
+
 
 ## Operations with Crypto Keys
 

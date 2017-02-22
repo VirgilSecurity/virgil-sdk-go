@@ -1,8 +1,10 @@
 package transport
 
 import (
-	"gopkg.in/virgil.v4/errors"
+	"fmt"
 	"net/http"
+
+	"gopkg.in/virgil.v4/errors"
 )
 
 // GetErrByCode function return error with description by code response
@@ -13,7 +15,7 @@ func GetErrByCode(transportCode, serviceCode int) error {
 	)
 
 	if msg, ok = cardsErrorCodes[serviceCode]; !ok {
-		msg = "Unknow response error"
+		msg = fmt.Sprintf("Unknown response error %d", serviceCode)
 	}
 	return errors.NewServiceError(serviceCode, transportCode, msg)
 }
@@ -63,6 +65,12 @@ var cardsErrorCodes = map[int]string{
 	30137: "Global Virigl Card cannot be created unconfirmed (which means that Virgil Identity service sign is mandatory)",
 	30138: "Virigl Card with the same fingerprint exists already",
 	30139: "Virigl Card revocation reason isn't specified or is invalid",
+	30200 : "Virgil Card relation sign is invalid",
+	30201 : "Virgil Card relation sign by the source Virgil Card was not found",
+	30202 : "Related Virgil content snapshot parameter was not found",
+	30203 : "The relation with this Virgil Card exists already",
+	30204 : "The related Virgil Card was not found for the provided CSR",
+	30205 : "The Virgil Card relation doesn't exist",
 	40000: "JSON specified as a request body is invalid",
 	40100: "Identity type is invalid",
 	40110: "Identity's ttl is invalid",

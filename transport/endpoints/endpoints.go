@@ -10,4 +10,6 @@ const (
 	VerifyIdentity
 	ConfirmIdentity
 	ValidateIdentity
+	AddRelation
+	DeleteRelation
 )

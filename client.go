@@ -107,6 +107,9 @@ func (c *Client) GetCard(id string) (*Card, error) {
 
 // CreateCard posts card create request to server where it checks signatures and adds it
 func (c *Client) CreateCard(request *SignableRequest) (*Card, error) {
+	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) == 0{
+		return nil, errors.New("request is empty or does not contain any signatures")
+	}
 	var res *CardResponse
 	err := c.transportClient.Call(endpoints.CreateCard, request, &res)
 
@@ -118,7 +121,9 @@ func (c *Client) CreateCard(request *SignableRequest) (*Card, error) {
 
 // RevokeCard deletes card from server
 func (c *Client) RevokeCard(request *SignableRequest) error {
-
+	if request == nil {
+		return errors.New("request is nil")
+	}
 	req := &RevokeCardRequest{}
 	err := json.Unmarshal(request.Snapshot, req)
 	if err != nil {
@@ -150,51 +155,82 @@ func (c *Client) SearchCards(criteria *Criteria) ([]*Card, error) {
 }
 
 func (c *Client) VerifyIdentity(request *VerifyRequest) (*VerifyResponse, error) {
+	if request == nil {
+		return nil, errors.New("request is nil")
+	}
 	var res *VerifyResponse
-	err := c.transportClient.Call(endpoints.VerifyIdentity, &VerifyRequest{
-		Type:        request.Type,
-		Value:       request.Value,
-		ExtraFields: request.ExtraFields,
-	}, &res)
+	err := c.transportClient.Call(endpoints.VerifyIdentity, request, &res)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &VerifyResponse{
-		ActionId: res.ActionId,
-	}, nil
+	return res, nil
 }
 
 func (c *Client) ConfirmIdentity(request *ConfirmRequest) (*ConfirmResponse, error) {
+	if request == nil {
+		return nil, errors.New("request is nil")
+	}
 	var res *ConfirmResponse
 
-	err := c.transportClient.Call(endpoints.ConfirmIdentity, &ConfirmRequest{
-		ActionId:         request.ActionId,
-		ConfirmationCode: request.ConfirmationCode,
-		Params: ValidationTokenParams{
-			CountToLive: request.Params.CountToLive,
-			TimeToLive:  request.Params.TimeToLive,
-		},
-	}, &res)
+	err := c.transportClient.Call(endpoints.ConfirmIdentity, request, &res)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &ConfirmResponse{
-		Type:            res.Type,
-		Value:           res.Value,
-		ValidationToken: res.ValidationToken,
-	}, nil
+	return res, nil
 }
 
 func (c *Client) ValidateIdentity(request *ValidateRequest) error {
-	return c.transportClient.Call(endpoints.ValidateIdentity, &ValidateRequest{
-		Type:            request.Type,
-		Value:           request.Value,
-		ValidationToken: request.ValidationToken,
-	}, nil)
+	if request == nil {
+		return errors.New("request is nil")
+	}
+	return c.transportClient.Call(endpoints.ValidateIdentity, request, nil)
+}
+
+// AddRelation adds signature of the card signer trusts
+func (c *Client) AddRelation(request *SignableRequest) (*Card, error) {
+	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) != 1 {
+		return nil, errors.New("request must not be empty and must contain exactly 1 relation signature")
+	}
+
+
+	var id string
+	for k := range request.Meta.Signatures {
+		id = k
+	}
+
+	var res *CardResponse
+	err := c.transportClient.Call(endpoints.AddRelation, request, &res, id)
+
+	if err != nil {
+		return nil, err
+	}
+	return c.convertToCardAndValidate(res)
+}
+
+
+// AddRelation adds signature of the card signer trusts
+func (c *Client) DeleteRelation(request *SignableRequest) (*Card, error) {
+	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) != 1 {
+		return nil, errors.New("request must not be empty and must contain exactly 1 signature")
+	}
+
+
+	var id string
+	for k := range request.Meta.Signatures {
+		id = k
+	}
+
+	var res *CardResponse
+	err := c.transportClient.Call(endpoints.DeleteRelation, request, &res, id)
+
+	if err != nil {
+		return nil, err
+	}
+	return c.convertToCardAndValidate(res)
 }
 
 func (c *Client) convertToCardAndValidate(response *CardResponse) (*Card, error) {

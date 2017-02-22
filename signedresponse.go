@@ -3,6 +3,7 @@ package virgil
 import (
 	"encoding/hex"
 	"encoding/json"
+
 	"gopkg.in/virgil.v4/errors"
 )
 
@@ -10,6 +11,7 @@ type ResponseMeta struct {
 	CreatedAt   string            `json:"created_at"`
 	CardVersion string            `json:"card_version"`
 	Signatures  map[string][]byte `json:"signs"`
+	Relations   map[string][]byte `json:"relations"`
 }
 
 type CardResponse struct {
@@ -47,6 +49,7 @@ func (r *CardResponse) ToCard() (*Card, error) {
 		DeviceInfo:   req.DeviceInfo,
 		CreatedAt:    r.Meta.CreatedAt,
 		CardVersion:  r.Meta.CardVersion,
+		Relations:    r.Meta.Relations,
 	}
 
 	return card, nil

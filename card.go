@@ -55,6 +55,7 @@ type Card struct {
 	CreatedAt    string
 	CardVersion  string
 	Signatures   map[string][]byte
+	Relations    map[string][]byte
 }
 
 //DeviceInfo is for device type & its concrete name, for example model

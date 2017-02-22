@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strings"
 
+	"time"
+
 	"github.com/valyala/fasthttp"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/transport"
 	"gopkg.in/virgil.v4/transport/endpoints"
-	"time"
 )
 
 // TransportClientDoer set a doer to Http Transport client
