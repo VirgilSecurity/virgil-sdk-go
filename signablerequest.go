@@ -165,6 +165,25 @@ func NewAddRelationRequest(relationCard *Card) (*SignableRequest, error) {
 	}, nil
 }
 
+func ImportAddRelationRequest(data []byte) (*SignableRequest, error) {
+
+	raw := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+
+	read, err := base64.StdEncoding.Decode(raw, data)
+	if err != nil {
+		return nil, err
+	}
+	raw = raw[:read]
+	req := &SignableRequest{}
+	err = json.Unmarshal(raw, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func NewDeleteRelationRequest(relationCardId string) (*SignableRequest, error) {
 
 	b, err := json.Marshal(&RevokeCardRequest{
@@ -181,4 +200,23 @@ func NewDeleteRelationRequest(relationCardId string) (*SignableRequest, error) {
 			Signatures: make(map[string][]byte, 0),
 		},
 	}, nil
+}
+
+func ImportDeleteRelationRequest(data []byte) (*SignableRequest, error) {
+
+	raw := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+
+	read, err := base64.StdEncoding.Decode(raw, data)
+	if err != nil {
+		return nil, err
+	}
+	raw = raw[:read]
+	req := &SignableRequest{}
+	err = json.Unmarshal(raw, &req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
