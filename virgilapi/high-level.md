@@ -6,6 +6,21 @@ Initialize high-level SDK with only application access token
 api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")
 ```
 
+Load key from file
+```go
+key, err :=ioutil.ReadFile("mykey.key")
+```
+
+Or from base64 string
+```go
+key, err := virgilapi.BufferFromBase64String(appPrivateKey)
+```
+
+This works too, for base64 encoded Der keys
+```go
+key := virgilapi.BufferFromString(appPrivateKey)
+```
+
 Initialize high-level SDK using context class
 
 ```go
@@ -14,6 +29,7 @@ api, err := virgilapi.NewWithConfig(virgilapi.Config{
         Credentials: &virgilapi.AppCredentials{
             AppId:      appCardID,
             PrivateKey: virgilapi.BufferFromString(appPrivateKey),
+            PrivateKeyPassword: "YOUR_PASSWORD"
         },
         CardVerifiers: map[string]virgilapi.Buffer{
             cardServiceID: virgilapi.BufferFromString(cardsServicePublicKey),
