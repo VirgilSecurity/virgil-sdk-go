@@ -1,423 +1,130 @@
-# Go SDK Programming Guide
+# Virgil Security Go SDK 
 
-Welcome to the Go Programming Guide This guide is a practical introduction to creating apps that make use of Virgil Security features. The code examples in this guide are written in Go language.
+[Installation](#installation) | [Encryption Example](#encryption-example) | [Initialization](#initialization) | [Documentation](#documentation) | [Support](#support)
 
-In this guide you will find code for every task you need to implement in order to create an application using Virgil Security. It also includes a description of the main classes and methods. The aim of this guide is to get you up and running quickly. You should be able to copy and paste the code provided into your own apps and use it with minumal changes.
+[Virgil Security](https://virgilsecurity.com) provides a set of APIs for adding security to any application. In a few simple steps you can encrypt communication, securely store data, provide passwordless login, and ensure data integrity.
 
-## Table of Contents
+For a full overview head over to our Go [Get Started][_getstarted] guides.
 
-* [Setting up your project](#setting-up-your-project)
-* [User and App Credentials](#user-and-app-credentials)
-* [Creating a Virgil Card](#creating-a-virgil-card)
-* [Search for Virgil cards](#search-for-virgil-cards)
-* [Getting a Virgil Card](#getting-a-virgil-card)
-* [Validating Virgil cards](#validating-virgil-cards)
-* [Revoking a Virgil Card](#revoking-a-virgil-card)
-* [Adding card relation](#adding-card-relation)
-* [Operations with Crypto Keys](#operations-with-crypto-keys)
-  * [Generate Keys](#generate-keys)
-  * [Import and Export Keys](#import-and-export-keys)
-* [Encryption and Decryption](#encryption-and-decryption)
-  * [Encrypt Data](#encrypt-data)
-  * [Decrypt Data](#decrypt-data)
-* [Generating and Verifying Signatures](#generating-and-verifying-signatures)
-  * [Generating a Signature](#generating-a-signature)
-  * [Verifying a Signature](#verifying-a-signature)
-* [Authenticated encryption](#authenticated-encryption)
-* [Fingerprint Generation](#fingerprint-generation)
-* [High level Api](high-level.md)
-* [Release Notes](#release-notes)
+## Installation
 
-## Setting up your project
+Run `go get -u gopkg.in/virgil.v4`
 
-The Virgil SDK is provided as a package named *virgil*. The package is distributed via github.
+then add import
 
-### Prerequisites
+```go
+import "gopkg.in/virgil.v4"
+```
 
-* Go 1.7 or newer
+__Next:__ [Get Started with the Go SDK][_getstarted].
 
-### Installing the package
+## Encryption Example
 
-1. go get -u gopkg.in/virgil.v4
-
-## User and App Credentials
-
-When you register an application on the Virgil developer's [dashboard](https://developer.virgilsecurity.com/dashboard), we provide you with an *appID*, *appKey* and *accessToken*.
-
-* **appID** uniquely identifies your application in our services, it is also used to identify the Public key generated in a pair with *appKey*, for example: ```af6799a2f26376731abb9abf32b5f2ac0933013f42628498adb6b12702df1a87```
-* **appKey** is a Private key that is used to perform creation and revocation of *Virgil cards* (Public key) in Virgil services. Also the *appKey* can be used for cryptographic operations to take part in application logic. The *appKey* is generated at the time of creation application and has to be saved in secure place.
-* **accessToken** is a unique string value that provides an authenticated secure access to the Virgil services and is passed with each API call. The *accessToken* also allows the API to associate your app’s requests with your Virgil developer’s account.
-
-## Connecting to Virgil
-Before you can use any Virgil services features in your app, you must first initialize ```virgil.Client``` class. You use the ```virgil.Client``` object to get access to Create, Revoke and Search for *Virgil cards* (Public keys).
-
-### Initializing an API Client
-
-To create an instance of *virgil.Client* class, just call virgil.NewClient() with your application's *accessToken* which you generated on developer's dashboard.
+Virgil Security makes it super easy to add encryption to any application. With our SDK you create a public [__Virgil Card__][_guide_virgil_cards] for every one of your users and devices. With these in place you can easily encrypt any data in the client.
 
 
 ```go
-client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]")
+// find Alice's card(s)
+aliceCards, err := api.Cards.Find("alice")
+
+// encrypt the message using Alice's cards
+message := virgilapi.BufferFromString("Hello Alice!")
+cipherData, err := aliceCards.Encrypt(message)
+//transmit the message using your preferred technology
+
+transmit(cipherData.ToBase64String())
 ```
 
-you can also customize initialization using your own parameters
-> import "gopkg.in/virgil.v4/transport/virgilhttp"
+The receiving user then uses their stored __private key__ to decrypt the message.
+
 
 ```go
-client, err := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]",
-  virgil.ClientTransport(virgilhttp.NewTransportClient("https://cards.virgilsecurity.com", 
-                                                       "https://cards-ro.virgilsecurity.com",
-                                                       "https://identity.virgilsecurity.com",
-                                                       "https://ra.virgilsecurity.com")),
-  virgil.ClientCardsValidator(virgil.NewCardsValidator()))
+// load alice's Key from secure storage provided by default.
+aliceKey, err := api.Keys.Load("alice_key_1", "mypassword")
 
+// get buffer from base64 encoded string
+encryptedData, err := virgilapi.BufferFromBase64String(transferData)
+
+// decrypt message using alice's Private key.
+originalData, err := aliceKey.Decrypt(encryptedData)
+// originalData = aliceKey.Decrypt(encryptedData)
+
+originalMessage := originalData.ToString()
 ```
 
-### Initializing Crypto
-The *VirgilCrypto* class provides cryptographic operations in applications, such as hashing, signature generation and verification, and encryption and decryption.
+__Next:__ To [get you properly started][_guide_encryption] you'll need to know how to create and store Virgil Cards. Our [Get Started guide][_guide_encryption] will get you there all the way.
+
+__Also:__ [Encrypted communication][_getstarted_encryption] is just one of the few things our SDK can do. Have a look at our guides on  [Encrypted Storage][_getstarted_storage], [Data Integrity][_getstarted_data_integrity] and [Passwordless Login][_getstarted_passwordless_login] for more information.
+
+## Initialization
+
+To use this SDK you need to [sign up for an account](https://developer.virgilsecurity.com/account/signup) and create your first __application__. Make sure to save the __app id__, __private key__ and it's __password__. After this, create an __application token__ for your application to make authenticated requests from your clients.
+
+To initialize the SDK on the client side you will only need the __access token__ you created.
 
 ```go
-crypto := virgil.Crypto()
+// initialize Virgil SDK
+api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")
 ```
 
-## Creating a Virgil Card
+> __Note:__ this client will have limited capabilities. For example, it will be able to generate new __Cards__ but it will need a server-side client to transmit these to Virgil.
 
-A *Virgil Card* is the main entity of the Virgil services, it includes the information about the user and his public key. The *Virgil Card* identifies the user/device by one of his types.
-
-Collect an *appID* and *appKey* for your app. These parametes are required to create a Virgil Card in your app scope.
+To initialize the SDK on the server side we will need the __access token__, __app id__ and the __App Key__ you created on the [Developer Dashboard](https://developer.virgilsecurity.com/).
 
 ```go
-appID := "[YOUR_APP_ID_HERE]"
-appKeyPassword := "[YOUR_APP_KEY_PASSWORD_HERE]"
-appKeyData, err := ioutil.ReadFile("[YOUR_APP_KEY_PATH_HERE]")
 
-appKey, err := crypto.ImportPrivateKey(appKeyData, appKeyPassword)
-```
-Generate a new Public/Private keypair using an instance of *virgil.Crypto* class.
+key, err :=ioutil.ReadFile("mykey.key")
 
-```go
-aliceKeys, err := crypto.GenerateKeypair()
-```
-Prepare request
-```go
-//only the public key will be used from aliceKeys
-createReq, err := virgil.NewCreateCardRequest("alice", "username", aliceKeys.PublicKey(), virgil.CardParams{
-  Scope: virgil.CardScope.Application,
-  Data: map[string]string{
-    "os": "macOS",
-  },
-  DeviceInfo: virgil.DeviceInfo{
-    Device:     "iphone7",
-    DeviceName: "my iphone",
-  },
-})
+...
 
-// short version
-createReq, err := virgil.NewCreateCardRequest("alice", "username", aliceKeys.PublicKey(), virgil.CardParams{})
+api, err := virgilapi.NewWithConfig(virgilapi.Config{
+        Token: "AT.[YOUR_ACCESS_TOKEN_HERE]",
+        Credentials: &virgilapi.AppCredentials{
+            AppId:      "[APP_CARD_ID]",
+            PrivateKey: key,
+            PrivateKeyPassword: "YOUR_PASSWORD"
+        },
+        CardVerifiers: map[string]virgilapi.Buffer{
+            cardServiceID: virgilapi.BufferFromString(cardsServicePublicKey),
+        },
+    })
+
 ```
 
-then, use *RequestSigner* class to sign request with owner and app keys.
-
-```go
-requestSigner := virgil.RequestSigner{}
-
-err = requestSigner.SelfSign(CardModel, aliceKeys.PrivateKey())
-err = requestSigner.AuthoritySign(CardModel, appID, appKey)
-```
-Publish a Virgil Card
-```go
-aliceCard, err := virgil.CreateCard(CardModel)
-```
-
-## Search for Virgil cards
-Performs the `Virgil Card`s search by criteria:
-- the *Identities* request parameter is mandatory;
-- the *IdentityType* is optional and specifies the *IdentityType* of a `Virgil Card`s to be found;
-- the *Scope* optional request parameter specifies the scope to perform search on. Either 'global' or 'application'. The default value is 'application';
-
-```go
-criteria := &virgil.Criteria{
-		Scope:virgil.CardScope.Global,
-		IdentityType:"application",
-		Identities: []string{"com.virgilsecurity.cards"},
-	}
-
-	client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]")
-
-	cards, err := client.SearchCards(criteria)
-```
-
-## Getting a Virgil Card
-Gets a `Virgil Card` by ID.
-
-```go
-client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]")
-card, err := client.GetCard("CARD_ID")
-```
-
-## Validating Virgil cards
-This sample uses *built-in* ```CardValidator``` to validate cards. By default ```CardValidator``` validates only *cards Service* signature.
-
-```go
-// Initialize crypto API
-crypto := virgil.Crypto()
-
-// Your can also use another public key for verification.
-validator := virgil.NewCardsValidator() // initialize empty validator
-validator.AddVerifier("[VERIFIER_CARD_ID]", [VERIFIER_PUBLIC_KEY])
-
-// Initialize service client
-    client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]",virgil.ClientCardsValidator(validator))
-    client.SetCardsValidator(validator)
-
-    criteria := virgil.SearchCriteriaByIdentities("alice", "bob")
-    cards, err := client.SearchCards(criteria)
-```
-
-## Revoking a Virgil Card
-Initialize required components.
-```go
-client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]")
-crypto := virgil.Crypto()
-
-requestSigner := &virgil.RequestSigner{}
-```
-
-Collect *App* credentials
-```go
-appID := "[YOUR_APP_ID_HERE]"
-appKeyPassword := "[YOUR_APP_KEY_PASSWORD_HERE]"
-appKeyData, err := ioutil.ReadFile("[YOUR_APP_KEY_PATH_HERE]")
-
-appKey, err := crypto.ImportPrivateKey(appKeyData, appKeyPassword)
-```
-
-Prepare revocation request
-```go
-cardId := "[YOUR_CARD_ID_HERE]"
-
-revokeRequest := virgil.NewRevokeCardRequest(cardId, enums.RevocationReason.Unspecified)
-requestSigner.AuthoritySign(revokeRequest, appID, appKey)
-
-err := client.RevokeCard(revokeRequest)
-```
-
-
-## Adding card relation
-Create request
-
-```go
-req, err := virgil.NewAddRelationRequest(trustedCard)
-```
-
-sign request with trustor card 
-
-```go
- signer.AuthoritySign(req, aliceCard.ID, aliceKeys.PrivateKey())
-```
-
-publish request 
-
-```go
-updatedCard, err := client.AddRelation(req)
-```
-
-## Deleting card relation
-Create request
-
-```go
-req, err := virgil.NewDeleteRelationRequest(trustedCard.ID)
-```
-
-sign request with trustor card
-
-```go
- signer.AuthoritySign(req, aliceCard.ID, aliceKeys.PrivateKey())
-```
-
-publish request 
-
-```go
-updatedCard, err := client.DeleteRelation(req)
-```
-
-
-## Operations with Crypto Keys
-
-### Generate Keys
-The following code sample illustrates keypair generation. The default algorithm is ed25519
-
-```go
- aliceKeys, err := crypto.GenerateKeypair()
-```
-
-### Import and Export Keys
-You can export and import your Public/Private keys to/from supported wire representation.
-
-To export Public/Private keys, simply call one of the Export methods:
-
-```go
- exportedPrivateKey, err := crypto.ExportPrivateKey(aliceKeys.PrivateKey(), "[YOUR_PASSWORD]")
- exportedPublicKey, err := crypto.ExportPublicKey(aliceKeys.PublicKey())
-```
-
- To import Public/Private keys, simply call one of the Import methods:
-
- ```go
- privateKey, err := crypto.ImportPrivateKey(exportedPrivateKey, "[YOUR_PASSWORD]")
- publicKey, err := crypto.ImportPublicKey(exportedPublicKey)
-```
-
-## Encryption and Decryption
-
-Initialize Crypto API and generate keypair.
-```go
- crypto := virgil.Crypto()
- aliceKeys, err := crypto.GenerateKeypair()
-```
-
-### Encrypt Data
-Data encryption using ECIES scheme with AES-GCM. You can encrypt either stream or a byte array.
-There also can be more than one recipient
-
-*Byte Array*
-```go
-plaintext := []byte("Hello Bob!")
-cipherData, err := crypto.Encrypt(plaintext, aliceKeys.PublicKey())
-```
-
-*Stream*
-```go
-	inputStream, err := os.Open(`[YOUR_FILE_PATH_HERE]`)
-
-	if(err != nil){
-		panic(err)
-	}
-	defer inputStream.Close()
-
-	cipherStream, err := os.Create(`[YOUR_FILE_PATH_HERE]`)
-
-	if(err != nil){
-		panic(err)
-	}
-	defer cipherStream.Close()
-
-	err = crypto.EncryptStream(inputStream, cipherStream, aliceKeys.PublicKey())
-```
-
-### Decrypt Data
-You can decrypt either stream or a byte array using your private key
-
-*Byte Array*
-```go
-//aliceKeys must contain private key
- crypto.Decrypt(cipherData, aliceKeys.PrivateKey())
-```
-
- *Stream*
-```go
-    crypto := virgil.Crypto()
-
-	cipherStream, err := os.Open(`[YOUR_FILE_PATH_HERE]`)
-
-	if(err != nil){
-		panic(err)
-	}
-	defer cipherStream.Close()
-
-	resultStream, err := os.Create(`[YOUR_FILE_PATH_HERE]`)
-
-	if(err != nil){
-		panic(err)
-	}
-	defer resultStream.Close()
-
-	err = crypto.DecryptStream(cipherStream, resultStream, aliceKeys.PrivateKey())
-```
-
-## Generating and Verifying Signatures
-This section walks you through the steps necessary to use the *VirgilCrypto* to generate a digital signature for data and to verify that a signature is authentic.
-
-Generate a new Public/Private keypair and *data* to be signed.
-
-```go
-crypto := virgil.Crypto()
-aliceKeys, err := crypto.GenerateKeypair()
-
-// The data to be signed with alice's Private key
-data = []byte("Hello Bob, How are you?")
-```
-
-### Generating a Signature
-
-Sign the SHA-384 fingerprint of either stream or a byte array using your private key. To generate the signature, simply call one of the sign methods:
-
-*Byte Array*
-```go
-signature, err := crypto.Sign(data, aliceKeys.PrivateKey())
-```
-*Stream*
-```go
-inputStream, err := os.Open(`[YOUR_FILE_PATH_HERE]`)
-
-	if(err != nil){
-		panic(err)
-	}
-	defer inputStream.Close()
-
-	signature, err := crypto.Sign(inputStream, aliceKeys.PrivateKey())
-```
-### Verifying a Signature
-
-Verify the signature of the SHA-384 fingerprint of either stream or a byte array using Public key. The signature can now be verified by calling the verify method:
-
-*Byte Array*
-
-```go
- isValid, err := crypto.Verify(data, signature, aliceKeys.PublicKey())
- ```
-
- *Stream*
-
- ```go
-inputStream, err := os.Open(`[YOUR_FILE_PATH_HERE]`)
-
-	if(err != nil){
-		panic(err)
-	}
-	defer inputStream.Close()
-
-    isValid, err := crypto.VerifyStream(inputStream, signature, aliceKeys.PublicKey())
-```
-
-## Authenticated Encryption
-Authenticated Encryption provides both data confidentiality and data integrity assurances to the information being protected.
-
-```go
-crypto := virgil.Crypto()
-aliceKeys, err := crypto.GenerateKeypair()
-bobKeys, err := crypto.GenerateKeypair()
-
-// The data to be signed with alice's Private key
-data = []byte("Hello Bob, How are you?")
-```
-
-### Sign then Encrypt
-```go
-ciphertext, err := crypto.SignThenEncrypt(data, aliceKeys.PrivateKey(), bobKeys.PublicKey())
-```
-
-### Decrypt then Verify
-```go
-plaintext, err := crypto.DecryptThenVerify(data, bobKeys.PrivateKey(), aliceKeys.PublicKey());
-```
-
-## Fingerprint Generation
-The default Fingerprint algorithm is SHA-256.
-```go
-crypto := virgil.Crypto()
-fingerprint := crypto.CalculateFingerprint(content)
-```
-
-## Release Notes
- - Please read the latest note here: [https://github.com/VirgilSecurity/virgil-sdk-go/releases](https://github.com/VirgilSecurity/virgil-sdk-go/releases)
+Next: [Learn more about our the different ways of initializing the .NET/C# SDK][_guide_initialization] in our documentation.
+
+## Documentation
+
+Virgil Security has a powerful set of APIs, and the documentation is there to get you started today.
+
+* [Get Started][_getstarted_root] documentation
+  * [Initialize the SDK][_initialize_root]
+  * [Encrypted storage][_getstarted_storage]
+  * [Encrypted communication][_getstarted_encryption]
+  * [Data integrity][_getstarted_data_integrity]
+  * [Passwordless login][_getstarted_passwordless_login]
+* [Guides][_guides]
+  * [Virgil Cards][_guide_virgil_cards]
+  * [Virgil Keys][_guide_virgil_keys]
+
+## License
+
+This library is released under the [3-clause BSD License](LICENSE.md).
+
+## Support
+
+Our developer support team is here to help you. You can find us on [Twitter](https://twitter.com/virgilsecurity) and [email](support).
+
+[support]: mailto:support@virgilsecurity.com
+[_getstarted_root]: https://virgilsecurity.com/docs/sdk/go/
+[_getstarted]: https://virgilsecurity.com/docs/sdk/go/
+[_getstarted_encryption]: https://virgilsecurity.com/docs/use-cases/encrypted-communication
+[_getstarted_storage]: https://virgilsecurity.com/docs/use-cases/secure-data-at-rest
+[_getstarted_data_integrity]: https://virgilsecurity.com/docs/use-cases/data-verification
+[_getstarted_passwordless_login]: https://virgilsecurity.com/docs/use-cases/passwordless-authentication
+[_guides]: https://stg.virgilsecurity.com/docs/sdk/go/features
+[_guide_initialization]: https://virgilsecurity.com/docs/sdk/go/getting-started#initializing
+[_guide_virgil_cards]: https://virgilsecurity.com/docs/sdk/go/features#virgil-cards
+[_guide_virgil_keys]: https://virgilsecurity.com/docs/sdk/go/features#virgil-keys
+[_guide_encryption]: https://virgilsecurity.com/docs/sdk/go/features#encryption
+[_initialize_root]: https://virgilsecurity.com/docs/sdk/go/programming-guide#initializing
