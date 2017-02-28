@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/errors"
 )
@@ -68,6 +69,23 @@ func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 	}
 
 	req, err := virgil.NewCreateCardRequest(email, "email", publicKey, virgil.CardParams{Scope: virgil.CardScope.Global})
+	if err != nil {
+		return nil, err
+	}
+
+	return c.requestToCard(req)
+}
+
+func (c *cardManager) CreateApplicationCard(bundleName string, key *Key) (*Card, error) {
+	if key == nil || key.privateKey == nil || key.privateKey.Empty() {
+		return nil, errors.New("nil key")
+	}
+	publicKey, err := key.privateKey.ExtractPublicKey()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := virgil.NewCreateCardRequest(bundleName, "application", publicKey, virgil.CardParams{Scope: virgil.CardScope.Global})
 	if err != nil {
 		return nil, err
 	}
