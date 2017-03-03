@@ -93,6 +93,10 @@ func (c *cardManager) CreateApplicationCard(bundleName string, key *Key) (*Card,
 	if err != nil {
 		return nil, err
 	}
+	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	if err != nil {
+		return nil, err
+	}
 
 	return c.requestToCard(req)
 }

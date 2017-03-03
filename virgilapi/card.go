@@ -3,6 +3,7 @@ package virgilapi
 import (
 	"encoding/base64"
 	"encoding/json"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/virgilcrypto"
