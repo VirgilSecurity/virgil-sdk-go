@@ -72,6 +72,10 @@ func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	if err != nil {
+		return nil, err
+	}
 
 	return c.requestToCard(req)
 }
