@@ -1,4 +1,4 @@
-package virgilcrypto
+package KeyType
 
 const (
 	Default = iota
