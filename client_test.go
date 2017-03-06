@@ -79,12 +79,12 @@ func clientInvokes(tr transport.Client, v CardsValidator) []error {
 			return err
 		}(),
 		func() error {
-			_, err := c.CreateCard(&SignableRequest{Snapshot:make([]byte,1),
-			Meta:RequestMeta{
-				Signatures:map[string][]byte{
-					"str":make([]byte,1),
-				},
-			}})
+			_, err := c.CreateCard(&SignableRequest{Snapshot: make([]byte, 1),
+				Meta: RequestMeta{
+					Signatures: map[string][]byte{
+						"str": make([]byte, 1),
+					},
+				}})
 			return err
 		}(),
 		//func() error {
@@ -288,10 +288,10 @@ func TestCreateCard_CardsValidated_ReturnCard(t *testing.T) {
 	tr := makeFakeTransport()
 	tr.On("Call", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(resp, nil)
 	c, _ := NewClient("accessToken", ClientTransport(tr), ClientCardsValidator(nil))
-	card, _ := c.CreateCard(&SignableRequest{Snapshot:make([]byte,1),
-		Meta:RequestMeta{
-			Signatures:map[string][]byte{
-				"str":make([]byte,1),
+	card, _ := c.CreateCard(&SignableRequest{Snapshot: make([]byte, 1),
+		Meta: RequestMeta{
+			Signatures: map[string][]byte{
+				"str": make([]byte, 1),
 			},
 		}})
 

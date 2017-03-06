@@ -43,6 +43,9 @@ import (
 	"github.com/agl/ed25519"
 )
 
+// KeyType denotes algorithm used for key generation. See keytypes package
+type KeyType int
+
 type Keypair interface {
 	HasPublic() bool
 	HasPrivate() bool

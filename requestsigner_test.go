@@ -22,6 +22,10 @@ func makeRequest() (*SignableRequest, virgilcrypto.Keypair) {
 type FakeCrypto struct {
 }
 
+func (c *FakeCrypto) SetKeyType(keyType virgilcrypto.KeyType) error {
+	return errors.New("ERROR")
+}
+
 func (c *FakeCrypto) GenerateKeypair() (virgilcrypto.Keypair, error) {
 	return nil, errors.New("ERROR")
 }

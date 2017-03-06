@@ -107,7 +107,7 @@ func (c *Client) GetCard(id string) (*Card, error) {
 
 // CreateCard posts card create request to server where it checks signatures and adds it
 func (c *Client) CreateCard(request *SignableRequest) (*Card, error) {
-	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) == 0{
+	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) == 0 {
 		return nil, errors.New("request is empty or does not contain any signatures")
 	}
 	var res *CardResponse
@@ -196,7 +196,6 @@ func (c *Client) AddRelation(request *SignableRequest) (*Card, error) {
 		return nil, errors.New("request must not be empty and must contain exactly 1 relation signature")
 	}
 
-
 	var id string
 	for k := range request.Meta.Signatures {
 		id = k
@@ -211,13 +210,11 @@ func (c *Client) AddRelation(request *SignableRequest) (*Card, error) {
 	return c.convertToCardAndValidate(res)
 }
 
-
 // AddRelation adds signature of the card signer trusts
 func (c *Client) DeleteRelation(request *SignableRequest) (*Card, error) {
 	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) != 1 {
 		return nil, errors.New("request must not be empty and must contain exactly 1 signature")
 	}
-
 
 	var id string
 	for k := range request.Meta.Signatures {

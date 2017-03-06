@@ -8,6 +8,7 @@ import (
 	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
+// ffjson: skip
 type CardParams struct {
 	Scope      Enum
 	Data       map[string]string

@@ -33,6 +33,9 @@ func New(accessToken string) (*Api, error) {
 func NewWithConfig(config Config) (*Api, error) {
 
 	params := make([]func(client *virgil.Client), 0)
+	if err := virgil.Crypto().SetKeyType(config.KeyType); err != nil {
+		return nil, err
+	}
 
 	if config.ClientParams != nil {
 		clientParams := config.ClientParams
@@ -40,16 +43,27 @@ func NewWithConfig(config Config) (*Api, error) {
 			clientParams.ReadOnlyCardServiceURL, clientParams.IdentityServiceURL, clientParams.VRAServiceURL)))
 	}
 
-	if config.CardVerifiers != nil {
-		validator := virgil.NewCardsValidator()
+	var validator virgil.CardsValidator
+
+	if len(config.CardVerifiers) > 0 {
+		val := virgil.NewCardsValidator()
+		if !config.SkipBuiltInVerifiers {
+			val.AddDefaultVerifiers()
+		}
 		for id, v := range config.CardVerifiers {
 			key, err := virgil.Crypto().ImportPublicKey(v)
 			if err != nil {
 				return nil, err
 			}
-			validator.AddVerifier(id, key)
+			val.AddVerifier(id, key)
 		}
+		validator = val
 		params = append(params, virgil.ClientCardsValidator(validator))
+	} else {
+		if config.SkipBuiltInVerifiers {
+			validator = virgil.NewCardsValidator()
+			params = append(params, virgil.ClientCardsValidator(validator))
+		}
 	}
 
 	cli, err := virgil.NewClient(config.Token, params...)
@@ -78,6 +92,7 @@ func NewWithConfig(config Config) (*Api, error) {
 		storage:       &virgil.FileStorage{RootDir: root},
 		requestSigner: &virgil.RequestSigner{},
 		appKey:        key,
+		validator:     validator,
 	}
 
 	return &Api{
@@ -91,22 +106,50 @@ func (a *Api) Encrypt(data Buffer, recipients ...*Card) (Buffer, error) {
 	return Cards(recipients).Encrypt(data)
 }
 
+//EncryptString is the same as Encrypt but expects any string
+func (a *Api) EncryptString(data string, recipients ...*Card) (Buffer, error) {
+	return Cards(recipients).EncryptString(data)
+}
+
 func (a *Api) Decrypt(data Buffer, key *Key) (Buffer, error) {
 	return key.Decrypt(data)
+}
+
+// Decrypt expects string, received by calling ToBase64String on Buffer, received from Encrypt or EncryptString
+func (a *Api) DecryptString(data string, key *Key) (Buffer, error) {
+	return key.DecryptString(data)
 }
 
 func (a *Api) Sign(data Buffer, key *Key) (Buffer, error) {
 	return key.Sign(data)
 }
 
+func (a *Api) SignString(data string, key *Key) (Buffer, error) {
+	return key.SignString(data)
+}
+
 func (a *Api) Verify(data Buffer, signature Buffer, signerCard *Card) (bool, error) {
 	return signerCard.Verify(data, signature)
+}
+
+// VerifyString is the same as Verify but works with ordinary strings
+func (a *Api) VerifyString(data string, signature Buffer, signerCard *Card) (bool, error) {
+	return signerCard.VerifyString(data, signature)
 }
 
 func (a *Api) SignThenEncrypt(data Buffer, signerKey *Key, recipients ...*Card) (Buffer, error) {
 	return signerKey.SignThenEncrypt(data, recipients...)
 }
 
+func (a *Api) SignThenEncryptString(data string, signerKey *Key, recipients ...*Card) (Buffer, error) {
+	return signerKey.SignThenEncryptString(data, recipients...)
+}
+
 func (a *Api) DecryptThenVerify(data Buffer, key *Key, signerCard *Card) (Buffer, error) {
 	return key.DecryptThenVerify(data, signerCard)
+}
+
+// DecryptThenVerifyString expects data to be in base64 encoding
+func (a *Api) DecryptThenVerifyString(data string, key *Key, signerCard *Card) (Buffer, error) {
+	return key.DecryptThenVerifyString(data, signerCard)
 }

@@ -87,6 +87,7 @@ api, err := virgilapi.NewWithConfig(virgilapi.Config{
         CardVerifiers: map[string]virgilapi.Buffer{
             cardServiceID: virgilapi.BufferFromString(cardsServicePublicKey),
         },
+        SkipBuiltInVerifiers: true,
     })
 
 ```

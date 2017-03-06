@@ -37,12 +37,15 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 import (
 	"crypto/sha256"
-	"gopkg.in/virgil.v4/errors"
 	"io"
+
+	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v4/virgilcrypto/keytypes"
 )
 
 type (
 	Crypto interface {
+		SetKeyType(keyType KeyType) error
 		GenerateKeypair() (Keypair, error)
 		ImportPrivateKey(data []byte, password string) (PrivateKey, error)
 		ImportPublicKey(data []byte) (PublicKey, error)
@@ -69,6 +72,13 @@ type (
 )
 
 var DefaultCrypto Crypto
+
+func (c *VirgilCrypto) SetKeyType(keyType KeyType) error {
+	if keyType != keytypes.Default && keyType != keytypes.FAST_EC_ED25519 {
+		return errors.New("Only ED25519 keys are supported")
+	}
+	return nil
+}
 
 func (c *VirgilCrypto) GenerateKeypair() (Keypair, error) {
 

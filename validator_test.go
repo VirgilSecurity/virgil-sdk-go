@@ -20,6 +20,7 @@ func TestValidate_CardV3_ReturnTrue(t *testing.T) {
 	validator := NewCardsValidator()
 	card := &Card{}
 	card.CardVersion = "3.0"
+	card.Scope = CardScope.Global
 	card.Snapshot = make([]byte, 1)
 	ok, err := validator.Validate(card)
 

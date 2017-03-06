@@ -4,6 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+
+	"encoding/json"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/errors"
 )
@@ -71,6 +74,31 @@ func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.requestToCard(req)
+}
+
+func (c *cardManager) CreateApplicationCard(bundleName string, key *Key) (*Card, error) {
+	if key == nil || key.privateKey == nil || key.privateKey.Empty() {
+		return nil, errors.New("nil key")
+	}
+	publicKey, err := key.privateKey.ExtractPublicKey()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := virgil.NewCreateCardRequest(bundleName, "application", publicKey, virgil.CardParams{Scope: virgil.CardScope.Global})
+	if err != nil {
+		return nil, err
+	}
+	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	if err != nil {
+		return nil, err
+	}
 
 	return c.requestToCard(req)
 }
@@ -104,23 +132,21 @@ func (c *cardManager) Import(card string) (*Card, error) {
 		return nil, err
 	}
 
-	req, err := virgil.ImportCreateCardRequest(data)
+	var resp virgil.CardResponse
+	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		return nil, err
 	}
-	id := hex.EncodeToString(virgil.Crypto().CalculateFingerprint(req.Snapshot))
-	resp := &virgil.CardResponse{
-		ID:       id,
-		Snapshot: req.Snapshot,
-		Meta: virgil.ResponseMeta{
-			Signatures: req.Meta.Signatures,
-		},
-	}
-
 	model, err := resp.ToCard()
 
 	if err != nil {
 		return nil, err
+	}
+
+	res, err := c.context.validator.Validate(model)
+
+	if !res || err != nil {
+		return nil, errors.Wrap(err, "imported card validation failed")
 	}
 
 	return &Card{

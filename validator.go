@@ -34,7 +34,7 @@ func (v *VirgilCardValidator) Validate(card *Card) (bool, error) {
 		return false, errors.New("nil card")
 	}
 	// Support for legacy Cards.
-	if card.CardVersion == "3.0" {
+	if card.CardVersion == "3.0" && card.Scope == CardScope.Global {
 		return true, nil
 	}
 	if len(card.Signatures) == 0 {
@@ -79,7 +79,8 @@ func (v *VirgilCardValidator) AddVerifier(cardId string, key virgilcrypto.Public
 	v.validators[cardId] = key
 }
 
-func makeDefaultCardsValidator() (CardsValidator, error) {
+// AddVerifier adds default card service card
+func (v *VirgilCardValidator) AddDefaultVerifiers() error {
 	crypto := Crypto()
 
 	key, err := crypto.ImportPublicKey([]byte(`-----BEGIN PUBLIC KEY-----
@@ -87,10 +88,18 @@ MCowBQYDK2VwAyEAYR501kV1tUne2uOdkw4kErRRbJrc2Syaz5V1fuG+rVs=
 -----END PUBLIC KEY-----`))
 
 	if err != nil {
-		return nil, err
+		return err
 	}
+	v.AddVerifier("3e29d43373348cfb373b7eae189214dc01d7237765e572db685839b64adca853", key)
+	return nil
+}
+
+func makeDefaultCardsValidator() (CardsValidator, error) {
 
 	validator := NewCardsValidator()
-	validator.AddVerifier("3e29d43373348cfb373b7eae189214dc01d7237765e572db685839b64adca853", key)
+	err := validator.AddDefaultVerifiers()
+	if err != nil {
+		return nil, err
+	}
 	return validator, nil
 }

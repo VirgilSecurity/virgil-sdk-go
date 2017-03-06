@@ -15,4 +15,5 @@ type Context struct {
 	storage       virgil.KeyStorage
 	requestSigner *virgil.RequestSigner
 	appKey        *appKey
+	validator     virgil.CardsValidator
 }
