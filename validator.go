@@ -91,6 +91,7 @@ MCowBQYDK2VwAyEAYR501kV1tUne2uOdkw4kErRRbJrc2Syaz5V1fuG+rVs=
 		return err
 	}
 	v.AddVerifier("3e29d43373348cfb373b7eae189214dc01d7237765e572db685839b64adca853", key)
+	return nil
 }
 
 func makeDefaultCardsValidator() (CardsValidator, error) {
