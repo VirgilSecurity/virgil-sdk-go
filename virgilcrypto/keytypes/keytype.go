@@ -1,4 +1,4 @@
-package KeyType
+package keytypes
 
 const (
 	Default = iota

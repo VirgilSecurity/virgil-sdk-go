@@ -33,6 +33,9 @@ func New(accessToken string) (*Api, error) {
 func NewWithConfig(config Config) (*Api, error) {
 
 	params := make([]func(client *virgil.Client), 0)
+	if err := virgil.Crypto().SetKeyType(config.KeyType); err != nil {
+		return nil, err
+	}
 
 	if config.ClientParams != nil {
 		clientParams := config.ClientParams

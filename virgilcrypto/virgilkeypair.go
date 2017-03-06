@@ -43,6 +43,8 @@ import (
 	"github.com/agl/ed25519"
 )
 
+type KeyType int
+
 type Keypair interface {
 	HasPublic() bool
 	HasPrivate() bool
