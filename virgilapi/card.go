@@ -51,7 +51,7 @@ func (c *Card) Export() (string, error) {
 
 	res, err := json.Marshal(resp)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	b := make([]byte, base64.StdEncoding.EncodedLen(len(res)))
