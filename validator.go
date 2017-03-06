@@ -34,7 +34,7 @@ func (v *VirgilCardValidator) Validate(card *Card) (bool, error) {
 		return false, errors.New("nil card")
 	}
 	// Support for legacy Cards.
-	if card.CardVersion == "3.0" {
+	if card.CardVersion == "3.0" && card.Scope == CardScope.Global {
 		return true, nil
 	}
 	if len(card.Signatures) == 0 {

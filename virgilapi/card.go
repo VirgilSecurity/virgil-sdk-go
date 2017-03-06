@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
+	"encoding/hex"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/virgilcrypto"
@@ -35,15 +37,25 @@ func (c *Card) VerifyString(data string, signature Buffer) (bool, error) {
 }
 
 func (c *Card) Export() (string, error) {
-	req, err := c.ToRequest()
-	if err != nil {
-		return "", err
+
+	resp := &virgil.CardResponse{
+		ID:       hex.EncodeToString(virgil.Crypto().CalculateFingerprint(c.Snapshot)),
+		Snapshot: c.Snapshot,
+		Meta: virgil.ResponseMeta{
+			CardVersion: c.CardVersion,
+			CreatedAt:   c.CreatedAt,
+			Relations:   c.Relations,
+			Signatures:  c.Signatures,
+		},
 	}
-	data, err := req.Export()
+
+	res, err := json.Marshal(resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return base64.StdEncoding.EncodeToString(data), nil
+
+	b := make([]byte, base64.StdEncoding.EncodedLen(len(res)))
+	return base64.StdEncoding.EncodeToString(b), nil
 }
 
 type Cards []*Card

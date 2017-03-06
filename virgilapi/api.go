@@ -43,22 +43,25 @@ func NewWithConfig(config Config) (*Api, error) {
 			clientParams.ReadOnlyCardServiceURL, clientParams.IdentityServiceURL, clientParams.VRAServiceURL)))
 	}
 
+	var validator virgil.CardsValidator
+
 	if len(config.CardVerifiers) > 0 {
-		validator := virgil.NewCardsValidator()
+		val := virgil.NewCardsValidator()
 		if !config.SkipBuiltInVerifiers {
-			validator.AddDefaultVerifiers()
+			val.AddDefaultVerifiers()
 		}
 		for id, v := range config.CardVerifiers {
 			key, err := virgil.Crypto().ImportPublicKey(v)
 			if err != nil {
 				return nil, err
 			}
-			validator.AddVerifier(id, key)
+			val.AddVerifier(id, key)
 		}
+		validator = val
 		params = append(params, virgil.ClientCardsValidator(validator))
 	} else {
 		if config.SkipBuiltInVerifiers {
-			validator := virgil.NewCardsValidator()
+			validator = virgil.NewCardsValidator()
 			params = append(params, virgil.ClientCardsValidator(validator))
 		}
 	}
@@ -89,6 +92,7 @@ func NewWithConfig(config Config) (*Api, error) {
 		storage:       &virgil.FileStorage{RootDir: root},
 		requestSigner: &virgil.RequestSigner{},
 		appKey:        key,
+		validator:     validator,
 	}
 
 	return &Api{
