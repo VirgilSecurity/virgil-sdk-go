@@ -32,8 +32,14 @@ func (c *Card) Verify(data Buffer, signature Buffer) (bool, error) {
 	return virgil.Crypto().Verify(data, signature, c.PublicKey)
 }
 
-func (c *Card) VerifyString(data string, signature Buffer) (bool, error) {
-	return virgil.Crypto().Verify(BufferFromString(data), signature, c.PublicKey)
+func (c *Card) VerifyString(data string, signature string) (bool, error) {
+
+	sign, err := BufferFromBase64String(signature)
+	if err != nil {
+		return false, err
+	}
+
+	return virgil.Crypto().Verify(BufferFromString(data), sign, c.PublicKey)
 }
 
 func (c *Card) Export() (string, error) {
