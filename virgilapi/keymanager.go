@@ -7,7 +7,7 @@ import (
 type KeyManager interface {
 	Generate() (*Key, error)
 	Load(alias string, password string) (*Key, error)
-	Import(password string) (*Key, error)
+	Import(key Buffer, password string) (*Key, error)
 }
 
 type keyManager struct {
@@ -43,12 +43,8 @@ func (k *keyManager) Load(alias string, password string) (*Key, error) {
 }
 
 //Import imports base64 encoded private key
-func (k *keyManager) Import(encodedKey string, password string) (*Key, error) {
-	buf, err := BufferFromBase64String(encodedKey)
-	if err != nil {
-		return nil, err
-	}
-	key, err := virgil.Crypto().ImportPrivateKey(buf, password)
+func (k *keyManager) Import(key Buffer, password string) (*Key, error) {
+	pkey, err := virgil.Crypto().ImportPrivateKey(key, password)
 
 	if err != nil {
 		return nil, err
@@ -56,6 +52,6 @@ func (k *keyManager) Import(encodedKey string, password string) (*Key, error) {
 
 	return &Key{
 		context:    k.context,
-		privateKey: key,
+		privateKey: pkey,
 	}, nil
 }
