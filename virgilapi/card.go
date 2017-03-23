@@ -61,7 +61,7 @@ func (c *Card) Export() (string, error) {
 	}
 
 	b := make([]byte, base64.StdEncoding.EncodedLen(len(res)))
-	return base64.StdEncoding.EncodeToString(b), nil
+	return base64.StdEncoding.EncodeToString(res), nil
 }
 
 type Cards []*Card
