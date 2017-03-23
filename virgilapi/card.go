@@ -60,7 +60,6 @@ func (c *Card) Export() (string, error) {
 		return "", err
 	}
 
-	b := make([]byte, base64.StdEncoding.EncodedLen(len(res)))
 	return base64.StdEncoding.EncodeToString(res), nil
 }
 
