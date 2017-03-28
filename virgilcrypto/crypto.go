@@ -55,7 +55,7 @@ type (
 		EncryptStream(in io.Reader, out io.Writer, recipients ...PublicKey) error
 		Decrypt(data []byte, key PrivateKey) ([]byte, error)
 		DecryptStream(in io.Reader, out io.Writer, key PrivateKey) error
-		DecryptThenVerify(data []byte, privateKeyForDecryption PrivateKey, verifierKey PublicKey) ([]byte, error)
+		DecryptThenVerify(data []byte, privateKeyForDecryption PrivateKey, verifierKey ...PublicKey) ([]byte, error)
 		Sign(data []byte, signer PrivateKey) ([]byte, error)
 		SignStream(in io.Reader, signer PrivateKey) ([]byte, error)
 		SignThenEncrypt(data []byte, signerKey PrivateKey, recipients ...PublicKey) ([]byte, error)
@@ -202,12 +202,18 @@ func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey PrivateKey, recipi
 	return cipher.SignThenEncrypt(data, signerKey.(*ed25519PrivateKey))
 }
 
-func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierKey PublicKey) ([]byte, error) {
+func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierKeys ...PublicKey) ([]byte, error) {
 
-	if decryptionKey == nil || decryptionKey.Empty() || verifierKey == nil || verifierKey.Empty() {
+	if decryptionKey == nil || decryptionKey.Empty() || len(verifierKeys) == 0 {
 		return nil, errors.New("key is nil")
 	}
-	return c.Cipher().DecryptThenVerify(data, decryptionKey.(*ed25519PrivateKey), verifierKey.(*ed25519PublicKey))
+
+	verifiers := make([]*ed25519PublicKey, 0, len(verifierKeys))
+	for _, v := range verifierKeys {
+		verifiers = append(verifiers, v.(*ed25519PublicKey))
+	}
+
+	return c.Cipher().DecryptThenVerify(data, decryptionKey.(*ed25519PrivateKey), verifiers...)
 }
 
 func (c *VirgilCrypto) ExtractPublicKey(key PrivateKey) (PublicKey, error) {

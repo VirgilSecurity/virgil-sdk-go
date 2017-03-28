@@ -172,7 +172,7 @@ func TestCMS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if plaintext, err := NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey().(*ed25519PrivateKey), signerKeypair.PublicKey().(*ed25519PublicKey)); err != nil || !bytes.Equal(plaintext, data) {
+	if plaintext, err := NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey().(*ed25519PrivateKey), keypair.PublicKey().(*ed25519PublicKey), signerKeypair.PublicKey().(*ed25519PublicKey)); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
 

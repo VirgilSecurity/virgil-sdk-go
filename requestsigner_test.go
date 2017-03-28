@@ -53,7 +53,7 @@ func (c *FakeCrypto) Decrypt(data []byte, key virgilcrypto.PrivateKey) ([]byte, 
 func (c *FakeCrypto) DecryptStream(in io.Reader, out io.Writer, key virgilcrypto.PrivateKey) error {
 	return errors.New("ERROR")
 }
-func (c *FakeCrypto) DecryptThenVerify(data []byte, privateKeyForDecryption virgilcrypto.PrivateKey, verifierKey virgilcrypto.PublicKey) ([]byte, error) {
+func (c *FakeCrypto) DecryptThenVerify(data []byte, privateKeyForDecryption virgilcrypto.PrivateKey, verifierKeys ...virgilcrypto.PublicKey) ([]byte, error) {
 	return nil, errors.New("ERROR")
 }
 func (c *FakeCrypto) Sign(data []byte, signer virgilcrypto.PrivateKey) ([]byte, error) {

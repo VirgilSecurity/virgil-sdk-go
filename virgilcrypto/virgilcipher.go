@@ -39,6 +39,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/asn1"
 	"io"
 )
@@ -52,7 +53,7 @@ type Cipher interface {
 	EncryptStream(in io.Reader, out io.Writer) error
 	DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error
 	SignThenEncrypt(data []byte, signerKey *ed25519PrivateKey) ([]byte, error)
-	DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierKey *ed25519PublicKey) ([]byte, error)
+	DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierPublicKeys ...*ed25519PublicKey) ([]byte, error)
 }
 
 type defaultCipher struct {
@@ -63,7 +64,10 @@ type defaultCipher struct {
 
 var newCipherFunc func() Cipher
 
-const signatureKey = "VIRGIL-DATA-SIGNATURE"
+const (
+	signatureKey = "VIRGIL-DATA-SIGNATURE"
+	signerId     = "VIRGIL-DATA-SIGNER-ID"
+)
 
 func NewCipher() Cipher {
 	return newCipherFunc()
@@ -132,6 +136,7 @@ func (c *defaultCipher) SignThenEncrypt(data []byte, signer *ed25519PrivateKey) 
 
 	customParams := map[string]interface{}{
 		signatureKey: signature,
+		signerId:     signer.receiverID,
 	}
 	var models []*asn1.RawValue
 
@@ -186,10 +191,14 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKe
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
 
-func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierPublicKey *ed25519PublicKey) ([]byte, error) {
+func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierPublicKeys ...*ed25519PublicKey) ([]byte, error) {
 
 	if decryptionKey == nil || decryptionKey.Empty() {
 		return nil, CryptoError("no keypair provided")
+	}
+
+	if len(verifierPublicKeys) == 0 {
+		return nil, CryptoError("no verifiers provided")
 	}
 
 	customParams, ciphertext, nonce, recipients, err := decodeCMSMessage(data)
@@ -197,7 +206,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 		return nil, err
 	}
 
-	var signature []byte
+	var signature, signerIdValue []byte
 	if len(customParams) > 0 {
 
 		if signatureValue, ok := customParams[signatureKey]; ok {
@@ -206,7 +215,14 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 			} else {
 				return nil, CryptoError("got signature but could not decode")
 			}
+		}
 
+		if signerId, ok := customParams[signerId]; ok {
+			if tmp, ok := signerId.(*[]byte); ok {
+				signerIdValue = *tmp
+			} else {
+				return nil, CryptoError("got signerId but could not decode")
+			}
 		}
 	}
 	for _, r := range recipients {
@@ -216,14 +232,30 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 			if err != nil {
 				return nil, err
 			}
-			res, err := Verifier.Verify(data, verifierPublicKey, signature)
-			if !res {
-				return nil, CryptoError("signature validation failed")
+
+			for _, v := range verifierPublicKeys {
+				if len(signerIdValue) > 0 {
+					//found match
+					if subtle.ConstantTimeCompare(signerIdValue, v.receiverID) == 1 {
+						res, err := Verifier.Verify(data, v, signature)
+						if !res {
+							return nil, CryptoError("signature validation failed")
+						}
+						if err != nil {
+							return nil, err
+						}
+						return data, nil
+					}
+				} else {
+					res, err := Verifier.Verify(data, v, signature)
+					if res && err == nil {
+						return data, nil
+					}
+				}
 			}
-			if err != nil {
-				return nil, err
-			}
-			return data, nil
+
+			return nil, CryptoError("Could not verify signature with provided public keys")
+
 		}
 
 	}
