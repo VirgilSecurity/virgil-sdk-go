@@ -3,7 +3,6 @@ package virgilapi
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 
 	"encoding/json"
 
@@ -211,8 +210,6 @@ func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, 
 	req.Meta.Validation = &virgil.ValidationInfo{}
 
 	req.Meta.Validation.Token = validationToken
-	e, _ := req.Export()
-	fmt.Printf("%s\n", e)
 	res, err := c.context.client.CreateCard(req)
 	if err != nil {
 		return nil, err

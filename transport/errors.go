@@ -25,7 +25,7 @@ func ErrByTransportCode(transportCode int, message string) error {
 }
 
 var cardsErrorCodes = map[int]string{
-	10000: "Internal application error. You know, shit happens, so do internal server errors. Just take a deep breath and try harder.",
+	10000: "Internal application error.",
 	20300: "The Virgil access token or token header was not specified or is invalid",
 	20301: "The Virgil authenticator service responded with an error",
 	20302: "The Virgil access token validation has failed on the Virgil Authenticator service",

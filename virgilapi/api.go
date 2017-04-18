@@ -133,7 +133,7 @@ func (a *Api) Verify(data Buffer, signature Buffer, signerCard *Card) (bool, err
 }
 
 // VerifyString is the same as Verify but works with ordinary strings
-func (a *Api) VerifyString(data string, signature Buffer, signerCard *Card) (bool, error) {
+func (a *Api) VerifyString(data string, signature string, signerCard *Card) (bool, error) {
 	return signerCard.VerifyString(data, signature)
 }
 

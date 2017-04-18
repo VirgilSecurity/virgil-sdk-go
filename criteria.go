@@ -2,7 +2,7 @@ package virgil
 
 type Criteria struct {
 	Scope        Enum     `json:"scope,omitempty"`
-	IdentityType string   `json:"indentity_type,omitempty"`
+	IdentityType string   `json:"identity_type,omitempty"`
 	Identities   []string `json:"identities"`
 }
 

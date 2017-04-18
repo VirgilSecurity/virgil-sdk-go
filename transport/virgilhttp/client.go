@@ -8,6 +8,8 @@ import (
 
 	"time"
 
+	"crypto/tls"
+
 	"github.com/valyala/fasthttp"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/transport"
@@ -29,7 +31,12 @@ func NewTransportClient(serviceURL string, roServiceURL string, identityServiceU
 		roCardServiceURL:   strings.TrimRight(roServiceURL, "/"),
 		identityServiceURL: strings.TrimRight(identityServiceURL, "/"),
 		vraServiceURL:      strings.TrimRight(vraServiceURL, "/"),
-		client:             &fasthttp.Client{MaxIdleConnDuration: 24 * time.Hour},
+		client: &fasthttp.Client{
+			MaxIdleConnDuration: 24 * time.Hour,
+			TLSConfig: &tls.Config{
+				ClientSessionCache: tls.NewLRUClientSessionCache(0),
+			},
+		},
 	}
 	for _, option := range opts {
 		option(t)

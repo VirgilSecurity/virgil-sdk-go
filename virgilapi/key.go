@@ -44,15 +44,25 @@ func (k *Key) SignThenEncryptString(data string, recipients ...*Card) (Buffer, e
 	return virgil.Crypto().SignThenEncrypt(BufferFromString(data), k.privateKey, Cards(recipients).ToRecipients()...)
 }
 
-func (k *Key) DecryptThenVerify(data Buffer, card *Card) (Buffer, error) {
-	return virgil.Crypto().DecryptThenVerify(data, k.privateKey, card.PublicKey)
+func (k *Key) DecryptThenVerify(data Buffer, cards ...*Card) (Buffer, error) {
+
+	keys := make([]virgilcrypto.PublicKey, 0, len(cards))
+	for _, c := range cards {
+		keys = append(keys, c.PublicKey)
+	}
+
+	return virgil.Crypto().DecryptThenVerify(data, k.privateKey, keys...)
 }
 
-func (k *Key) DecryptThenVerifyString(data string, card *Card) (Buffer, error) {
+func (k *Key) DecryptThenVerifyString(data string, cards ...*Card) (Buffer, error) {
 	if buf, err := BufferFromBase64String(data); err != nil {
 		return nil, err
 	} else {
-		return virgil.Crypto().DecryptThenVerify(buf, k.privateKey, card.PublicKey)
+		keys := make([]virgilcrypto.PublicKey, 0, len(cards))
+		for _, c := range cards {
+			keys = append(keys, c.PublicKey)
+		}
+		return virgil.Crypto().DecryptThenVerify(buf, k.privateKey, keys...)
 	}
 
 }
