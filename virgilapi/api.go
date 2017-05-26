@@ -2,7 +2,7 @@ package virgilapi
 
 import (
 	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/transport/virgilhttp"
+	"gopkg.in/virgil.v4/transport"
 )
 
 type Api struct {
@@ -38,9 +38,16 @@ func NewWithConfig(config Config) (*Api, error) {
 	}
 
 	if config.ClientParams != nil {
-		clientParams := config.ClientParams
-		params = append(params, virgil.ClientTransport(virgilhttp.NewTransportClient(clientParams.CardServiceURL,
-			clientParams.ReadOnlyCardServiceURL, clientParams.IdentityServiceURL, clientParams.VRAServiceURL)))
+		clientParams := config.ClientParams //TODO
+
+		urls := map[transport.ServiceType]string{
+			virgil.Cardservice:     clientParams.CardServiceURL,
+			virgil.ROCardService:   clientParams.ReadOnlyCardServiceURL,
+			virgil.IdentityService: clientParams.IdentityServiceURL,
+			virgil.VRAService:      clientParams.VRAServiceURL,
+		}
+
+		params = append(params, virgil.ClientTransport(transport.NewTransportClient(virgil.DefaultHTTPEndpoints, urls)))
 	}
 
 	var validator virgil.CardsValidator

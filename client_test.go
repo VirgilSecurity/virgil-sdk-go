@@ -8,15 +8,13 @@ import (
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/transport"
-	"gopkg.in/virgil.v4/transport/endpoints"
-	"gopkg.in/virgil.v4/transport/virgilhttp"
 )
 
 type FakeTransport struct {
 	mock.Mock
 }
 
-func (t *FakeTransport) Call(endpoint endpoints.Endpoint, payload interface{}, returnObj interface{}, params ...interface{}) error {
+func (t *FakeTransport) Call(endpoint transport.Endpoint, payload interface{}, returnObj interface{}, params ...interface{}) error {
 	argz := make([]interface{}, 3)
 	argz[0] = endpoint
 	argz[1] = payload
@@ -48,7 +46,7 @@ func TestNewClient_InitByDefault_CheckStruct(t *testing.T) {
 	c, _ := NewClient("test")
 	v, _ := makeDefaultCardsValidator()
 
-	assert.IsType(t, &virgilhttp.TransportClient{}, c.transportClient)
+	assert.IsType(t, &transport.TransportClient{}, c.transportClient)
 	assert.Equal(t, v, c.cardsValidator)
 }
 
@@ -273,7 +271,7 @@ func TestSearchCards_CheckPassedParameter(t *testing.T) {
 	c, _ := NewClient("accessToken", ClientTransport(tr), ClientCardsValidator(nil))
 	c.SearchCards(criteria)
 
-	tr.AssertCalled(t, "Call", endpoints.SearchCards, &Criteria{
+	tr.AssertCalled(t, "Call", SearchCards, &Criteria{
 		Identities: []string{
 			"test1",
 			"test2",
@@ -320,7 +318,7 @@ MCowBQYDK2VwAyEA5Fle51URZN2seVuToVQKSFZ8OkF051jlUjBuM9OZSHk=
 	c, _ := NewClient("accessToken", ClientTransport(tr), ClientCardsValidator(nil))
 	c.CreateCard(sr)
 
-	tr.AssertCalled(t, "Call", endpoints.CreateCard, &SignableRequest{
+	tr.AssertCalled(t, "Call", CreateCard, &SignableRequest{
 		Snapshot: sr.Snapshot,
 		Meta: RequestMeta{
 			Signatures: sr.Meta.Signatures,
@@ -350,7 +348,7 @@ func TestRevokeCard_CheckPassedParameter(t *testing.T) {
 
 	c.RevokeCard(r)
 
-	tr.AssertCalled(t, "Call", endpoints.RevokeCard, &SignableRequest{
+	tr.AssertCalled(t, "Call", RevokeCard, &SignableRequest{
 		Snapshot: r.Snapshot,
 		Meta: RequestMeta{
 			Signatures: r.Meta.Signatures,

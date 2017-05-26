@@ -1,10 +1,9 @@
-package virgilhttp
+package transport
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"time"
 
@@ -12,9 +11,9 @@ import (
 
 	"github.com/valyala/fasthttp"
 	"gopkg.in/virgil.v4/errors"
-	"gopkg.in/virgil.v4/transport"
-	"gopkg.in/virgil.v4/transport/endpoints"
 )
+
+type Endpoint int
 
 // TransportClientDoer set a doer to Http Transport client
 func TransportClientDoer(client Doer) func(t *TransportClient) {
@@ -25,12 +24,10 @@ func TransportClientDoer(client Doer) func(t *TransportClient) {
 
 // NewTransportClient create a new instance of HTTP Transport protocol for Virgil Client
 // You can send nil for second paramter and by defaolt will be used http.Client
-func NewTransportClient(serviceURL string, roServiceURL string, identityServiceURL string, vraServiceURL string, opts ...func(t *TransportClient)) *TransportClient {
+func NewTransportClient(endpoints map[Endpoint]*HTTPEndpoint, serviceURLs map[ServiceType]string, opts ...func(t *TransportClient)) *TransportClient {
 	t := &TransportClient{
-		cardServiceURL:     strings.TrimRight(serviceURL, "/"),
-		roCardServiceURL:   strings.TrimRight(roServiceURL, "/"),
-		identityServiceURL: strings.TrimRight(identityServiceURL, "/"),
-		vraServiceURL:      strings.TrimRight(vraServiceURL, "/"),
+		endpoints:   endpoints,
+		serviceURLs: serviceURLs,
 		client: &fasthttp.Client{
 			MaxIdleConnDuration: 24 * time.Hour,
 			TLSConfig: &tls.Config{
@@ -51,39 +48,38 @@ type Doer interface {
 
 // TransportClient is implementation for virgil client transport protocol
 type TransportClient struct {
-	cardServiceURL     string
-	roCardServiceURL   string
-	identityServiceURL string
-	vraServiceURL      string
-	client             Doer
-	token              string
+	endpoints   map[Endpoint]*HTTPEndpoint
+	serviceURLs map[ServiceType]string
+	client      Doer
+	token       string
 }
 
-func (c *TransportClient) Call(endpoint endpoints.Endpoint, payload interface{}, returnObj interface{}, params ...interface{}) error {
+func (c *TransportClient) Call(endpoint Endpoint, payload interface{}, returnObj interface{}, params ...interface{}) error {
 
 	var ep *HTTPEndpoint
+	var baseURL string
+	var ok bool
 
-	if e, ok := HTTPEndpoints[endpoint]; !ok {
+	if ep, ok = c.endpoints[endpoint]; !ok {
 		return errors.Errorf("endpoint %d is not supported", endpoint)
-	} else {
-		ep = e
 	}
 
-	url, err := c.ToServiceURL(ep.ServiceType)
-	if err != nil {
-		return err
+
+	if baseURL, ok = c.serviceURLs[ep.ServiceType]; !ok {
+		return errors.Errorf("service %d is not supported", endpoint)
 	}
+
 	if len(params) != ep.Params {
 		return errors.Errorf("expected %d params but got %d", ep.Params, len(params))
 	}
 
 	urlParams := make([]interface{}, 1)
-	urlParams[0] = url
+	urlParams[0] = baseURL
 	urlParams = append(urlParams, params...)
 
-	url = fmt.Sprintf(ep.URL, urlParams...)
+	baseURL = fmt.Sprintf(ep.URL, urlParams...)
 
-	res, err := c.getBody(c.do(ep.Method, url, payload))
+	res, err := c.getBody(c.do(ep.Method, baseURL, payload))
 	if err != nil {
 		return err
 	}
@@ -92,23 +88,6 @@ func (c *TransportClient) Call(endpoint endpoints.Endpoint, payload interface{},
 		return errors.Wrap(err, "Cannot unmarshal response body")
 	}
 	return nil
-}
-
-func (c *TransportClient) ToServiceURL(serviceType ServiceType) (string, error) {
-	switch serviceType {
-	case Cardservice:
-		return c.cardServiceURL, nil
-	case ROCardService:
-		return c.roCardServiceURL, nil
-	case IdentityService:
-		return c.identityServiceURL, nil
-	case VRAService:
-		return c.vraServiceURL, nil
-
-	default:
-		return "", errors.Errorf("service %d not supported", serviceType)
-
-	}
 }
 
 func (c *TransportClient) SetToken(token string) {
@@ -131,16 +110,16 @@ func (c *TransportClient) getBody(resp *fasthttp.Response, err error) ([]byte, e
 	body := resp.Body()
 
 	if resp.Header.StatusCode() == http.StatusNotFound {
-		return nil, errors.Wrap(transport.ErrNotFound, "")
+		return nil, errors.Wrap(ErrNotFound, "")
 	}
 
 	if resp.Header.StatusCode() != http.StatusOK {
 		verr := &responseError{}
 		err = json.Unmarshal(body, verr)
 		if err != nil {
-			return nil, errors.Wrap(transport.ErrByTransportCode(resp.Header.StatusCode(), string(body)), "")
+			return nil, errors.Wrap(ErrByTransportCode(resp.Header.StatusCode(), string(body)), "")
 		}
-		return nil, errors.Wrap(transport.GetErrByCode(resp.Header.StatusCode(), verr.Code), "")
+		return nil, errors.Wrap(GetErrByCode(resp.Header.StatusCode(), verr.Code), "")
 
 	}
 	return body, nil

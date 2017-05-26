@@ -1,28 +1,33 @@
-package virgilhttp
+package virgil
 
 import (
 	"net/http"
 
-	. "gopkg.in/virgil.v4/transport/endpoints"
+	"gopkg.in/virgil.v4/transport"
 )
 
-type ServiceType int
+const (
+	GetCard transport.Endpoint = iota
+	SearchCards
+	CreateCard
+	RevokeCard
+	VerifyIdentity
+	ConfirmIdentity
+	ValidateIdentity
+	AddRelation
+	DeleteRelation
+)
 
 const (
-	Cardservice ServiceType = iota
+	Cardservice transport.ServiceType = iota
 	ROCardService
 	IdentityService
 	VRAService
 )
 
-type HTTPEndpoint struct {
-	URL         string
-	Method      string
-	ServiceType ServiceType
-	Params      int
-}
 
-var HTTPEndpoints = map[Endpoint]*HTTPEndpoint{
+
+var DefaultHTTPEndpoints = map[transport.Endpoint]*transport.HTTPEndpoint{
 	GetCard: {
 		Method:      http.MethodGet,
 		URL:         "%s/v4/card/%s",
