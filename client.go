@@ -45,7 +45,7 @@ import (
 
 var (
 	ErrNotFound            = transport.ErrNotFound
-	defaultServiceBaseURLs = map[transport.ServiceType]string{
+	DefaultServiceBaseURLs = map[transport.ServiceType]string{
 		Cardservice:     "https://cards.virgilsecurity.com",
 		ROCardService:   "https://cards-ro.virgilsecurity.com",
 		IdentityService: "https://identity.virgilsecurity.com",
@@ -57,7 +57,7 @@ var (
 //
 func ClientTransport(transportClient transport.Client) func(*Client) {
 	return func(client *Client) {
-		client.transportClient = transportClient
+		client.TransportClient = transportClient
 	}
 }
 
@@ -65,44 +65,44 @@ func ClientTransport(transportClient transport.Client) func(*Client) {
 //
 func ClientCardsValidator(validator CardsValidator) func(*Client) {
 	return func(client *Client) {
-		client.cardsValidator = validator
+		client.CardsValidator = validator
 	}
 }
 
 // NewClient create a new instance of Virgil client
 func NewClient(accessToken string, opts ...func(*Client)) (*Client, error) {
-	v, err := makeDefaultCardsValidator()
+	v, err := MakeDefaultCardsValidator()
 	if err != nil {
 		return nil, err
 	}
 
 	c := &Client{
-		transportClient: transport.NewTransportClient(DefaultHTTPEndpoints, defaultServiceBaseURLs),
-		cardsValidator:  v,
+		TransportClient: transport.NewTransportClient(DefaultHTTPEndpoints, DefaultServiceBaseURLs),
+		CardsValidator:  v,
 	}
 
 	for _, option := range opts {
 		option(c)
 	}
 
-	c.transportClient.SetToken(accessToken)
+	c.TransportClient.SetToken(accessToken)
 	return c, nil
 }
 
 // A Client manages communication with Virgil Security API.
 type Client struct {
-	transportClient transport.Client
-	cardsValidator  CardsValidator
+	TransportClient transport.Client
+	CardsValidator  CardsValidator
 }
 
 // GetCard return a card from Virgil Read Only Card service
 func (c *Client) GetCard(id string) (*Card, error) {
 	var res *CardResponse
-	err := c.transportClient.Call(GetCard, nil, &res, id)
+	err := c.TransportClient.Call(GetCard, nil, &res, id)
 	if err != nil {
 		return nil, err
 	}
-	return c.convertToCardAndValidate(res)
+	return c.ConvertToCardAndValidate(res)
 }
 
 // CreateCard posts card create request to server where it checks signatures and adds it
@@ -111,12 +111,12 @@ func (c *Client) CreateCard(request *SignableRequest) (*Card, error) {
 		return nil, errors.New("request is empty or does not contain any signatures")
 	}
 	var res *CardResponse
-	err := c.transportClient.Call(CreateCard, request, &res)
+	err := c.TransportClient.Call(CreateCard, request, &res)
 
 	if err != nil {
 		return nil, err
 	}
-	return c.convertToCardAndValidate(res)
+	return c.ConvertToCardAndValidate(res)
 }
 
 // RevokeCard deletes card from server
@@ -130,7 +130,7 @@ func (c *Client) RevokeCard(request *SignableRequest) error {
 		return errors.Wrap(err, "")
 	}
 
-	return c.transportClient.Call(RevokeCard, request, nil, req.ID)
+	return c.TransportClient.Call(RevokeCard, request, nil, req.ID)
 }
 
 func (c *Client) SearchCards(criteria *Criteria) ([]*Card, error) {
@@ -138,14 +138,14 @@ func (c *Client) SearchCards(criteria *Criteria) ([]*Card, error) {
 		return nil, errors.New("search criteria cannot be empty")
 	}
 	var res []*CardResponse
-	err := c.transportClient.Call(SearchCards, criteria, &res)
+	err := c.TransportClient.Call(SearchCards, criteria, &res)
 	if err != nil {
 		return nil, err
 	}
 
 	var cards []*Card
 	for _, v := range res {
-		card, err := c.convertToCardAndValidate(v)
+		card, err := c.ConvertToCardAndValidate(v)
 		if err != nil {
 			return nil, err
 		}
@@ -159,7 +159,7 @@ func (c *Client) VerifyIdentity(request *VerifyRequest) (*VerifyResponse, error)
 		return nil, errors.New("request is nil")
 	}
 	var res *VerifyResponse
-	err := c.transportClient.Call(VerifyIdentity, request, &res)
+	err := c.TransportClient.Call(VerifyIdentity, request, &res)
 
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (c *Client) ConfirmIdentity(request *ConfirmRequest) (*ConfirmResponse, err
 	}
 	var res *ConfirmResponse
 
-	err := c.transportClient.Call(ConfirmIdentity, request, &res)
+	err := c.TransportClient.Call(ConfirmIdentity, request, &res)
 
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (c *Client) ValidateIdentity(request *ValidateRequest) error {
 	if request == nil {
 		return errors.New("request is nil")
 	}
-	return c.transportClient.Call(ValidateIdentity, request, nil)
+	return c.TransportClient.Call(ValidateIdentity, request, nil)
 }
 
 // AddRelation adds signature of the card signer trusts
@@ -202,12 +202,12 @@ func (c *Client) AddRelation(request *SignableRequest) (*Card, error) {
 	}
 
 	var res *CardResponse
-	err := c.transportClient.Call(AddRelation, request, &res, id)
+	err := c.TransportClient.Call(AddRelation, request, &res, id)
 
 	if err != nil {
 		return nil, err
 	}
-	return c.convertToCardAndValidate(res)
+	return c.ConvertToCardAndValidate(res)
 }
 
 // AddRelation adds signature of the card signer trusts
@@ -222,15 +222,15 @@ func (c *Client) DeleteRelation(request *SignableRequest) (*Card, error) {
 	}
 
 	var res *CardResponse
-	err := c.transportClient.Call(DeleteRelation, request, &res, id)
+	err := c.TransportClient.Call(DeleteRelation, request, &res, id)
 
 	if err != nil {
 		return nil, err
 	}
-	return c.convertToCardAndValidate(res)
+	return c.ConvertToCardAndValidate(res)
 }
 
-func (c *Client) convertToCardAndValidate(response *CardResponse) (*Card, error) {
+func (c *Client) ConvertToCardAndValidate(response *CardResponse) (*Card, error) {
 
 	card, err := response.ToCard()
 
@@ -238,8 +238,8 @@ func (c *Client) convertToCardAndValidate(response *CardResponse) (*Card, error)
 		return nil, err
 	}
 
-	if c.cardsValidator != nil {
-		ok, err := c.cardsValidator.Validate(card)
+	if c.CardsValidator != nil {
+		ok, err := c.CardsValidator.Validate(card)
 		if !ok {
 			return nil, err
 		}

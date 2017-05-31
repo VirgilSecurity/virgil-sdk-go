@@ -38,7 +38,7 @@ func NewWithConfig(config Config) (*Api, error) {
 	}
 
 	if config.ClientParams != nil {
-		clientParams := config.ClientParams //TODO
+		clientParams := config.ClientParams
 
 		urls := map[transport.ServiceType]string{
 			virgil.Cardservice:     clientParams.CardServiceURL,

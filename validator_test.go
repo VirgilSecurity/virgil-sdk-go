@@ -209,7 +209,7 @@ func TestValidate_CardCorrecec_ReturnTrue(t *testing.T) {
 
 func Test_makeDefaultCardsValidator_CorrectCardValidation(t *testing.T) {
 	var v interface{}
-	v, _ = makeDefaultCardsValidator()
+	v, _ = MakeDefaultCardsValidator()
 	assert.IsType(t, &VirgilCardValidator{}, v)
 	cv := v.(*VirgilCardValidator)
 	_, ok := cv.validators["3e29d43373348cfb373b7eae189214dc01d7237765e572db685839b64adca853"]

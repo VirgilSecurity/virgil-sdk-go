@@ -94,7 +94,7 @@ MCowBQYDK2VwAyEAYR501kV1tUne2uOdkw4kErRRbJrc2Syaz5V1fuG+rVs=
 	return nil
 }
 
-func makeDefaultCardsValidator() (CardsValidator, error) {
+func MakeDefaultCardsValidator() (CardsValidator, error) {
 
 	validator := NewCardsValidator()
 	err := validator.AddDefaultVerifiers()

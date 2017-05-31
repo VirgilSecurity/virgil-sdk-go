@@ -29,7 +29,9 @@ func NewTransportClient(endpoints map[Endpoint]*HTTPEndpoint, serviceURLs map[Se
 		endpoints:   endpoints,
 		serviceURLs: serviceURLs,
 		client: &fasthttp.Client{
-			MaxIdleConnDuration: 24 * time.Hour,
+			MaxIdleConnDuration: 1 * time.Hour,
+			ReadTimeout:         1 * time.Minute,
+			WriteTimeout:        1 * time.Minute,
 			TLSConfig: &tls.Config{
 				ClientSessionCache: tls.NewLRUClientSessionCache(0),
 			},
@@ -63,7 +65,6 @@ func (c *TransportClient) Call(endpoint Endpoint, payload interface{}, returnObj
 	if ep, ok = c.endpoints[endpoint]; !ok {
 		return errors.Errorf("endpoint %d is not supported", endpoint)
 	}
-
 
 	if baseURL, ok = c.serviceURLs[ep.ServiceType]; !ok {
 		return errors.Errorf("service %d is not supported", endpoint)

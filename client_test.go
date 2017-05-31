@@ -44,10 +44,10 @@ func (v *FakeValidator) Validate(c *Card) (bool, error) {
 
 func TestNewClient_InitByDefault_CheckStruct(t *testing.T) {
 	c, _ := NewClient("test")
-	v, _ := makeDefaultCardsValidator()
+	v, _ := MakeDefaultCardsValidator()
 
-	assert.IsType(t, &transport.TransportClient{}, c.transportClient)
-	assert.Equal(t, v, c.cardsValidator)
+	assert.IsType(t, &transport.TransportClient{}, c.TransportClient)
+	assert.Equal(t, v, c.CardsValidator)
 }
 
 func makeFakeTransport() *FakeTransport {
@@ -63,8 +63,8 @@ func TestNewClient_OverwriteParams_CheckStruct(t *testing.T) {
 		ClientTransport(tr),
 		ClientCardsValidator(&FakeValidator{}))
 
-	assert.IsType(t, tr, c.transportClient)
-	assert.IsType(t, &FakeValidator{}, c.cardsValidator)
+	assert.IsType(t, tr, c.TransportClient)
+	assert.IsType(t, &FakeValidator{}, c.CardsValidator)
 
 	tr.AssertCalled(t, "SetToken", "test")
 }

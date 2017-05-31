@@ -25,8 +25,6 @@ const (
 	VRAService
 )
 
-
-
 var DefaultHTTPEndpoints = map[transport.Endpoint]*transport.HTTPEndpoint{
 	GetCard: {
 		Method:      http.MethodGet,
