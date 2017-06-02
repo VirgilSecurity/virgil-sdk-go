@@ -20,6 +20,8 @@ type (
 	}
 )
 
+var virgil = []byte("Virgil")
+
 func (c *VirgilCrypto) StartInitiatorSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
 
 	sk, err := X3DHInit(ICa, EKa, ICb, LTCb, OTCb)
@@ -44,8 +46,6 @@ func (c *VirgilCrypto) StartResponderSession(ICa, EKa PublicKey, ICb, LTCb, OTCb
 
 func skToSession(sk []byte, aliceCardId, bobCardId string) *PFSSession {
 	hash := sha256.New()
-
-	virgil := []byte("Virgil")
 
 	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len(virgil))
 	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
@@ -78,7 +78,7 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 	}
 
 	keyAndNonce := make([]byte, 44)
-	kdf := hkdf.New(sha256.New, s.SK, salt, []byte("Virgil"))
+	kdf := hkdf.New(sha256.New, s.SK, salt, virgil)
 
 	_, err = kdf.Read(keyAndNonce)
 	if err != nil {
@@ -94,7 +94,7 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 func (s *PFSSession) Decrypt(salt, ciphertext []byte) ([]byte, error) {
 
 	keyAndNonce := make([]byte, 44)
-	kdf := hkdf.New(sha256.New, s.SK, salt, []byte("Virgil"))
+	kdf := hkdf.New(sha256.New, s.SK, salt, virgil)
 
 	_, err := kdf.Read(keyAndNonce)
 	if err != nil {
