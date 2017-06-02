@@ -4,8 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha256"
 
+	"github.com/minio/sha256-simd"
 	"golang.org/x/crypto/hkdf"
 )
 
@@ -15,71 +15,59 @@ type (
 	}
 
 	PFS interface {
-		StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error)
-		ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error)
+		StartInitiatorSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error)
+		StartResponderSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error)
 	}
 )
 
-func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) StartInitiatorSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
 
 	sk, err := X3DHInit(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
 		return
 	}
 
-	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len("Virgil"))
-	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
-	toHash = append(toHash, []byte("Virgil")...)
-
-	hash := sha256.Sum256(toHash)
-
-	ad := hash[:]
-
-	toHash = make([]byte, 0, len(sk)+len(ad)+len("Virgil"))
-
-	toHash = append(sk, ad...)
-	toHash = append(toHash, []byte("Virgil")...)
-
-	sessHash := sha256.Sum256(toHash)
-	sessionID := sessHash[:]
-
-	return &PFSSession{
-		SK:        sk,
-		AD:        ad,
-		SessionID: sessionID,
-	}, nil
+	return skToSession(sk, aliceCardId, bobCardId), nil
 
 }
 
-func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) StartResponderSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
 
 	sk, err := X3DHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
 		return
 	}
 
-	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len("Virgil"))
+	return skToSession(sk, aliceCardId, bobCardId), nil
+
+}
+
+func skToSession(sk []byte, aliceCardId, bobCardId string) *PFSSession {
+	hash := sha256.New()
+
+	virgil := []byte("Virgil")
+
+	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len(virgil))
 	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
-	toHash = append(toHash, []byte("Virgil")...)
+	toHash = append(toHash, virgil...)
 
-	hash := sha256.Sum256(toHash)
+	hash.Write(toHash)
+	ad := hash.Sum(nil)
+	hash.Reset()
 
-	ad := hash[:]
+	toHash = toHash[:0]
 
-	toHash = make([]byte, 0, len(sk)+len(ad)+len("Virgil"))
+	toHash = append(sk, ad[:]...)
+	toHash = append(toHash, virgil...)
 
-	toHash = append(sk, ad...)
-	toHash = append(toHash, []byte("Virgil")...)
-
-	sessHash := sha256.Sum256(toHash)
-	sessionID := sessHash[:]
+	hash.Write(toHash)
+	sessionID := hash.Sum(nil)
 
 	return &PFSSession{
 		SK:        sk,
 		AD:        ad,
 		SessionID: sessionID,
-	}, nil
-
+	}
 }
 
 func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
