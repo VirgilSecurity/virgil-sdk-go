@@ -4,5 +4,5 @@ type ClientParams struct {
 	CardServiceURL,
 	ReadOnlyCardServiceURL,
 	IdentityServiceURL,
-	VRAServiceURL string
+	RAServiceURL string
 }

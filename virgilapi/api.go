@@ -2,7 +2,11 @@ package virgilapi
 
 import (
 	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/transport"
+	"gopkg.in/virgil.v4/clients"
+	"gopkg.in/virgil.v4/clients/cardsclient"
+	"gopkg.in/virgil.v4/clients/cardsroclient"
+	"gopkg.in/virgil.v4/clients/identityclient"
+	"gopkg.in/virgil.v4/clients/raclient"
 )
 
 type Api struct {
@@ -13,14 +17,33 @@ type Api struct {
 
 func New(accessToken string) (*Api, error) {
 
-	cli, err := virgil.NewClient(accessToken)
+	cardsClient, err := cardsclient.New(accessToken)
 	if err != nil {
 		return nil, err
 	}
+
+	cardsROClient, err := cardsroclient.New(accessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	raClient, err := raclient.New(accessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	identityClient, err := identityclient.New(accessToken)
+	if err != nil {
+		return nil, err
+	}
+
 	context := &Context{
-		client:        cli,
-		storage:       &virgil.FileStorage{RootDir: "."},
-		requestSigner: &virgil.RequestSigner{},
+		cardsClient:    cardsClient,
+		cardsROClient:  cardsROClient,
+		raClient:       raClient,
+		identityClient: identityClient,
+		storage:        &virgil.FileStorage{RootDir: "."},
+		requestSigner:  &virgil.RequestSigner{},
 	}
 
 	return &Api{
@@ -32,7 +55,11 @@ func New(accessToken string) (*Api, error) {
 
 func NewWithConfig(config Config) (*Api, error) {
 
-	params := make([]func(client *virgil.Client), 0)
+	cardsParams := make([]func(client *clients.BaseClient), 0)
+	cardsROParams := make([]func(client *clients.BaseClient), 0)
+	identityParams := make([]func(client *clients.BaseClient), 0)
+	raParams := make([]func(client *clients.BaseClient), 0)
+
 	if err := virgil.Crypto().SetKeyType(config.KeyType); err != nil {
 		return nil, err
 	}
@@ -40,14 +67,10 @@ func NewWithConfig(config Config) (*Api, error) {
 	if config.ClientParams != nil {
 		clientParams := config.ClientParams
 
-		urls := map[transport.ServiceType]string{
-			virgil.Cardservice:     clientParams.CardServiceURL,
-			virgil.ROCardService:   clientParams.ReadOnlyCardServiceURL,
-			virgil.IdentityService: clientParams.IdentityServiceURL,
-			virgil.VRAService:      clientParams.VRAServiceURL,
-		}
-
-		params = append(params, virgil.ClientTransport(transport.NewTransportClient(virgil.DefaultHTTPEndpoints, urls)))
+		cardsParams = append(cardsParams, clients.ServiceUrl(clientParams.CardServiceURL))
+		cardsROParams = append(cardsROParams, clients.ServiceUrl(clientParams.ReadOnlyCardServiceURL))
+		identityParams = append(identityParams, clients.ServiceUrl(clientParams.IdentityServiceURL))
+		raParams = append(raParams, clients.ServiceUrl(clientParams.RAServiceURL))
 	}
 
 	var validator virgil.CardsValidator
@@ -65,16 +88,38 @@ func NewWithConfig(config Config) (*Api, error) {
 			val.AddVerifier(id, key)
 		}
 		validator = val
-		params = append(params, virgil.ClientCardsValidator(validator))
+
+		cardsParams = append(cardsParams, clients.ClientCardsValidator(validator))
+		cardsROParams = append(cardsROParams, clients.ClientCardsValidator(validator))
+		identityParams = append(identityParams, clients.ClientCardsValidator(validator))
+		raParams = append(raParams, clients.ClientCardsValidator(validator))
+
 	} else {
 		if config.SkipBuiltInVerifiers {
 			validator = virgil.NewCardsValidator()
-			params = append(params, virgil.ClientCardsValidator(validator))
+			cardsParams = append(cardsParams, clients.ClientCardsValidator(validator))
+			cardsROParams = append(cardsROParams, clients.ClientCardsValidator(validator))
+			identityParams = append(identityParams, clients.ClientCardsValidator(validator))
+			raParams = append(raParams, clients.ClientCardsValidator(validator))
 		}
 	}
 
-	cli, err := virgil.NewClient(config.Token, params...)
+	cardsClient, err := cardsclient.New(config.Token)
+	if err != nil {
+		return nil, err
+	}
 
+	cardsROClient, err := cardsroclient.New(config.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	raClient, err := raclient.New(config.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	identityClient, err := identityclient.New(config.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -95,11 +140,14 @@ func NewWithConfig(config Config) (*Api, error) {
 	}
 
 	context := &Context{
-		client:        cli,
-		storage:       &virgil.FileStorage{RootDir: root},
-		requestSigner: &virgil.RequestSigner{},
-		appKey:        key,
-		validator:     validator,
+		cardsClient:    cardsClient,
+		cardsROClient:  cardsROClient,
+		raClient:       raClient,
+		identityClient: identityClient,
+		storage:        &virgil.FileStorage{RootDir: root},
+		requestSigner:  &virgil.RequestSigner{},
+		appKey:         key,
+		validator:      validator,
 	}
 
 	return &Api{

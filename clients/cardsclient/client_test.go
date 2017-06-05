@@ -1,4 +1,4 @@
-package virgil
+package cardsclient
 
 import (
 	"encoding/json"

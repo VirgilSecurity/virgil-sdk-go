@@ -13,8 +13,6 @@ import (
 	"gopkg.in/virgil.v4/errors"
 )
 
-type Endpoint int
-
 // TransportClientDoer set a doer to Http Transport client
 func TransportClientDoer(client Doer) func(t *TransportClient) {
 	return func(t *TransportClient) {
@@ -24,10 +22,10 @@ func TransportClientDoer(client Doer) func(t *TransportClient) {
 
 // NewTransportClient create a new instance of HTTP Transport protocol for Virgil Client
 // You can send nil for second paramter and by defaolt will be used http.Client
-func NewTransportClient(endpoints map[Endpoint]*HTTPEndpoint, serviceURLs map[ServiceType]string, opts ...func(t *TransportClient)) *TransportClient {
+func NewTransportClient(serviceURL string, endpoints map[Endpoint]*HTTPEndpoint, opts ...func(t *TransportClient)) *TransportClient {
 	t := &TransportClient{
-		endpoints:   endpoints,
-		serviceURLs: serviceURLs,
+		serviceURL: serviceURL,
+		endpoints:  endpoints,
 		client: &fasthttp.Client{
 			MaxIdleConnDuration: 1 * time.Hour,
 			ReadTimeout:         1 * time.Minute,
@@ -50,24 +48,20 @@ type Doer interface {
 
 // TransportClient is implementation for virgil client transport protocol
 type TransportClient struct {
-	endpoints   map[Endpoint]*HTTPEndpoint
-	serviceURLs map[ServiceType]string
-	client      Doer
-	token       string
+	endpoints  map[Endpoint]*HTTPEndpoint
+	serviceURL string
+	client     Doer
+	token      string
 }
 
 func (c *TransportClient) Call(endpoint Endpoint, payload interface{}, returnObj interface{}, params ...interface{}) error {
 
 	var ep *HTTPEndpoint
-	var baseURL string
 	var ok bool
+	var baseURL = c.serviceURL
 
 	if ep, ok = c.endpoints[endpoint]; !ok {
 		return errors.Errorf("endpoint %d is not supported", endpoint)
-	}
-
-	if baseURL, ok = c.serviceURLs[ep.ServiceType]; !ok {
-		return errors.Errorf("service %d is not supported", endpoint)
 	}
 
 	if len(params) != ep.Params {
@@ -93,6 +87,10 @@ func (c *TransportClient) Call(endpoint Endpoint, payload interface{}, returnObj
 
 func (c *TransportClient) SetToken(token string) {
 	c.token = token
+}
+
+func (c *TransportClient) SetURL(url string) {
+	c.serviceURL = url
 }
 
 type responseError struct {
