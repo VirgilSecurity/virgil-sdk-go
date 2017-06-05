@@ -10,25 +10,25 @@ import (
 var DefaultServiceBaseURLs map[transport.ServiceType]string = initBaseURLs()
 
 type EphemeralCardsClient struct {
-	virgil.Client
+	*virgil.Client
 }
 
 // NewClient create a new instance of Virgil client
-func NewClient(accessToken string, opts ...func(*EphemeralCardsClient)) (*EphemeralCardsClient, error) {
+func NewClient(accessToken string, opts ...func(*virgil.Client)) (*EphemeralCardsClient, error) {
 	v, err := virgil.MakeDefaultCardsValidator()
 	if err != nil {
 		return nil, err
 	}
 
 	c := &EphemeralCardsClient{
-		Client: virgil.Client{
+		Client: &virgil.Client{
 			TransportClient: transport.NewTransportClient(DefaultHTTPEndpoints, DefaultServiceBaseURLs),
 			CardsValidator:  v,
 		},
 	}
 
 	for _, option := range opts {
-		option(c)
+		option(c.Client)
 	}
 
 	c.TransportClient.SetToken(accessToken)
@@ -36,12 +36,12 @@ func NewClient(accessToken string, opts ...func(*EphemeralCardsClient)) (*Epheme
 }
 
 // CreateLTCCard posts user LTC card to PFS server. Card must be self-signed and user-identity signed
-func (c *EphemeralCardsClient) CreateLTCCard(request *virgil.SignableRequest) (*virgil.Card, error) {
+func (c *EphemeralCardsClient) CreateLTCCard(icCardID string, request *virgil.SignableRequest) (*virgil.Card, error) {
 	if request == nil || len(request.Snapshot) == 0 || len(request.Meta.Signatures) != 2 {
 		return nil, errors.New("request is empty or number of signatures is not 2")
 	}
 	var res *virgil.CardResponse
-	err := c.TransportClient.Call(CreateLTCCard, request, &res)
+	err := c.TransportClient.Call(CreateLTCCard, request, &res, icCardID)
 
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (c *EphemeralCardsClient) CreateLTCCard(request *virgil.SignableRequest) (*
 }
 
 // CreateLTCCard posts user LTC card to PFS server. Card must be self-signed and user-identity signed
-func (c *EphemeralCardsClient) UploadOTCCards(requests []*virgil.SignableRequest) ([]*virgil.Card, error) {
+func (c *EphemeralCardsClient) UploadOTCCards(icCardID string, requests []*virgil.SignableRequest) ([]*virgil.Card, error) {
 	if len(requests) == 0 {
 		return nil, errors.New("nothing to upload")
 	}
@@ -61,7 +61,7 @@ func (c *EphemeralCardsClient) UploadOTCCards(requests []*virgil.SignableRequest
 		}
 	}
 	var res []*virgil.CardResponse
-	err := c.TransportClient.Call(UploadOTCCards, requests, &res)
+	err := c.TransportClient.Call(UploadOTCCards, requests, &res, icCardID)
 
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (c *EphemeralCardsClient) GetUserCredentials(identities ...string) ([]*Cred
 		}
 	}
 	var res []*CredentialsResponse
-	err := c.TransportClient.Call(GetUserCredentials, identities, &res)
+	err := c.TransportClient.Call(GetUserCredentials, &CredentialsRequest{Identities: identities}, &res)
 
 	if err != nil {
 		return nil, err
@@ -128,6 +128,6 @@ func initBaseURLs() map[transport.ServiceType]string {
 		res[k] = v
 	}
 
-	res[PFSService] = "https://pfs.virgilsecurity.com"
+	res[PFSService] = "https://pfs-stg.virgilsecurity.com"
 	return res
 }

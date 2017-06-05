@@ -12,10 +12,10 @@ const (
 )
 
 const (
-	CreateLTCCard = 100
-	UploadOTCCards
-	GetUserCredentials
-	GetOTCCardCount
+	CreateLTCCard      = 100
+	UploadOTCCards     = 101
+	GetUserCredentials = 102
+	GetOTCCardCount    = 103
 )
 
 var DefaultHTTPEndpoints map[Endpoint]*HTTPEndpoint = initEndpoints()
@@ -28,27 +28,27 @@ func initEndpoints() map[Endpoint]*HTTPEndpoint {
 
 	res[CreateLTCCard] = &HTTPEndpoint{
 		Method:      http.MethodPost,
-		URL:         "%s/v4/recipient/%s/actions/push-ltc",
+		URL:         "%s/v1/recipient/%s/actions/push-ltc",
 		ServiceType: PFSService,
 		Params:      1,
 	}
 
 	res[UploadOTCCards] = &HTTPEndpoint{
 		Method:      http.MethodPost,
-		URL:         "%s/v4/recipient/%s/actions/push-otcs",
+		URL:         "%s/v1/recipient/%s/actions/push-otcs",
 		ServiceType: PFSService,
 		Params:      1,
 	}
 
 	res[GetUserCredentials] = &HTTPEndpoint{
 		Method:      http.MethodPost,
-		URL:         "%s/v4/recipient/actions/search",
+		URL:         "%s/v1/recipient/actions/search",
 		ServiceType: PFSService,
 	}
 
 	res[GetOTCCardCount] = &HTTPEndpoint{
 		Method:      http.MethodPost,
-		URL:         "%s/v4/recipient/%s/actions/count-otcs",
+		URL:         "%s/v1/recipient/%s/actions/count-otcs",
 		ServiceType: PFSService,
 		Params:      1,
 	}

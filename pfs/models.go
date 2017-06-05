@@ -14,3 +14,7 @@ type CredentialsResponse struct {
 	LTC          *virgil.CardResponse `json:"long_time_card"`
 	OTC          *virgil.CardResponse `json:"one_time_card"`
 }
+
+type CredentialsRequest struct {
+	Identities []string `json:"identities"`
+}
