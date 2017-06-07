@@ -10,25 +10,25 @@ type Key struct {
 	privateKey virgilcrypto.PrivateKey
 }
 
-func (k *Key) Export(password string) (Buffer, error) {
+func (k *Key) Export(password string) (virgil.Buffer, error) {
 	return virgil.Crypto().ExportPrivateKey(k.privateKey, password)
 }
 
-func (k *Key) Sign(data Buffer) (Buffer, error) {
+func (k *Key) Sign(data virgil.Buffer) (virgil.Buffer, error) {
 	return virgil.Crypto().Sign(data, k.privateKey)
 }
 
-func (k *Key) SignString(data string) (Buffer, error) {
-	return virgil.Crypto().Sign(BufferFromString(data), k.privateKey)
+func (k *Key) SignString(data string) (virgil.Buffer, error) {
+	return virgil.Crypto().Sign(virgil.BufferFromString(data), k.privateKey)
 }
 
-func (k *Key) Decrypt(data Buffer) (Buffer, error) {
+func (k *Key) Decrypt(data virgil.Buffer) (virgil.Buffer, error) {
 	return virgil.Crypto().Decrypt(data, k.privateKey)
 }
 
-func (k *Key) DecryptString(data string) (Buffer, error) {
+func (k *Key) DecryptString(data string) (virgil.Buffer, error) {
 
-	if buf, err := BufferFromBase64String(data); err != nil {
+	if buf, err := virgil.BufferFromBase64String(data); err != nil {
 		return nil, err
 	} else {
 		return virgil.Crypto().Decrypt(buf, k.privateKey)
@@ -36,15 +36,15 @@ func (k *Key) DecryptString(data string) (Buffer, error) {
 
 }
 
-func (k *Key) SignThenEncrypt(data Buffer, recipients ...*Card) (Buffer, error) {
+func (k *Key) SignThenEncrypt(data virgil.Buffer, recipients ...*Card) (virgil.Buffer, error) {
 	return virgil.Crypto().SignThenEncrypt(data, k.privateKey, Cards(recipients).ToRecipients()...)
 }
 
-func (k *Key) SignThenEncryptString(data string, recipients ...*Card) (Buffer, error) {
-	return virgil.Crypto().SignThenEncrypt(BufferFromString(data), k.privateKey, Cards(recipients).ToRecipients()...)
+func (k *Key) SignThenEncryptString(data string, recipients ...*Card) (virgil.Buffer, error) {
+	return virgil.Crypto().SignThenEncrypt(virgil.BufferFromString(data), k.privateKey, Cards(recipients).ToRecipients()...)
 }
 
-func (k *Key) DecryptThenVerify(data Buffer, cards ...*Card) (Buffer, error) {
+func (k *Key) DecryptThenVerify(data virgil.Buffer, cards ...*Card) (virgil.Buffer, error) {
 
 	keys := make([]virgilcrypto.PublicKey, 0, len(cards))
 	for _, c := range cards {
@@ -54,8 +54,8 @@ func (k *Key) DecryptThenVerify(data Buffer, cards ...*Card) (Buffer, error) {
 	return virgil.Crypto().DecryptThenVerify(data, k.privateKey, keys...)
 }
 
-func (k *Key) DecryptThenVerifyString(data string, cards ...*Card) (Buffer, error) {
-	if buf, err := BufferFromBase64String(data); err != nil {
+func (k *Key) DecryptThenVerifyString(data string, cards ...*Card) (virgil.Buffer, error) {
+	if buf, err := virgil.BufferFromBase64String(data); err != nil {
 		return nil, err
 	} else {
 		keys := make([]virgilcrypto.PublicKey, 0, len(cards))
@@ -67,7 +67,7 @@ func (k *Key) DecryptThenVerifyString(data string, cards ...*Card) (Buffer, erro
 
 }
 
-func (k *Key) ExportPublicKey() (Buffer, error) {
+func (k *Key) ExportPublicKey() (virgil.Buffer, error) {
 
 	pub, err := virgil.Crypto().ExtractPublicKey(k.privateKey)
 	if err != nil {

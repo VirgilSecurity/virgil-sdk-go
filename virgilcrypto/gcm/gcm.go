@@ -43,7 +43,7 @@ import (
 	"gopkg.in/virgil.v4/errors"
 )
 
-const GcmStreamBufSize = 1024 * 1024 //megabyte buffer
+const GcmStreamBufSize = 1024 * 1024 //megabyte virgilbuffer
 
 type gcmFieldElement struct {
 	low, high uint64
@@ -140,7 +140,7 @@ func (g *gcm) SealStream(nonce, data []byte, plain io.Reader, ciph io.Writer) er
 		g.update(&y, buf)
 		written, err := ciph.Write(buf)
 		if written != len(buf) || err != nil {
-			return errors.New("Could not write to output buffer")
+			return errors.New("Could not write to output virgilbuffer")
 		}
 		plainLen += uint64(n)
 		n, err = plain.Read(inBuf)
@@ -211,7 +211,7 @@ func (g *gcm) OpenStream(nonce, data []byte, ciphertext io.Reader, plaintext io.
 			if len(previousTagPart) == 0 {
 				previousTagPart = make([]byte, len(lastTagPart))
 			}
-			copy(previousTagPart, lastTagPart) //avoid buffer corruption when reading next chunk
+			copy(previousTagPart, lastTagPart) //avoid virgilbuffer corruption when reading next chunk
 		}
 		g.update(&y, buf)
 		g.counterCrypt(buf, buf, &counter)
@@ -219,7 +219,7 @@ func (g *gcm) OpenStream(nonce, data []byte, ciphertext io.Reader, plaintext io.
 		written, err := plaintext.Write(buf)
 
 		if written != len(buf) || err != nil {
-			return errors.New("Could not write to output buffer")
+			return errors.New("Could not write to output virgilbuffer")
 		}
 		cipherLen += uint64(len(buf))
 		n, err = ciphertext.Read(inBuf)

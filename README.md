@@ -42,7 +42,7 @@ The receiving user then uses their stored __private key__ to decrypt the message
 // load alice's Key from secure storage provided by default.
 aliceKey, err := api.Keys.Load("alice_key_1", "mypassword")
 
-// get buffer from base64 encoded string
+virgilbuffer
 encryptedData, err := virgilapi.BufferFromBase64String(transferData)
 
 // decrypt message using alice's Private key.

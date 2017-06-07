@@ -16,30 +16,30 @@ type Card struct {
 	context *Context
 }
 
-func (c *Card) Encrypt(data Buffer) (Buffer, error) {
+func (c *Card) Encrypt(data virgil.Buffer) (virgil.Buffer, error) {
 	return virgil.Crypto().Encrypt(data, c.PublicKey)
 }
 
-func (c *Card) EncryptString(data string) (Buffer, error) {
-	return c.encrypt(BufferFromString(data))
+func (c *Card) EncryptString(data string) (virgil.Buffer, error) {
+	return c.encrypt(virgil.BufferFromString(data))
 }
 
-func (c *Card) encrypt(data Buffer) (Buffer, error) {
+func (c *Card) encrypt(data virgil.Buffer) (virgil.Buffer, error) {
 	return virgil.Crypto().Encrypt(data, c.PublicKey)
 }
 
-func (c *Card) Verify(data Buffer, signature Buffer) (bool, error) {
+func (c *Card) Verify(data virgil.Buffer, signature virgil.Buffer) (bool, error) {
 	return virgil.Crypto().Verify(data, signature, c.PublicKey)
 }
 
 func (c *Card) VerifyString(data string, signature string) (bool, error) {
 
-	sign, err := BufferFromBase64String(signature)
+	sign, err := virgil.BufferFromBase64String(signature)
 	if err != nil {
 		return false, err
 	}
 
-	return virgil.Crypto().Verify(BufferFromString(data), sign, c.PublicKey)
+	return virgil.Crypto().Verify(virgil.BufferFromString(data), sign, c.PublicKey)
 }
 
 func (c *Card) Export() (string, error) {
@@ -73,26 +73,26 @@ func (c Cards) ToRecipients() []virgilcrypto.PublicKey {
 	return res
 }
 
-func (c Cards) Encrypt(data Buffer) (Buffer, error) {
+func (c Cards) Encrypt(data virgil.Buffer) (virgil.Buffer, error) {
 	return virgil.Crypto().Encrypt(data, c.ToRecipients()...)
 }
 
-func (c Cards) EncryptString(data string) (Buffer, error) {
-	return virgil.Crypto().Encrypt(BufferFromString(data), c.ToRecipients()...)
+func (c Cards) EncryptString(data string) (virgil.Buffer, error) {
+	return virgil.Crypto().Encrypt(virgil.BufferFromString(data), c.ToRecipients()...)
 }
 
-func (c Cards) SignThenEncrypt(data Buffer, signerKey *Key) (Buffer, error) {
+func (c Cards) SignThenEncrypt(data virgil.Buffer, signerKey *Key) (virgil.Buffer, error) {
 	if signerKey == nil || signerKey.privateKey == nil || signerKey.privateKey.Empty() {
 		return nil, errors.New("nil key")
 	}
 	return virgil.Crypto().SignThenEncrypt(data, signerKey.privateKey, c.ToRecipients()...)
 }
 
-func (c Cards) SignThenEncryptString(data string, signerKey *Key) (Buffer, error) {
+func (c Cards) SignThenEncryptString(data string, signerKey *Key) (virgil.Buffer, error) {
 	if signerKey == nil || signerKey.privateKey == nil || signerKey.privateKey.Empty() {
 		return nil, errors.New("nil key")
 	}
-	return virgil.Crypto().SignThenEncrypt(BufferFromString(data), signerKey.privateKey, c.ToRecipients()...)
+	return virgil.Crypto().SignThenEncrypt(virgil.BufferFromString(data), signerKey.privateKey, c.ToRecipients()...)
 }
 
 func (c *Card) VerifyIdentity() (attempt *IdentityVerificationAttempt, err error) {
@@ -108,7 +108,7 @@ func (c *Card) VerifyIdentity() (attempt *IdentityVerificationAttempt, err error
 		Value: createReq.Identity,
 	}
 
-	resp, err := c.context.client.VerifyIdentity(req)
+	resp, err := c.context.identityClient.VerifyIdentity(req)
 	if err != nil {
 		return nil, err
 	}

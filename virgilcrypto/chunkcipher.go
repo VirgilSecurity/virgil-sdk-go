@@ -42,7 +42,7 @@ func (c *aesGCMChunkStreamCipher) Encrypt(key, nonce, ad []byte, chunkSize int, 
 
 		written, err := out.Write(res)
 		if written != len(res) || err != nil {
-			return CryptoError("Could not write to output buffer")
+			return CryptoError("Could not write to output virgilbuffer")
 		}
 
 		increment(counter)
@@ -76,7 +76,7 @@ func (c *aesGCMChunkStreamCipher) Decrypt(key, nonce, ad []byte, chunkSize int, 
 		}
 		written, err := out.Write(res)
 		if written != len(res) || err != nil {
-			return CryptoError("Could not write to output buffer")
+			return CryptoError("Could not write to output virgilbuffer")
 		}
 		increment(counter)
 		n, err = in.Read(buf)

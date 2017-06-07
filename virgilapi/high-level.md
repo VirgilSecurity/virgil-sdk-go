@@ -184,7 +184,7 @@ transferData := cipherData.ToBase64String()
 // load alice's Key from secure storage provided by default.
 aliceKey, err := api.Keys.Load("[KEY_NAME]", "[KEY_PASSWORD]")
 
-// get buffer from base64 encoded string
+virgilbuffer
 encryptedData, err := virgilapi.BufferFromBase64String(transferData)
 
 // decrypt message using alice's Private key.
@@ -233,7 +233,7 @@ bobKey, err := api.Keys.Load("[KEY_NAME]", "[KEY_PASSWORD]")
 aliceCards, err := api.Cards.Find("alice")
 aliceCard := aliceCards[0] //or whatever filter you like
 
-// get buffer from base64 encoded string
+virgilbuffer
 encryptedData, err := virgilapi.BufferFromBase64String(transferData)
 
 // decrypt cipher message bob's key pair and verify it using alice's Card

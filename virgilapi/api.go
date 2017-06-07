@@ -157,33 +157,33 @@ func NewWithConfig(config Config) (*Api, error) {
 	}, nil
 }
 
-func (a *Api) Encrypt(data Buffer, recipients ...*Card) (Buffer, error) {
+func (a *Api) Encrypt(data virgil.Buffer, recipients ...*Card) (virgil.Buffer, error) {
 	return Cards(recipients).Encrypt(data)
 }
 
 //EncryptString is the same as Encrypt but expects any string
-func (a *Api) EncryptString(data string, recipients ...*Card) (Buffer, error) {
+func (a *Api) EncryptString(data string, recipients ...*Card) (virgil.Buffer, error) {
 	return Cards(recipients).EncryptString(data)
 }
 
-func (a *Api) Decrypt(data Buffer, key *Key) (Buffer, error) {
+func (a *Api) Decrypt(data virgil.Buffer, key *Key) (virgil.Buffer, error) {
 	return key.Decrypt(data)
 }
 
 // Decrypt expects string, received by calling ToBase64String on Buffer, received from Encrypt or EncryptString
-func (a *Api) DecryptString(data string, key *Key) (Buffer, error) {
+func (a *Api) DecryptString(data string, key *Key) (virgil.Buffer, error) {
 	return key.DecryptString(data)
 }
 
-func (a *Api) Sign(data Buffer, key *Key) (Buffer, error) {
+func (a *Api) Sign(data virgil.Buffer, key *Key) (virgil.Buffer, error) {
 	return key.Sign(data)
 }
 
-func (a *Api) SignString(data string, key *Key) (Buffer, error) {
+func (a *Api) SignString(data string, key *Key) (virgil.Buffer, error) {
 	return key.SignString(data)
 }
 
-func (a *Api) Verify(data Buffer, signature Buffer, signerCard *Card) (bool, error) {
+func (a *Api) Verify(data virgil.Buffer, signature virgil.Buffer, signerCard *Card) (bool, error) {
 	return signerCard.Verify(data, signature)
 }
 
@@ -192,19 +192,19 @@ func (a *Api) VerifyString(data string, signature string, signerCard *Card) (boo
 	return signerCard.VerifyString(data, signature)
 }
 
-func (a *Api) SignThenEncrypt(data Buffer, signerKey *Key, recipients ...*Card) (Buffer, error) {
+func (a *Api) SignThenEncrypt(data virgil.Buffer, signerKey *Key, recipients ...*Card) (virgil.Buffer, error) {
 	return signerKey.SignThenEncrypt(data, recipients...)
 }
 
-func (a *Api) SignThenEncryptString(data string, signerKey *Key, recipients ...*Card) (Buffer, error) {
+func (a *Api) SignThenEncryptString(data string, signerKey *Key, recipients ...*Card) (virgil.Buffer, error) {
 	return signerKey.SignThenEncryptString(data, recipients...)
 }
 
-func (a *Api) DecryptThenVerify(data Buffer, key *Key, signerCard *Card) (Buffer, error) {
+func (a *Api) DecryptThenVerify(data virgil.Buffer, key *Key, signerCard *Card) (virgil.Buffer, error) {
 	return key.DecryptThenVerify(data, signerCard)
 }
 
 // DecryptThenVerifyString expects data to be in base64 encoding
-func (a *Api) DecryptThenVerifyString(data string, key *Key, signerCard *Card) (Buffer, error) {
+func (a *Api) DecryptThenVerifyString(data string, key *Key, signerCard *Card) (virgil.Buffer, error) {
 	return key.DecryptThenVerifyString(data, signerCard)
 }

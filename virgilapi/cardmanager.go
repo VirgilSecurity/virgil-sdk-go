@@ -29,7 +29,7 @@ type cardManager struct {
 }
 
 func (c *cardManager) Get(id string) (*Card, error) {
-	card, err := c.context.client.GetCard(id)
+	card, err := c.context.cardsROClient.GetCard(id)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) 
 			TimeToLive:  3600,
 		},
 	}
-	resp, err := c.context.client.ConfirmIdentity(req)
+	resp, err := c.context.identityClient.ConfirmIdentity(req)
 	if err != nil {
 		return "", err
 	}
@@ -189,7 +189,7 @@ func (c *cardManager) Publish(card *Card) (*Card, error) {
 		return nil, err
 	}
 
-	res, err := c.context.client.CreateCard(req)
+	res, err := c.context.raClient.CreateCard(req)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (c *cardManager) PublishGlobal(card *Card, validationToken string) (*Card, 
 	req.Meta.Validation = &virgil.ValidationInfo{}
 
 	req.Meta.Validation.Token = validationToken
-	res, err := c.context.client.CreateCard(req)
+	res, err := c.context.raClient.CreateCard(req)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (c *cardManager) Revoke(card *Card, reason virgil.Enum) error {
 		return err
 	}
 
-	return c.context.client.RevokeCard(req)
+	return c.context.raClient.RevokeCard(req)
 }
 
 func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Key, validationToken string) error {
@@ -253,12 +253,12 @@ func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Ke
 	req.Meta.Validation = &virgil.ValidationInfo{}
 	req.Meta.Validation.Token = validationToken
 
-	return c.context.client.RevokeCard(req)
+	return c.context.raClient.RevokeCard(req)
 }
 
 func (c *cardManager) Find(identities ...string) (Cards, error) {
 
-	cards, err := c.context.client.SearchCards(virgil.SearchCriteriaByIdentities(identities...))
+	cards, err := c.context.cardsROClient.SearchCards(virgil.SearchCriteriaByIdentities(identities...))
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +275,7 @@ func (c *cardManager) Find(identities ...string) (Cards, error) {
 
 func (c *cardManager) FindGlobal(identityType string, identities ...string) (Cards, error) {
 
-	cards, err := c.context.client.SearchCards(&virgil.Criteria{
+	cards, err := c.context.cardsROClient.SearchCards(&virgil.Criteria{
 		IdentityType: identityType,
 		Identities:   identities,
 		Scope:        virgil.CardScope.Global,

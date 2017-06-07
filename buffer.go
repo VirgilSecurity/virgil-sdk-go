@@ -1,4 +1,4 @@
-package virgilapi
+package virgil
 
 import (
 	"encoding/base64"

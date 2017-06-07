@@ -18,7 +18,7 @@ func (a *IdentityVerificationAttempt) Confirm(confirmationCode string) (string, 
 			TimeToLive:  a.TimeToLive,
 		},
 	}
-	resp, err := a.context.client.ConfirmIdentity(req)
+	resp, err := a.context.identityClient.ConfirmIdentity(req)
 	if err != nil {
 		return "", err
 	}

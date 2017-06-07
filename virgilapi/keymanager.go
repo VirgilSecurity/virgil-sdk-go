@@ -1,13 +1,11 @@
 package virgilapi
 
-import (
-	"gopkg.in/virgil.v4"
-)
+import "gopkg.in/virgil.v4"
 
 type KeyManager interface {
 	Generate() (*Key, error)
 	Load(alias string, password string) (*Key, error)
-	Import(key Buffer, password string) (*Key, error)
+	Import(key virgil.Buffer, password string) (*Key, error)
 }
 
 type keyManager struct {
@@ -43,7 +41,7 @@ func (k *keyManager) Load(alias string, password string) (*Key, error) {
 }
 
 //Import imports base64 encoded private key
-func (k *keyManager) Import(key Buffer, password string) (*Key, error) {
+func (k *keyManager) Import(key virgil.Buffer, password string) (*Key, error) {
 	pkey, err := virgil.Crypto().ImportPrivateKey(key, password)
 
 	if err != nil {
