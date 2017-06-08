@@ -12,28 +12,17 @@ import (
 	"gopkg.in/virgil.v4/errors"
 )
 
-var services = map[ServiceType]string{
-	0: "test url",
-	1: "test ro url",
-	2: "test ident url",
-	3: "test vra url",
-}
-
 var endpoints = map[Endpoint]*HTTPEndpoint{
 	0: {
-		Method:      http.MethodGet,
-		URL:         "%s/v4/card/%s",
-		ServiceType: 0,
-		Params:      1,
+		Method: http.MethodGet,
+		URL:    "%s/v4/card/%s",
+		Params: 1,
 	},
 }
 
 func TestNewTransportClient_InitByDefault_DoerIsHttpClient(t *testing.T) {
-	v := NewTransportClient(endpoints, services)
-	assert.Equal(t, services[0], v.serviceURLs[0])
-	assert.Equal(t, services[1], v.serviceURLs[1])
-	assert.Equal(t, services[2], v.serviceURLs[2])
-	assert.Equal(t, services[3], v.serviceURLs[3])
+	v := NewTransportClient("url", endpoints)
+	assert.Equal(t, "url", v.serviceURL)
 	assert.IsType(t, &fasthttp.Client{}, v.client)
 }
 
@@ -52,12 +41,12 @@ func (c *CustomClient) Do(req *fasthttp.Request, resp *fasthttp.Response) (err e
 }
 
 func TestNewTransportClient_InitWithCustomClient(t *testing.T) {
-	v := NewTransportClient(endpoints, services, TransportClientDoer(&CustomClient{}))
+	v := NewTransportClient("url", endpoints, TransportClientDoer(&CustomClient{}))
 	assert.IsType(t, &CustomClient{}, v.client)
 }
 
 func TestSetToken_Check(t *testing.T) {
-	v := NewTransportClient(endpoints, services)
+	v := NewTransportClient("url", endpoints)
 	v.token = ""
 	v.SetToken("token")
 
@@ -65,13 +54,13 @@ func TestSetToken_Check(t *testing.T) {
 }
 
 func TestInvalidService_ReturnErr(t *testing.T) {
-	c := NewTransportClient(nil, nil)
+	c := NewTransportClient("", nil)
 	err := c.Call(1000, nil, nil)
 	assert.NotNil(t, err)
 }
 
 func TestInvalidParamsCount_ReturnErr(t *testing.T) {
-	c := NewTransportClient(endpoints, services)
+	c := NewTransportClient("url", endpoints)
 	err := c.Call(0, nil, nil, 0)
 	assert.NotNil(t, err)
 }
@@ -95,7 +84,7 @@ func Test_ClientReturnErr_ReturnErr(t *testing.T) {
 	c := &CustomClient{}
 	c.On("Do", mock.Anything).Return(nil, errors.New("format"))
 
-	tc := NewTransportClient(endpoints, services, TransportClientDoer(c))
+	tc := NewTransportClient("url", endpoints, TransportClientDoer(c))
 
 	tab := makeFakeInvokes(tc)
 	for _, f := range tab {
@@ -115,7 +104,7 @@ func Test_ClientReturnStatusNotOk_ReturnDecodedErr(t *testing.T) {
 
 	c.On("Do", mock.Anything).Return(fn, nil)
 
-	tc := NewTransportClient(endpoints, services, TransportClientDoer(c))
+	tc := NewTransportClient("url", endpoints, TransportClientDoer(c))
 
 	tab := makeFakeInvokes(tc)
 	for _, f := range tab {
@@ -135,7 +124,7 @@ func Test_ClientReturnStatusNotOkAndBodyBroken_ReturnErr(t *testing.T) {
 	c := &CustomClient{}
 	c.On("Do", mock.Anything).Return(&resp, nil)
 
-	tc := NewTransportClient(endpoints, services, TransportClientDoer(c))
+	tc := NewTransportClient("url", endpoints, TransportClientDoer(c))
 	tc.SetToken("token")
 
 	tab := makeFakeInvokes(tc)

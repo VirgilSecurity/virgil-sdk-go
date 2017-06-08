@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	VerifyIdentity = iota
+	VerifyIdentity transport.Endpoint = iota
 	ConfirmIdentity
 	ValidateIdentity
 

@@ -20,7 +20,6 @@ type Context struct {
 	raClient       *raclient.Client
 	identityClient *identityclient.Client
 	storage        virgil.KeyStorage
-	requestSigner  *virgil.RequestSigner
 	appKey         *appKey
 	validator      virgil.CardsValidator
 }

@@ -53,7 +53,7 @@ func (c *cardManager) Create(identity string, key *Key, customFields map[string]
 		return nil, err
 	}
 
-	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	err = req.SelfSign(key.privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (c *cardManager) CreateGlobal(email string, key *Key) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	err = req.SelfSign(key.privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *cardManager) CreateApplicationCard(bundleName string, key *Key) (*Card,
 	if err != nil {
 		return nil, err
 	}
-	err = c.context.requestSigner.SelfSign(req, key.privateKey)
+	err = req.SelfSign(key.privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (c *cardManager) Publish(card *Card) (*Card, error) {
 		return nil, err
 	}
 
-	err = c.context.requestSigner.AuthoritySign(req, c.context.appKey.id, c.context.appKey.key)
+	err = req.AuthoritySign(c.context.appKey.id, c.context.appKey.key)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func (c *cardManager) Revoke(card *Card, reason virgil.Enum) error {
 		return err
 	}
 
-	err = c.context.requestSigner.AuthoritySign(req, c.context.appKey.id, c.context.appKey.key)
+	err = req.AuthoritySign(c.context.appKey.id, c.context.appKey.key)
 	if err != nil {
 		return err
 	}
@@ -246,7 +246,7 @@ func (c *cardManager) RevokeGlobal(card *Card, reason virgil.Enum, signerKey *Ke
 		return err
 	}
 
-	err = c.context.requestSigner.AuthoritySign(req, card.ID, signerKey.privateKey)
+	err = req.AuthoritySign(card.ID, signerKey.privateKey)
 	if err != nil {
 		return err
 	}

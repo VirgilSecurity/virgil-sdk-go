@@ -119,8 +119,7 @@ func TestValidate_OneSignatureMissed_ReturnFalse(t *testing.T) {
 
 	req, _ := NewCreateCardRequest("Device #1", "Smart Iot Device", deviceKeypair.PublicKey(), CardParams{})
 
-	signer := &RequestSigner{}
-	signer.SelfSign(req, deviceKeypair.PrivateKey())
+	req.SelfSign(deviceKeypair.PrivateKey())
 
 	fp := crypto.CalculateFingerprint(req.Snapshot)
 	id := hex.EncodeToString(fp)
@@ -149,9 +148,8 @@ func TestValidate_BadAuthoritySignature_ReturnFalse(t *testing.T) {
 
 	req, _ := NewCreateCardRequest("Device #1", "Smart Iot Device", deviceKeypair.PublicKey(), CardParams{})
 
-	signer := &RequestSigner{}
-	signer.SelfSign(req, deviceKeypair.PrivateKey())
-	signer.AuthoritySign(req, "app", deviceKeypair.PrivateKey())
+	req.SelfSign(deviceKeypair.PrivateKey())
+	req.AuthoritySign("app", deviceKeypair.PrivateKey())
 
 	fp := crypto.CalculateFingerprint(req.Snapshot)
 	id := hex.EncodeToString(fp)
@@ -187,9 +185,8 @@ func TestValidate_CardCorrecec_ReturnTrue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signer := &RequestSigner{}
-	signer.SelfSign(req, deviceKeypair.PrivateKey())
-	signer.AuthoritySign(req, "app", appKey.PrivateKey())
+	req.SelfSign(deviceKeypair.PrivateKey())
+	req.AuthoritySign("app", appKey.PrivateKey())
 
 	fp := crypto.CalculateFingerprint(req.Snapshot)
 	id := hex.EncodeToString(fp)

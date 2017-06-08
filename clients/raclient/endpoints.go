@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	CreateCard = iota
+	CreateCard transport.Endpoint = iota
 	RevokeCard
 
 	URL = "https://ra.virgilsecurity.com"

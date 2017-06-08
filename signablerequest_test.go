@@ -127,10 +127,9 @@ func TestExportCreateCardRequest(t *testing.T) {
 		},
 	},
 	)
-	signer := &RequestSigner{}
 
-	signer.SelfSign(req, sk)
-	signer.AuthoritySign(req, "a7c6cb4fd800a3d2187d5e342f36a2c04b34321912c230b6069e61222645fb", sk)
+	req.SelfSign(sk)
+	req.AuthoritySign("a7c6cb4fd800a3d2187d5e342f36a2c04b34321912c230b6069e61222645fb", sk)
 	rez, err := req.Export()
 	assert.Nil(t, err)
 	assert.Equal(t, expected, string(rez))
@@ -167,10 +166,9 @@ func TestImportCreateCardRequest(t *testing.T) {
 		},
 	},
 	)
-	signer := &RequestSigner{}
 
-	signer.SelfSign(req, sk)
-	signer.AuthoritySign(req, "a7c6cb4fd800a3d2187d5e342f36a2c04b34321912c230b6069e61222645fb", sk)
+	req.SelfSign(sk)
+	req.AuthoritySign("a7c6cb4fd800a3d2187d5e342f36a2c04b34321912c230b6069e61222645fb", sk)
 
 	assert.Equal(t, req, imported)
 
@@ -187,9 +185,8 @@ func TestExportRevokeCardRequest(t *testing.T) {
 
 	req, err := NewRevokeCardRequest("234623984762983746298734", RevocationReason.Compromised)
 	assert.Nil(t, err)
-	signer := &RequestSigner{}
 
-	signer.AuthoritySign(req, "2234f234f234f234f234234f", sk)
+	req.AuthoritySign("2234f234f234f234f234234f", sk)
 	rez, err := req.Export()
 	assert.Nil(t, err)
 	assert.Equal(t, expected, string(rez))
@@ -209,8 +206,7 @@ func TestImportRevokeCardRequest(t *testing.T) {
 
 	req, err := NewRevokeCardRequest("234623984762983746298734", RevocationReason.Compromised)
 	assert.Nil(t, err)
-	signer := &RequestSigner{}
 
-	signer.AuthoritySign(req, "2234f234f234f234f234234f", sk)
+	req.AuthoritySign("2234f234f234f234f234234f", sk)
 	assert.Equal(t, imported, req)
 }

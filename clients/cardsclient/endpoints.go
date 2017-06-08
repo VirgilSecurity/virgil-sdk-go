@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	AddRelation = iota
+	AddRelation transport.Endpoint = iota
 	DeleteRelation
+
 	URL = "https://cards.virgilsecurity.com"
 )
 

@@ -26,14 +26,12 @@ func NewTransportClient(serviceURL string, endpoints map[Endpoint]*HTTPEndpoint,
 	t := &TransportClient{
 		serviceURL: serviceURL,
 		endpoints:  endpoints,
-
 		client: &fasthttp.Client{
 			MaxIdleConnDuration: 1 * time.Hour,
 			ReadTimeout:         1 * time.Minute,
 			WriteTimeout:        1 * time.Minute,
 			TLSConfig: &tls.Config{
 				ClientSessionCache: tls.NewLRUClientSessionCache(0),
-				//InsecureSkipVerify: true,
 			},
 		},
 	}

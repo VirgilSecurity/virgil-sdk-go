@@ -89,8 +89,7 @@ func TestSelfSign_SignReturnErr_ReturnErr(t *testing.T) {
 
 	virgilcrypto.DefaultCrypto = &FakeCrypto{}
 
-	s := RequestSigner{}
-	err := s.SelfSign(r, kv.PrivateKey())
+	err := r.SelfSign(kv.PrivateKey())
 
 	virgilcrypto.DefaultCrypto = &virgilcrypto.VirgilCrypto{
 		Cipher: virgilcrypto.NewCipher,
@@ -102,8 +101,7 @@ func TestSelfSign_SignReturnErr_ReturnErr(t *testing.T) {
 func TestSelfSign_AddSelfSign_ReturnNil(t *testing.T) {
 	r, kv := makeRequest()
 
-	s := RequestSigner{}
-	err := s.SelfSign(r, kv.PrivateKey())
+	err := r.SelfSign(kv.PrivateKey())
 
 	assert.Nil(t, err)
 
@@ -120,8 +118,7 @@ func TestAuthoritySign_SignReturnErr_ReturnErr(t *testing.T) {
 
 	virgilcrypto.DefaultCrypto = &FakeCrypto{}
 
-	s := RequestSigner{}
-	err := s.AuthoritySign(r, "test", kv.PrivateKey())
+	err := r.AuthoritySign("test", kv.PrivateKey())
 
 	virgilcrypto.DefaultCrypto = &virgilcrypto.VirgilCrypto{
 		Cipher: virgilcrypto.NewCipher,
@@ -133,8 +130,7 @@ func TestAuthoritySign_SignReturnErr_ReturnErr(t *testing.T) {
 func TestAuthoritySign_AddSelfSign_ReturnNil(t *testing.T) {
 	r, kv := makeRequest()
 
-	s := RequestSigner{}
-	err := s.AuthoritySign(r, "test", kv.PrivateKey())
+	err := r.AuthoritySign("test", kv.PrivateKey())
 
 	assert.Nil(t, err)
 

@@ -103,7 +103,7 @@ func (s *FileStorage) getRootDir() (string, error) {
 		var err error
 		s.RootDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
 		if err != nil {
-			return "", errors.Wrap(err, "FileStorage cannot get exutable path")
+			return "", errors.Wrap(err, "FileStorage cannot get executable path")
 		}
 	}
 	return s.RootDir, nil

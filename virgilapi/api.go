@@ -43,7 +43,6 @@ func New(accessToken string) (*Api, error) {
 		raClient:       raClient,
 		identityClient: identityClient,
 		storage:        &virgil.FileStorage{RootDir: "."},
-		requestSigner:  &virgil.RequestSigner{},
 	}
 
 	return &Api{
@@ -145,7 +144,6 @@ func NewWithConfig(config Config) (*Api, error) {
 		raClient:       raClient,
 		identityClient: identityClient,
 		storage:        &virgil.FileStorage{RootDir: root},
-		requestSigner:  &virgil.RequestSigner{},
 		appKey:         key,
 		validator:      validator,
 	}

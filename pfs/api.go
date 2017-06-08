@@ -12,6 +12,7 @@ type Api struct {
 	Client         *Client
 	Crypto         virgilcrypto.PFS
 	SessionManager *SessionManager
+	Storage        virgil.KeyStorage
 }
 
 func New(config *Config) (*Api, error) {

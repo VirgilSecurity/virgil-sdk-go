@@ -5,6 +5,8 @@ import (
 
 	"encoding/base64"
 
+	"encoding/hex"
+
 	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
@@ -220,4 +222,30 @@ func ImportDeleteRelationRequest(data []byte) (*SignableRequest, error) {
 	}
 
 	return req, nil
+}
+
+func (s *SignableRequest) SelfSign(privateKey virgilcrypto.PrivateKey) error {
+
+	fp := Crypto().CalculateFingerprint(s.Snapshot)
+
+	sign, err := Crypto().Sign(fp, privateKey)
+
+	if err != nil {
+		return err
+	}
+	s.AppendSignature(hex.EncodeToString(fp), sign)
+	return nil
+}
+
+func (s *SignableRequest) AuthoritySign(cardId string, privateKey virgilcrypto.PrivateKey) error {
+
+	fp := Crypto().CalculateFingerprint(s.Snapshot)
+
+	sign, err := Crypto().Sign(fp, privateKey)
+	if err != nil {
+		return err
+	}
+
+	s.AppendSignature(cardId, sign)
+	return nil
 }
