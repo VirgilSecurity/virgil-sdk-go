@@ -281,6 +281,7 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 		if err != nil {
 			return nil, err
 		}
+		a.storage.Delete(message.OTCID) //This is the core idea of PFS
 	}
 
 	sess, err := a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, message.ID, a.identityCardID)

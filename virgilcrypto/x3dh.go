@@ -66,7 +66,7 @@ func X3DHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
 
 	kdf := hkdf.New(sha256.New, sk, nil, nil)
 
-	res := make([]byte, 64)
+	res := make([]byte, 128)
 	kdf.Read(res)
 	return res, nil
 
@@ -129,7 +129,7 @@ func X3DHRespond(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey) ([]byte, error)
 
 	kdf := hkdf.New(sha256.New, sk, nil, nil)
 
-	res := make([]byte, 64)
+	res := make([]byte, 128)
 	kdf.Read(res)
 	return res, nil
 

@@ -51,4 +51,155 @@ func TestPFS(t *testing.T) {
 
 	assert.Equal(t, plaintext, msg)
 
+	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
+	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
+	ICbb, _ := c.ExportPrivateKey(ICb.PrivateKey(), "")
+	LTCbb, _ := c.ExportPrivateKey(LTCb.PrivateKey(), "")
+	OTCbb, _ := c.ExportPrivateKey(OTCb.PrivateKey(), "")
+
+	vec := map[string]interface{}{
+		"ICa":         ICab,
+		"EKa":         EKab,
+		"ICb":         ICbb,
+		"LTCb":        LTCbb,
+		"OTCb":        OTCbb,
+		"AliceCardID": aliceCardID,
+		"BobCardID":   bobCardID,
+		"SKa":         sessA.SKa,
+		"SKb":         sessA.SKb,
+		"AD":          sessA.AD,
+		"SessionID":   sessA.SessionID,
+		"Salt":        salt,
+		"Plaintext":   plaintext,
+		"Ciphertext":  ciphertext,
+	}
+
+	res, _ := json.Marshal(vec)
+	fmt.Printf("%s\n\n\n", res)*/
+
+	sessB.Initiator = !sessB.Initiator
+
+	plaintext, err = sessB.Decrypt(salt, ciphertext)
+
+	assert.Error(t, err)
+
+	assert.NotEqual(t, plaintext, msg)
+
+	/*sessB.Initiator = !sessB.Initiator
+
+
+	sessA, err = pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), nil, ICa.PrivateKey(), EKa.PrivateKey(), aliceCardID, bobCardID)
+	assert.NoError(t, err)
+
+	sessB, err = pfs.ReceivePFCSession(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), nil, aliceCardID, bobCardID)
+	assert.NoError(t, err)
+
+
+	salt, ciphertext = sessA.Encrypt(msg)
+
+	plaintext, err = sessB.Decrypt(salt, ciphertext)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, plaintext, msg)
+
+	vec = map[string]interface{}{
+		"ICa":         ICab,
+		"EKa":         EKab,
+		"ICb":         ICbb,
+		"LTCb":        LTCbb,
+		"AliceCardID": aliceCardID,
+		"BobCardID":   bobCardID,
+		"SKa":         sessA.SKa,
+		"SKb":         sessA.SKb,
+		"AD":          sessA.AD,
+		"SessionID":   sessA.SessionID,
+		"Salt":        salt,
+		"Plaintext":   plaintext,
+		"Ciphertext":  ciphertext,
+	}
+
+	res, _ = json.Marshal(vec)
+	fmt.Printf("%s", res)
+
+	sessB.Initiator = !sessB.Initiator
+
+	plaintext, err = sessB.Decrypt(salt, ciphertext)
+
+	assert.Error(t, err)
+
+	assert.NotEqual(t, plaintext, msg)*/
+}
+
+func TestPFSNoOTC(t *testing.T) {
+
+	c := DefaultCrypto
+
+	//ICa, EKa, ICb, LTCb, OTCb
+	ICa, err := c.GenerateKeypair()
+	assert.NoError(t, err)
+
+	EKa, err := c.GenerateKeypair()
+	assert.NoError(t, err)
+
+	ICb, err := c.GenerateKeypair()
+	assert.NoError(t, err)
+
+	LTCb, err := c.GenerateKeypair()
+	assert.NoError(t, err)
+
+	pfs := c.(PFS)
+
+	aliceCardID := hex.EncodeToString(ICa.PublicKey().ReceiverID())
+	bobCardID := hex.EncodeToString(ICb.PublicKey().ReceiverID())
+
+	sessA, err := pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), nil, ICa.PrivateKey(), EKa.PrivateKey(), aliceCardID, bobCardID)
+	assert.NoError(t, err)
+
+	sessB, err := pfs.ReceivePFCSession(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), nil, aliceCardID, bobCardID)
+	assert.NoError(t, err)
+
+	msg := make([]byte, 1025)
+	rand.Read(msg)
+
+	salt, ciphertext := sessA.Encrypt(msg)
+
+	plaintext, err := sessB.Decrypt(salt, ciphertext)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, plaintext, msg)
+
+	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
+	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
+	ICbb, _ := c.ExportPrivateKey(ICb.PrivateKey(), "")
+	LTCbb, _ := c.ExportPrivateKey(LTCb.PrivateKey(), "")
+
+	vec := map[string]interface{}{
+		"ICa":         ICab,
+		"EKa":         EKab,
+		"ICb":         ICbb,
+		"LTCb":        LTCbb,
+		"AliceCardID": aliceCardID,
+		"BobCardID":   bobCardID,
+		"SKa":         sessA.SKa,
+		"SKb":         sessA.SKb,
+		"AD":          sessA.AD,
+		"SessionID":   sessA.SessionID,
+		"Salt":        salt,
+		"Plaintext":   plaintext,
+		"Ciphertext":  ciphertext,
+	}
+
+	res, _ := json.Marshal(vec)
+	fmt.Printf("%s", res)*/
+
+	sessB.Initiator = !sessB.Initiator
+
+	plaintext, err = sessB.Decrypt(salt, ciphertext)
+
+	assert.Error(t, err)
+
+	assert.NotEqual(t, plaintext, msg)
+
 }

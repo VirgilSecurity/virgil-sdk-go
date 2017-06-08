@@ -11,7 +11,8 @@ import (
 
 type (
 	PFSSession struct {
-		SK, AD, SessionID []byte
+		SKa, SKb, AD, SessionID []byte
+		Initiator               bool
 	}
 
 	PFS interface {
@@ -27,6 +28,8 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 		return
 	}
 
+	ska, skb := sk[:64], sk[64:]
+
 	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len("Virgil"))
 	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
 	toHash = append(toHash, []byte("Virgil")...)
@@ -44,7 +47,9 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 	sessionID := sessHash[:]
 
 	return &PFSSession{
-		SK:        sk,
+		Initiator: true,
+		SKa:       ska,
+		SKb:       skb,
 		AD:        ad,
 		SessionID: sessionID,
 	}, nil
@@ -57,6 +62,7 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb Pri
 	if err != nil {
 		return
 	}
+	ska, skb := sk[:64], sk[64:]
 
 	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len("Virgil"))
 	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
@@ -75,7 +81,9 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb Pri
 	sessionID := sessHash[:]
 
 	return &PFSSession{
-		SK:        sk,
+		Initiator: false,
+		SKa:       ska,
+		SKb:       skb,
 		AD:        ad,
 		SessionID: sessionID,
 	}, nil
@@ -90,7 +98,14 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 	}
 
 	keyAndNonce := make([]byte, 44)
-	kdf := hkdf.New(sha256.New, s.SK, salt, []byte("Virgil"))
+
+	sk := s.SKa
+
+	if !s.Initiator {
+		sk = s.SKb
+	}
+
+	kdf := hkdf.New(sha256.New, sk, salt, []byte("Virgil"))
 
 	_, err = kdf.Read(keyAndNonce)
 	if err != nil {
@@ -106,7 +121,14 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 func (s *PFSSession) Decrypt(salt, ciphertext []byte) ([]byte, error) {
 
 	keyAndNonce := make([]byte, 44)
-	kdf := hkdf.New(sha256.New, s.SK, salt, []byte("Virgil"))
+
+	sk := s.SKb
+
+	if !s.Initiator {
+		sk = s.SKa
+	}
+
+	kdf := hkdf.New(sha256.New, sk, salt, []byte("Virgil"))
 
 	_, err := kdf.Read(keyAndNonce)
 	if err != nil {
