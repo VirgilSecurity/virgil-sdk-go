@@ -140,7 +140,7 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 	creds := make([]*Credentials, len(res))
 	for i, r := range res {
 
-		if r.IdentityCard == nil || r.LTC == nil{
+		if r.IdentityCard == nil || r.LTC == nil {
 			return nil, errors.New("Either Identity card or LTC card is empty")
 		}
 		ic, err := c.ConvertToCardAndValidate(r.IdentityCard)
