@@ -28,15 +28,15 @@ func (c *Card) encrypt(data virgil.Buffer) (virgil.Buffer, error) {
 	return virgil.Crypto().Encrypt(data, c.PublicKey)
 }
 
-func (c *Card) Verify(data virgil.Buffer, signature virgil.Buffer) (bool, error) {
+func (c *Card) Verify(data virgil.Buffer, signature virgil.Buffer) error {
 	return virgil.Crypto().Verify(data, signature, c.PublicKey)
 }
 
-func (c *Card) VerifyString(data string, signature string) (bool, error) {
+func (c *Card) VerifyString(data string, signature string) error {
 
 	sign, err := virgil.BufferFromBase64String(signature)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	return virgil.Crypto().Verify(virgil.BufferFromString(data), sign, c.PublicKey)

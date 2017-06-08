@@ -37,7 +37,7 @@ func TestVerify_ReturnCorrectData(t *testing.T) {
 	c, kv := makeFakeCard()
 	data := []byte(`Test data`)
 	sign, _ := Crypto().Sign(data, kv.PrivateKey())
-	ok, _ := c.Verify(data, sign)
+	err := c.Verify(data, sign)
 
-	assert.True(t, ok)
+	assert.NoError(t, err)
 }

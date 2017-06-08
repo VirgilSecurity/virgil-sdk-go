@@ -12,7 +12,8 @@ import (
 // Validator check that a card was signed by all services
 type CardsValidator interface {
 	//if the result is false then error must not be nil
-	Validate(card *Card) (bool, error)
+	Validate(card *Card) error
+	ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey) error
 }
 
 // NewCardsValidator create a cards validator
@@ -29,16 +30,16 @@ type VirgilCardValidator struct {
 }
 
 // Validate that all signatures were added
-func (v *VirgilCardValidator) Validate(card *Card) (bool, error) {
+func (v *VirgilCardValidator) ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey) error {
 	if card == nil || len(card.Snapshot) == 0 {
-		return false, errors.New("nil card")
+		return errors.New("nil card")
 	}
 	// Support for legacy Cards.
 	if card.CardVersion == "3.0" && card.Scope == CardScope.Global {
-		return true, nil
+		return nil
 	}
 	if len(card.Signatures) == 0 {
-		return false, errors.New("no signatures provided")
+		return errors.New("no signatures provided")
 	}
 
 	fp := Crypto().CalculateFingerprint(card.Snapshot)
@@ -46,32 +47,50 @@ func (v *VirgilCardValidator) Validate(card *Card) (bool, error) {
 	//check that id looks like fingerprint
 	hexfp := hex.EncodeToString(fp)
 	if !strings.EqualFold(hexfp, card.ID) {
-		return false, errors.Errorf("card id %s does not match fingerprint %s", card.ID, hexfp)
+		return errors.Errorf("card id %s does not match fingerprint %s", card.ID, hexfp)
 	}
 
 	//check self signature
 	selfsign, ok := card.Signatures[hexfp]
 	if !ok {
-		return false, errors.Errorf("no self signature found for card " + card.ID)
+		return errors.Errorf("no self signature found for card " + card.ID)
 	}
 
-	valid, err := Crypto().Verify(fp, selfsign, card.PublicKey)
-	if !valid {
-		return false, errors.Wrap(err, "self signature validation failed")
+	err := Crypto().Verify(fp, selfsign, card.PublicKey)
+	if err != nil {
+		return errors.Wrap(err, "self signature validation failed")
 	}
 
 	for id, key := range v.validators {
 		sign, ok := card.Signatures[id]
 		if !ok {
-			return false, errors.Errorf("Card %s does not have signature for verifier ID %s", card.ID, id)
+			return errors.Errorf("Card %s does not have signature for verifier ID %s", card.ID, id)
 		}
 
-		valid, err := Crypto().Verify(fp, sign, key)
-		if !valid {
-			return false, errors.Wrap(err, "signature validation failed")
+		err := Crypto().Verify(fp, sign, key)
+		if err != nil {
+			return errors.Wrap(err, "signature validation failed")
 		}
 	}
-	return true, nil
+
+	for id, key := range extraKeys {
+		sign, ok := card.Signatures[id]
+		if !ok {
+			return errors.Errorf("Card %s does not have signature for verifier ID %s", card.ID, id)
+		}
+
+		err := Crypto().Verify(fp, sign, key)
+		if err != nil {
+			return errors.Wrap(err, "signature validation failed")
+		}
+	}
+
+	return nil
+}
+
+// Validate that all signatures were added
+func (v *VirgilCardValidator) Validate(card *Card) error {
+	return v.ValidateExtra(card, nil)
 }
 
 // AddVerifier add new service for validation

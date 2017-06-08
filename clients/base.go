@@ -3,6 +3,7 @@ package clients
 import (
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/transport"
+	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
 type BaseClient struct {
@@ -55,7 +56,7 @@ func NewClient(accessToken string, url string, endpoints map[transport.Endpoint]
 	return c, nil
 }
 
-func (b *BaseClient) ConvertToCardAndValidate(response *virgil.CardResponse) (*virgil.Card, error) {
+func (b *BaseClient) ConvertToCardAndValidateExtra(response *virgil.CardResponse, extraKeys map[string]virgilcrypto.PublicKey) (*virgil.Card, error) {
 
 	card, err := response.ToCard()
 
@@ -64,10 +65,15 @@ func (b *BaseClient) ConvertToCardAndValidate(response *virgil.CardResponse) (*v
 	}
 
 	if b.CardsValidator != nil {
-		ok, err := b.CardsValidator.Validate(card)
-		if !ok {
+		err := b.CardsValidator.ValidateExtra(card, extraKeys)
+		if err != nil {
 			return nil, err
 		}
 	}
 	return card, nil
+}
+
+func (b *BaseClient) ConvertToCardAndValidate(response *virgil.CardResponse) (*virgil.Card, error) {
+
+	return b.ConvertToCardAndValidateExtra(response, nil)
 }

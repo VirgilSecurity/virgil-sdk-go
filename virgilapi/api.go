@@ -181,12 +181,12 @@ func (a *Api) SignString(data string, key *Key) (virgil.Buffer, error) {
 	return key.SignString(data)
 }
 
-func (a *Api) Verify(data virgil.Buffer, signature virgil.Buffer, signerCard *Card) (bool, error) {
+func (a *Api) Verify(data virgil.Buffer, signature virgil.Buffer, signerCard *Card) error {
 	return signerCard.Verify(data, signature)
 }
 
 // VerifyString is the same as Verify but works with ordinary strings
-func (a *Api) VerifyString(data string, signature string, signerCard *Card) (bool, error) {
+func (a *Api) VerifyString(data string, signature string, signerCard *Card) error {
 	return signerCard.VerifyString(data, signature)
 }
 

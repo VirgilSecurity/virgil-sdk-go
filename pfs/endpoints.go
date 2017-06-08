@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	CreateLTCCard = iota
+	CreateRecipient transport.Endpoint = iota
+	CreateLTCCard
 	UploadOTCCards
 	GetUserCredentials
 	GetOTCCardCount
@@ -16,6 +17,11 @@ const (
 
 var (
 	Endpoints = map[transport.Endpoint]*transport.HTTPEndpoint{
+		CreateRecipient: {
+			Method: http.MethodPut,
+			URL:    "%s/v1/recipient/%s",
+			Params: 1,
+		},
 		CreateLTCCard: {
 			Method: http.MethodPost,
 			URL:    "%s/v1/recipient/%s/actions/push-ltc",

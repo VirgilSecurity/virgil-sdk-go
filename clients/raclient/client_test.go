@@ -10,6 +10,7 @@ import (
 	"gopkg.in/virgil.v4/clients"
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/transport"
+	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
 type FakeTransport struct {
@@ -43,9 +44,14 @@ type FakeValidator struct {
 	mock.Mock
 }
 
-func (v *FakeValidator) Validate(c *virgil.Card) (bool, error) {
+func (v *FakeValidator) Validate(c *virgil.Card) error {
 	args := v.Called(c)
-	return args.Bool(0), args.Error(1)
+	return args.Error(0)
+}
+
+func (v *FakeValidator) ValidateExtra(c *virgil.Card, extraKeys map[string]virgilcrypto.PublicKey) error {
+	args := v.Called(c, extraKeys)
+	return args.Error(0)
 }
 
 func TestNewClient_InitByDefault_CheckStruct(t *testing.T) {
@@ -178,7 +184,8 @@ func TestTable_CardValidated_ReturnNilErr(t *testing.T) {
 	tr.On("Call", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&resp, nil)
 
 	v := &FakeValidator{}
-	v.On("Validate", mock.Anything).Return(true, nil)
+	v.On("Validate", mock.Anything).Return(nil)
+	v.On("ValidateExtra", mock.Anything, mock.Anything).Return(nil)
 
 	for _, err := range clientInvokes(tr, v) {
 		assert.Nil(t, err)

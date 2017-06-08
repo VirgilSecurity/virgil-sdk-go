@@ -237,8 +237,8 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 				if len(signerIdValue) > 0 {
 					//found match
 					if subtle.ConstantTimeCompare(signerIdValue, v.receiverID) == 1 {
-						res, err := Verifier.Verify(data, v, signature)
-						if !res {
+						err := Verifier.Verify(data, v, signature)
+						if err != nil {
 							return nil, CryptoError("signature validation failed")
 						}
 						if err != nil {
@@ -247,8 +247,8 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 						return data, nil
 					}
 				} else {
-					res, err := Verifier.Verify(data, v, signature)
-					if res && err == nil {
+					err := Verifier.Verify(data, v, signature)
+					if err == nil {
 						return data, nil
 					}
 				}

@@ -61,8 +61,8 @@ type (
 		SignStream(in io.Reader, signer PrivateKey) ([]byte, error)
 		SignThenEncrypt(data []byte, signerKey PrivateKey, recipients ...PublicKey) ([]byte, error)
 		//Verify must return non nil error if the result is false
-		Verify(data []byte, signature []byte, key PublicKey) (bool, error)
-		VerifyStream(in io.Reader, signature []byte, key PublicKey) (bool, error)
+		Verify(data []byte, signature []byte, key PublicKey) error
+		VerifyStream(in io.Reader, signature []byte, key PublicKey) error
 		CalculateFingerprint(data []byte) []byte
 		ExtractPublicKey(key PrivateKey) (PublicKey, error)
 	}
@@ -160,9 +160,9 @@ func (c *VirgilCrypto) Sign(data []byte, signer PrivateKey) ([]byte, error) {
 	return Signer.Sign(data, signer)
 }
 
-func (c *VirgilCrypto) Verify(data []byte, signature []byte, key PublicKey) (bool, error) {
+func (c *VirgilCrypto) Verify(data []byte, signature []byte, key PublicKey) error {
 	if key == nil || key.Empty() {
-		return false, errors.New("key is nil")
+		return errors.New("key is nil")
 	}
 	return Verifier.Verify(data, key, signature)
 }
@@ -178,9 +178,9 @@ func (c *VirgilCrypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, erro
 	return []byte(res), nil
 }
 
-func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) (bool, error) {
+func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) error {
 	if key == nil || key.Empty() {
-		return false, errors.New("key is nil")
+		return errors.New("key is nil")
 	}
 	return Verifier.VerifyStream(in, key, signature)
 }

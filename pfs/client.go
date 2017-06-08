@@ -5,6 +5,7 @@ import (
 
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/clients"
+	"gopkg.in/virgil.v4/virgilcrypto"
 )
 
 type Client struct {
@@ -24,6 +25,57 @@ func NewClient(accessToken string, opts ...func(*clients.BaseClient)) (*Client, 
 		BaseClient: baseClient,
 	}
 	return c, nil
+}
+
+// CreateLTCCard posts user LTC card to PFS server. Card must be self-signed and user-identity signed
+func (c *Client) CreateRecipient(icCardID string, ltc *virgil.SignableRequest, otcs []*virgil.SignableRequest) (*Recipient, error) {
+	if ltc == nil || len(ltc.Snapshot) == 0 || len(ltc.Meta.Signatures) != 2 || len(otcs) == 0 {
+		return nil, errors.New("ltc is empty or number of signatures is not 2 or otcs list is empty")
+	}
+
+	for _, otc := range otcs {
+		if otc == nil || len(otc.Snapshot) == 0 || len(otc.Meta.Signatures) != 2 {
+			return nil, errors.New("otc is empty or number of signatures is not 2")
+		}
+	}
+
+	request := &CreateRecipientRequest{
+		LTC:  ltc,
+		OTCS: otcs,
+	}
+
+	var res *CreateRecipientResponse
+	err := c.TransportClient.Call(CreateRecipient, request, &res, icCardID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(otcs) != len(res.OTCS) {
+		return nil, errors.New("The number of added and returned OTCs does not match.")
+	}
+
+	ltcCard, err := c.ConvertToCardAndValidate(res.LTC)
+	if err != nil {
+		return nil, err
+	}
+
+	recipient := &Recipient{
+		LTC: ltcCard,
+	}
+
+	otcCards := make([]*virgil.Card, 0, len(res.OTCS))
+	for _, otcc := range res.OTCS {
+		otcCard, err := c.ConvertToCardAndValidate(otcc)
+		if err != nil {
+			return nil, err
+		}
+		otcCards = append(otcCards, otcCard)
+
+	}
+	recipient.OTCs = otcCards
+
+	return recipient, nil
 }
 
 // CreateLTCCard posts user LTC card to PFS server. Card must be self-signed and user-identity signed
@@ -87,11 +139,20 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 
 	creds := make([]*Credentials, len(res))
 	for i, r := range res {
+
+		if r.IdentityCard == nil || r.LTC == nil{
+			return nil, errors.New("Either Identity card or LTC card is empty")
+		}
 		ic, err := c.ConvertToCardAndValidate(r.IdentityCard)
 		if err != nil {
 			return nil, err
 		}
-		ltc, err := c.ConvertToCardAndValidate(r.LTC)
+
+		extraKeys := map[string]virgilcrypto.PublicKey{
+			ic.ID: ic.PublicKey,
+		}
+
+		ltc, err := c.ConvertToCardAndValidateExtra(r.LTC, extraKeys)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +163,7 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 		}
 
 		if r.OTC != nil {
-			otc, err := c.ConvertToCardAndValidate(r.OTC)
+			otc, err := c.ConvertToCardAndValidateExtra(r.OTC, extraKeys)
 			if err != nil {
 				return nil, err
 			}

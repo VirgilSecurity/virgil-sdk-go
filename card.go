@@ -75,7 +75,7 @@ func (c *Card) SignThenEncrypt(data []byte, signerKey virgilcrypto.PrivateKey) (
 }
 
 //Verify verifies a signature of data using the provided Card. Must return non nil error when the result is false
-func (c *Card) Verify(data, signature []byte) (bool, error) {
+func (c *Card) Verify(data, signature []byte) error {
 	return Crypto().Verify(data, signature, c.PublicKey)
 }
 

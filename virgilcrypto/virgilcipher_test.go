@@ -127,8 +127,8 @@ func BenchmarkVerify(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		res, err := Verifier.Verify(data, keypair.PublicKey(), signature)
-		if !res || err != nil {
+		err := Verifier.Verify(data, keypair.PublicKey(), signature)
+		if err != nil {
 			b.Fatal(err)
 		}
 	}

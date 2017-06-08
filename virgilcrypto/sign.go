@@ -49,8 +49,8 @@ type VirgilSigner interface {
 }
 
 type VirgilVerifier interface {
-	Verify(data []byte, key PublicKey, signature []byte) (bool, error)
-	VerifyStream(data io.Reader, key PublicKey, signature []byte) (bool, error)
+	Verify(data []byte, key PublicKey, signature []byte) error
+	VerifyStream(data io.Reader, key PublicKey, signature []byte) error
 }
 
 var Signer VirgilSigner
@@ -67,9 +67,9 @@ func (s *ed25519Signer) Sign(data []byte, signer PrivateKey) ([]byte, error) {
 	return signInternal(hash[:], signer.(*ed25519PrivateKey))
 
 }
-func (s *ed25519Verifier) Verify(data []byte, key PublicKey, signature []byte) (bool, error) {
+func (s *ed25519Verifier) Verify(data []byte, key PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
-		return false, errors.New("key is nil")
+		return errors.New("key is nil")
 	}
 	hash := Hash.Sum(data)
 	return verifyInternal(hash[:], key.(*ed25519PublicKey), signature)
@@ -84,13 +84,13 @@ func (s *ed25519Signer) SignStream(data io.Reader, signer PrivateKey) ([]byte, e
 	}
 	return signInternal(h, signer.(*ed25519PrivateKey))
 }
-func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature []byte) (bool, error) {
+func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
-		return false, errors.New("key is nil")
+		return errors.New("key is nil")
 	}
 	h, err := hashStream(data)
 	if err != nil {
-		return false, err
+		return err
 	}
 	return verifyInternal(h, key.(*ed25519PublicKey), signature)
 }
@@ -112,22 +112,22 @@ func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
 
 	return sBytes, nil
 }
-func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) (bool, error) {
+func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
-		return false, CryptoError("public key for verification is not provided")
+		return CryptoError("public key for verification is not provided")
 	}
 	if len(key.contents()) != ed25519.PublicKeySize {
-		return false, CryptoError("Invalid key size for signature")
+		return CryptoError("Invalid key size for signature")
 	}
 
 	sign, err := decodeSignature(signature)
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if len(sign) != ed25519.SignatureSize {
-		return false, CryptoError("Invalid signature size " + strconv.Itoa(len(sign)))
+		return CryptoError("Invalid signature size " + strconv.Itoa(len(sign)))
 	}
 
 	signatureBytes := new([ed25519.SignatureSize]byte)
@@ -137,9 +137,9 @@ func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) (bool,
 
 	res := ed25519.Verify(pub, hash, signatureBytes)
 	if !res {
-		return false, CryptoError("signature validation failed")
+		return CryptoError("signature validation failed")
 	}
-	return true, nil
+	return nil
 }
 
 func hashStream(data io.Reader) ([]byte, error) {

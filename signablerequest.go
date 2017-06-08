@@ -226,26 +226,30 @@ func ImportDeleteRelationRequest(data []byte) (*SignableRequest, error) {
 
 func (s *SignableRequest) SelfSign(privateKey virgilcrypto.PrivateKey) error {
 
-	fp := Crypto().CalculateFingerprint(s.Snapshot)
-
-	sign, err := Crypto().Sign(fp, privateKey)
+	sign, err := Crypto().Sign(s.Fingerprint(), privateKey)
 
 	if err != nil {
 		return err
 	}
-	s.AppendSignature(hex.EncodeToString(fp), sign)
+	s.AppendSignature(s.ID(), sign)
 	return nil
 }
 
 func (s *SignableRequest) AuthoritySign(cardId string, privateKey virgilcrypto.PrivateKey) error {
 
-	fp := Crypto().CalculateFingerprint(s.Snapshot)
-
-	sign, err := Crypto().Sign(fp, privateKey)
+	sign, err := Crypto().Sign(s.Fingerprint(), privateKey)
 	if err != nil {
 		return err
 	}
 
 	s.AppendSignature(cardId, sign)
 	return nil
+}
+
+func (s *SignableRequest) Fingerprint() []byte {
+	return Crypto().CalculateFingerprint(s.Snapshot)
+}
+
+func (s *SignableRequest) ID() string {
+	return hex.EncodeToString(s.Fingerprint())
 }

@@ -65,11 +65,11 @@ func (c *FakeCrypto) SignStream(in io.Reader, signer virgilcrypto.PrivateKey) ([
 func (c *FakeCrypto) SignThenEncrypt(data []byte, signerKey virgilcrypto.PrivateKey, recipients ...virgilcrypto.PublicKey) ([]byte, error) {
 	return nil, errors.New("ERROR")
 }
-func (c *FakeCrypto) Verify(data []byte, signature []byte, key virgilcrypto.PublicKey) (bool, error) {
-	return false, errors.New("ERROR")
+func (c *FakeCrypto) Verify(data []byte, signature []byte, key virgilcrypto.PublicKey) error {
+	return errors.New("ERROR")
 }
-func (c *FakeCrypto) VerifyStream(in io.Reader, signature []byte, key virgilcrypto.PublicKey) (bool, error) {
-	return false, errors.New("ERROR")
+func (c *FakeCrypto) VerifyStream(in io.Reader, signature []byte, key virgilcrypto.PublicKey) error {
+	return errors.New("ERROR")
 }
 func (c *FakeCrypto) CalculateFingerprint(data []byte) []byte {
 	crypto := virgilcrypto.VirgilCrypto{

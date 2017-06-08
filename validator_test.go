@@ -10,9 +10,8 @@ import (
 func TestValidate_EmptyCard_ReturnFalse(t *testing.T) {
 	validator := NewCardsValidator()
 	card := &Card{}
-	ok, err := validator.Validate(card)
+	err := validator.Validate(card)
 
-	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
 
@@ -22,9 +21,8 @@ func TestValidate_CardV3_ReturnTrue(t *testing.T) {
 	card.CardVersion = "3.0"
 	card.Scope = CardScope.Global
 	card.Snapshot = make([]byte, 1)
-	ok, err := validator.Validate(card)
+	err := validator.Validate(card)
 
-	assert.True(t, ok)
 	assert.Nil(t, err)
 
 }
@@ -33,9 +31,8 @@ func TestValidate_EmptySignatures_ReturnFalse(t *testing.T) {
 	validator := NewCardsValidator()
 	card := &Card{}
 	card.Snapshot = make([]byte, 1)
-	ok, err := validator.Validate(card)
+	err := validator.Validate(card)
 
-	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
 
@@ -55,8 +52,8 @@ func TestValidate_IDBroken_ReturnFalse(t *testing.T) {
 		PublicKey:  deviceKeypair.PublicKey(),
 	}
 
-	ok, err := validator.Validate(card)
-	assert.False(t, ok)
+	err := validator.Validate(card)
+
 	assert.NotNil(t, err)
 }
 
@@ -77,9 +74,8 @@ func TestValidate_NoSelfSign_ReturnFalse(t *testing.T) {
 		PublicKey:  deviceKeypair.PublicKey(),
 	}
 
-	ok, err := validator.Validate(card)
+	err := validator.Validate(card)
 
-	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
 
@@ -100,9 +96,8 @@ func TestValidate_BadSelfSign_ReturnFalse(t *testing.T) {
 		PublicKey:  deviceKeypair.PublicKey(),
 	}
 
-	ok, err := validator.Validate(card)
+	err := validator.Validate(card)
 
-	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
 
@@ -131,9 +126,8 @@ func TestValidate_OneSignatureMissed_ReturnFalse(t *testing.T) {
 		PublicKey:  deviceKeypair.PublicKey(),
 	}
 
-	ok, err := validator.Validate(card)
+	err = validator.Validate(card)
 
-	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
 
@@ -161,9 +155,8 @@ func TestValidate_BadAuthoritySignature_ReturnFalse(t *testing.T) {
 		PublicKey:  deviceKeypair.PublicKey(),
 	}
 
-	ok, err := validator.Validate(card)
+	err := validator.Validate(card)
 
-	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
 
@@ -198,9 +191,8 @@ func TestValidate_CardCorrecec_ReturnTrue(t *testing.T) {
 		PublicKey:  deviceKeypair.PublicKey(),
 	}
 
-	ok, err := validator.Validate(card)
+	err = validator.Validate(card)
 
-	assert.True(t, ok)
 	assert.Nil(t, err)
 }
 

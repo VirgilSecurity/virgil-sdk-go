@@ -142,9 +142,9 @@ func (c *cardManager) Import(card string) (*Card, error) {
 		return nil, err
 	}
 
-	res, err := c.context.validator.Validate(model)
+	err = c.context.validator.Validate(model)
 
-	if !res || err != nil {
+	if err != nil {
 		return nil, errors.Wrap(err, "imported card validation failed")
 	}
 
