@@ -148,11 +148,11 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 			return nil, err
 		}
 
-		extraKeys := map[string]virgilcrypto.PublicKey{
+		identityKey := map[string]virgilcrypto.PublicKey{
 			ic.ID: ic.PublicKey,
 		}
 
-		ltc, err := c.ConvertToCardAndValidateExtra(r.LTC, extraKeys)
+		ltc, err := c.ConvertToCardAndValidateExtra(r.LTC, identityKey)
 		if err != nil {
 			return nil, err
 		}
@@ -163,7 +163,7 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 		}
 
 		if r.OTC != nil {
-			otc, err := c.ConvertToCardAndValidateExtra(r.OTC, extraKeys)
+			otc, err := c.ConvertToCardAndValidateExtra(r.OTC, identityKey)
 			if err != nil {
 				return nil, err
 			}

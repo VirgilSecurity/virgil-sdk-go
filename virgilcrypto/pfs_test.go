@@ -51,6 +51,14 @@ func TestPFS(t *testing.T) {
 
 	assert.Equal(t, plaintext, msg)
 
+	salt, ciphertext = sessB.Encrypt(msg)
+
+	plaintext, err = sessA.Decrypt(salt, ciphertext)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, plaintext, msg)
+
 	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
 	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
 	ICbb, _ := c.ExportPrivateKey(ICb.PrivateKey(), "")

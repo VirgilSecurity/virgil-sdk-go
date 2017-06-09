@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/hkdf"
 )
 
-func X3DHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
+func EDHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
 
 	edICa, ok := ICa.(*ed25519PrivateKey)
 	if !ok {
@@ -72,7 +72,7 @@ func X3DHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
 
 }
 
-func X3DHRespond(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey) ([]byte, error) {
+func EDHRespond(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey) ([]byte, error) {
 
 	edICa, ok := ICa.(*ed25519PublicKey)
 	if !ok {

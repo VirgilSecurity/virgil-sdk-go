@@ -23,7 +23,7 @@ type (
 
 func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
 
-	sk, err := X3DHInit(ICa, EKa, ICb, LTCb, OTCb)
+	sk, err := EDHInit(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 
 func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
 
-	sk, err := X3DHRespond(ICa, EKa, ICb, LTCb, OTCb)
+	sk, err := EDHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
 		return
 	}

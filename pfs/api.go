@@ -150,6 +150,10 @@ func (a *Api) Bootstrap() error {
 	return nil
 }
 
+func (a *Api) EncryptEphemeralKey() {
+
+}
+
 func (a *Api) InitTalkWith(identity string, message virgil.Buffer) ([]*Message, error) {
 
 	creds, err := a.pfsClient.GetUserCredentials(identity)
@@ -216,13 +220,10 @@ func (a *Api) ReceiveMessage(message *Message) (virgil.Buffer, error) {
 }
 
 func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
-	if message.ID == "" || message.ICID == "" || message.LTCID == "" ||
-		message.Eph == nil || message.Signature == nil {
-		return nil, errors.New("initial message is incomplete")
-	}
 
-	if message.ICID != a.identityCardID {
-		return nil, errors.New("Identity card ID mismatch")
+	err := a.ValidateInitialMessage(message)
+	if err != nil {
+		return nil, err
 	}
 
 	ICa, err := a.cardsClient.GetCard(message.ID)
@@ -303,7 +304,75 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 	return plaintext, nil
 }
 
+func (a *Api) ValidateInitialMessage(msg *Message) error {
+	if len(msg.ID) != 64 || len(msg.ICID) != 64 || len(msg.LTCID) != 64 ||
+		msg.Eph == nil || msg.Signature == nil {
+		return errors.New("initial message is incomplete")
+	}
+
+	if !isHex(msg.ID) || !isHex(msg.ICID) || !isHex(msg.LTCID) {
+		return errors.New("invalid card ids")
+	}
+
+	if msg.ICID != a.identityCardID {
+		return errors.New("Identity card ID mismatch")
+	}
+
+	if msg.OTCID != "" && (len(msg.OTCID) != 64 || !isHex(msg.OTCID)) {
+		return errors.New("incorrect otc id")
+	}
+
+	if len(msg.Ciphertext) != 0 && len(msg.Salt) != 16 {
+		return errors.New("invalid salt size")
+	}
+
+	if len(msg.Ciphertext) != 0 && len(msg.Ciphertext) < 16 {
+		return errors.New("invalid ciphertext size")
+	}
+	return nil
+}
+
+func isHex(src string) bool {
+
+	if len(src)%2 == 1 {
+		return false
+	}
+	for i := 0; i < len(src); i++ {
+		if !fromHexChar(src[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// fromHexChar converts a hex character into its value and a success flag.
+func fromHexChar(c byte) bool {
+	switch {
+	case '0' <= c && c <= '9':
+		return true
+	case 'a' <= c && c <= 'f':
+		return true
+	case 'A' <= c && c <= 'F':
+		return true
+	}
+
+	return false
+}
+
 func (a *Api) ReceiveSessionMessage(message *Message) (virgil.Buffer, error) {
+
+	if len(message.SessionId) != 32 {
+		return nil, errors.New("Invalid session id")
+	}
+
+	if len(message.Salt) != 16 {
+		return nil, errors.New("Invalid salt")
+	}
+
+	if len(message.Ciphertext) < 16 {
+		return nil, errors.New("Invalid ciphertext")
+	}
+
 	session := a.sessionManager.GetSession(message.SessionId)
 	if session == nil {
 		return nil, errors.New("Session not found")
