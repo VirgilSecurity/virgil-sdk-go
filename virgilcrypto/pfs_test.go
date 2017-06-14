@@ -49,14 +49,6 @@ func TestPFS(t *testing.T) {
 
 	assert.Equal(t, plaintext, msg)
 
-	salt, ciphertext = sessB.Encrypt(msg)
-
-	plaintext, err = sessA.Decrypt(salt, ciphertext)
-
-	assert.NoError(t, err)
-
-	assert.Equal(t, plaintext, msg)
-
 	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
 	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
 	ICbb, _ := c.ExportPrivateKey(ICb.PrivateKey(), "")
@@ -69,7 +61,7 @@ func TestPFS(t *testing.T) {
 		"ICb":            ICbb,
 		"LTCb":           LTCbb,
 		"OTCb":           OTCbb,
-		"AdditionalData": ad,
+		"AdditionalData": append(ad, []byte("Virgil")...),
 		"SKa":            sessA.SKa,
 		"SKb":            sessA.SKb,
 		"AD":             sessA.AD,
@@ -82,49 +74,13 @@ func TestPFS(t *testing.T) {
 	res, _ := json.Marshal(vec)
 	fmt.Printf("%s\n\n\n", res)*/
 
-	//sessB.Initiator = !sessB.Initiator
+	salt, ciphertext = sessB.Encrypt(msg)
 
-	plaintext, err = sessB.Decrypt(salt, ciphertext)
-
-	assert.Error(t, err)
-
-	assert.NotEqual(t, plaintext, msg)
-
-	sessB.Initiator = !sessB.Initiator
-
-	sessA, err = pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), nil, ICa.PrivateKey(), EKa.PrivateKey(), ad)
-	assert.NoError(t, err)
-
-	sessB, err = pfs.ReceivePFCSession(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), nil, ad)
-	assert.NoError(t, err)
-
-	salt, ciphertext = sessA.Encrypt(msg)
-
-	plaintext, err = sessB.Decrypt(salt, ciphertext)
+	plaintext, err = sessA.Decrypt(salt, ciphertext)
 
 	assert.NoError(t, err)
 
 	assert.Equal(t, plaintext, msg)
-
-	/*vec = map[string]interface{}{
-		"ICa":            ICab,
-		"EKa":            EKab,
-		"ICb":            ICbb,
-		"LTCb":           LTCbb,
-		"AdditionalData": ad,
-		"SKa":            sessA.SKa,
-		"SKb":            sessA.SKb,
-		"AD":             sessA.AD,
-		"SessionID":      sessA.SessionID,
-		"Salt":           salt,
-		"Plaintext":      plaintext,
-		"Ciphertext":     ciphertext,
-	}
-
-	res, _ = json.Marshal(vec)
-	fmt.Printf("%s", res)*/
-
-	sessB.Initiator = !sessB.Initiator
 
 	plaintext, err = sessB.Decrypt(salt, ciphertext)
 
@@ -181,8 +137,7 @@ func TestPFSNoOTC(t *testing.T) {
 		"EKa":         EKab,
 		"ICb":         ICbb,
 		"LTCb":        LTCbb,
-		"AliceCardID": aliceCardID,
-		"BobCardID":   bobCardID,
+		"AdditionalData": append(ad, []byte("Virgil")...),
 		"SKa":         sessA.SKa,
 		"SKb":         sessA.SKb,
 		"AD":          sessA.AD,
