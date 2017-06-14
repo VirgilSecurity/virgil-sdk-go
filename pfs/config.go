@@ -11,7 +11,8 @@ type Config struct {
 	PrivateKey         virgil.Buffer
 	PrivateKeyPassword string
 	//the amount of One Time Cards to create. Default 100
-	OTCCount    int
-	PFSClient   *Client
-	CardsClient *cardsroclient.Client
+	OTCCount       int
+	PFSClient      *Client
+	CardsClient    *cardsroclient.Client
+	KeyStoragePath string
 }

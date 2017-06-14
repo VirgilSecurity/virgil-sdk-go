@@ -5,6 +5,8 @@ import (
 
 	"strconv"
 
+	"os"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/clients/cardsroclient"
 	"gopkg.in/virgil.v4/errors"
@@ -25,6 +27,8 @@ type Api struct {
 	otcCount           int
 }
 
+var crypto = virgil.Crypto()
+
 func New(config *Config) (*Api, error) {
 
 	cli, err := config.PFSClient, error(nil)
@@ -43,15 +47,23 @@ func New(config *Config) (*Api, error) {
 		}
 	}
 
-	pfsCrypto, ok := virgil.Crypto().(virgilcrypto.PFS)
+	pfsCrypto, ok := crypto.(virgilcrypto.PFS)
 
 	if !ok {
 		return nil, errors.New("Crypto does not implement PFS")
 	}
 
-	pk, err := virgil.Crypto().ImportPrivateKey(config.PrivateKey, config.PrivateKeyPassword)
+	pk, err := crypto.ImportPrivateKey(config.PrivateKey, config.PrivateKeyPassword)
 	if err != nil {
 		return nil, err
+	}
+	path := "."
+	if config.KeyStoragePath != "" {
+		path = config.KeyStoragePath
+	}
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.Mkdir(path, os.ModeDir)
 	}
 
 	api := &Api{
@@ -59,7 +71,7 @@ func New(config *Config) (*Api, error) {
 		cardsClient:        cardsCli,
 		crypto:             pfsCrypto,
 		sessionManager:     &SessionManager{Sessions: make(map[uint64]*virgilcrypto.PFSSession)},
-		storage:            &virgil.FileStorage{RootDir: "d:\\Keys"},
+		storage:            &virgil.FileStorage{RootDir: path},
 		identityCardID:     config.IdentityCardID,
 		privateKey:         pk,
 		privateKeyPassword: config.PrivateKeyPassword,
@@ -76,12 +88,12 @@ func New(config *Config) (*Api, error) {
 }
 
 func (a *Api) Bootstrap() error {
-	ltcKey, err := virgil.Crypto().GenerateKeypair()
+	ltcKey, err := crypto.GenerateKeypair()
 	if err != nil {
 		return err
 	}
 
-	exportedLTCKey, err := virgil.Crypto().ExportPrivateKey(ltcKey.PrivateKey(), "")
+	ltc, err := a.EncryptEphemeralKey(ltcKey.PrivateKey())
 	if err != nil {
 		return err
 	}
@@ -103,7 +115,7 @@ func (a *Api) Bootstrap() error {
 	otcRequests := make([]*virgil.SignableRequest, 0, a.otcCount)
 	otcKeys := make(map[string]virgilcrypto.PrivateKey)
 	for i := 0; i < a.otcCount; i++ {
-		otcKey, err := virgil.Crypto().GenerateKeypair()
+		otcKey, err := crypto.GenerateKeypair()
 		if err != nil {
 			panic(err)
 		}
@@ -124,7 +136,7 @@ func (a *Api) Bootstrap() error {
 
 	a.storage.Store(&virgil.StorageItem{
 		Name: recipient.LTC.ID,
-		Data: exportedLTCKey,
+		Data: ltc,
 		Meta: map[string]string{
 			"type":    "ltc",
 			"created": strconv.FormatInt(time.Now().Unix(), 10),
@@ -133,14 +145,14 @@ func (a *Api) Bootstrap() error {
 
 	for id, key := range otcKeys {
 
-		exportedOTCKey, err := virgil.Crypto().ExportPrivateKey(key, "")
+		otc, err := a.EncryptEphemeralKey(key)
 		if err != nil {
 			return err
 		}
 
 		a.storage.Store(&virgil.StorageItem{
 			Name: id,
-			Data: exportedOTCKey,
+			Data: otc,
 			Meta: map[string]string{
 				"type":    "otc",
 				"created": strconv.FormatInt(time.Now().Unix(), 10),
@@ -150,8 +162,30 @@ func (a *Api) Bootstrap() error {
 	return nil
 }
 
-func (a *Api) EncryptEphemeralKey() {
+func (a *Api) EncryptEphemeralKey(key virgilcrypto.PrivateKey) ([]byte, error) {
+	exportedKey, err := crypto.ExportPrivateKey(key, "")
+	if err != nil {
+		return nil, err
+	}
 
+	pub, err := crypto.ExtractPublicKey(a.privateKey)
+	if err != nil {
+		return nil, err
+	}
+	ct, err := crypto.Encrypt(exportedKey, pub)
+	if err != nil {
+		return nil, err
+	}
+	return ct, err
+}
+
+func (a *Api) DecryptEphemeralKey(data []byte) (virgilcrypto.PrivateKey, error) {
+	pt, err := crypto.Decrypt(data, a.privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return crypto.ImportPrivateKey(pt, "")
 }
 
 func (a *Api) InitTalkWith(identity string, message virgil.Buffer) ([]*Message, error) {
@@ -162,24 +196,29 @@ func (a *Api) InitTalkWith(identity string, message virgil.Buffer) ([]*Message, 
 	}
 	messages := make([]*Message, 0, len(creds))
 	for _, c := range creds {
-		EKa, err := virgil.Crypto().GenerateKeypair()
+		EKa, err := crypto.GenerateKeypair()
 		if err != nil {
 			return nil, err
 		}
+
+		ad := append([]byte(a.identityCardID), []byte(c.IdentityCard.ID)...)
+		ad = append(ad, []byte(c.LTC.ID)...)
 		var otcPub virgilcrypto.PublicKey
 		var otcID string
 		if c.OTC != nil {
 			otcPub = c.OTC.PublicKey
 			otcID = c.OTC.ID
+			ad = append(ad, []byte(otcID)...)
 		}
-		session, err := a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), a.identityCardID, c.IdentityCard.ID)
 
-		EKaPub, err := virgil.Crypto().ExportPublicKey(EKa.PublicKey())
+		session, err := a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ad)
+
+		EKaPub, err := crypto.ExportPublicKey(EKa.PublicKey())
 		if err != nil {
 			return nil, err
 		}
 
-		sign, err := virgil.Crypto().Sign(EKaPub, a.privateKey)
+		sign, err := crypto.Sign(EKaPub, a.privateKey)
 		if err != nil {
 			return nil, err
 		}
@@ -231,11 +270,11 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 		return nil, err
 	}
 
-	err = virgil.Crypto().Verify(message.Eph, message.Signature, ICa.PublicKey)
+	err = crypto.Verify(message.Eph, message.Signature, ICa.PublicKey)
 	if err != nil {
 		return nil, err
 	}
-	EKa, err := virgil.Crypto().ImportPublicKey(message.Eph)
+	EKa, err := crypto.ImportPublicKey(message.Eph)
 	if err != nil {
 		return nil, err
 	}
@@ -255,10 +294,13 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 		return nil, errors.Errorf("Supplied card ID %s is not LTC", message.LTCID)
 	}
 
-	ltcKey, err := virgil.Crypto().ImportPrivateKey(ltcKeyData.Data, "")
+	ltcKey, err := a.DecryptEphemeralKey(ltcKeyData.Data)
 	if err != nil {
 		return nil, err
 	}
+
+	ad := append([]byte(message.ID), []byte(message.ICID)...)
+	ad = append(ad, []byte(message.LTCID)...)
 
 	var otcKey virgilcrypto.PrivateKey
 
@@ -278,14 +320,15 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 			return nil, errors.Errorf("Supplied card ID %s is not OTC", message.OTCID)
 		}
 
-		otcKey, err = virgil.Crypto().ImportPrivateKey(otcKeyData.Data, "")
+		otcKey, err = a.DecryptEphemeralKey(otcKeyData.Data)
 		if err != nil {
 			return nil, err
 		}
 		a.storage.Delete(message.OTCID) //This is the core idea of PFS
+		ad = append(ad, []byte(message.OTCID)...)
 	}
 
-	sess, err := a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, message.ID, a.identityCardID)
+	sess, err := a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
 
 	if err != nil {
 		return nil, err

@@ -4,8 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha256"
 
+	"github.com/minio/sha256-simd"
 	"golang.org/x/crypto/hkdf"
 )
 
@@ -16,12 +16,14 @@ type (
 	}
 
 	PFS interface {
-		StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error)
-		ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error)
+		StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, additionalData []byte) (sess *PFSSession, err error)
+		ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, additionalData []byte) (sess *PFSSession, err error)
 	}
 )
 
-func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
+var virgil = []byte("Virgil")
+
+func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
 
 	sk, err := EDHInit(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
@@ -30,18 +32,18 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 
 	ska, skb := sk[:64], sk[64:]
 
-	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len("Virgil"))
-	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
-	toHash = append(toHash, []byte("Virgil")...)
+	toHash := make([]byte, 0, len(additionalData)+len(virgil))
+	toHash = append(toHash, additionalData...)
+	toHash = append(toHash, []byte(virgil)...)
 
 	hash := sha256.Sum256(toHash)
 
 	ad := hash[:]
 
-	toHash = make([]byte, 0, len(sk)+len(ad)+len("Virgil"))
+	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
 
 	toHash = append(sk, ad...)
-	toHash = append(toHash, []byte("Virgil")...)
+	toHash = append(toHash, []byte(virgil)...)
 
 	sessHash := sha256.Sum256(toHash)
 	sessionID := sessHash[:]
@@ -56,7 +58,7 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 
 }
 
-func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, aliceCardId, bobCardId string) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
 
 	sk, err := EDHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
@@ -64,18 +66,18 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb Pri
 	}
 	ska, skb := sk[:64], sk[64:]
 
-	toHash := make([]byte, 0, len(aliceCardId)+len(bobCardId)+len("Virgil"))
-	toHash = append([]byte(aliceCardId), []byte(bobCardId)...)
-	toHash = append(toHash, []byte("Virgil")...)
+	toHash := make([]byte, 0, len(additionalData)+len(virgil))
+	toHash = append(toHash, additionalData...)
+	toHash = append(toHash, []byte(virgil)...)
 
 	hash := sha256.Sum256(toHash)
 
 	ad := hash[:]
 
-	toHash = make([]byte, 0, len(sk)+len(ad)+len("Virgil"))
+	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
 
 	toHash = append(sk, ad...)
-	toHash = append(toHash, []byte("Virgil")...)
+	toHash = append(toHash, []byte(virgil)...)
 
 	sessHash := sha256.Sum256(toHash)
 	sessionID := sessHash[:]
@@ -105,7 +107,7 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 		sk = s.SKb
 	}
 
-	kdf := hkdf.New(sha256.New, sk, salt, []byte("Virgil"))
+	kdf := hkdf.New(sha256.New, sk, salt, virgil)
 
 	_, err = kdf.Read(keyAndNonce)
 	if err != nil {
@@ -128,7 +130,7 @@ func (s *PFSSession) Decrypt(salt, ciphertext []byte) ([]byte, error) {
 		sk = s.SKa
 	}
 
-	kdf := hkdf.New(sha256.New, sk, salt, []byte("Virgil"))
+	kdf := hkdf.New(sha256.New, sk, salt, virgil)
 
 	_, err := kdf.Read(keyAndNonce)
 	if err != nil {
