@@ -70,11 +70,15 @@ func (mj *CardModel) MarshalJSONBuf(buf fflib.EncodingBuffer) error {
 		}
 		buf.WriteByte(',')
 	}
-	/* Struct fall back. type=virgil.DeviceInfo kind=struct */
-	buf.WriteString(`"info":`)
-	err = buf.Encode(&mj.DeviceInfo)
-	if err != nil {
-		return err
+	if mj.DeviceInfo != nil {
+		/* Struct fall back. type=virgil.DeviceInfo kind=struct */
+		buf.WriteString(`"info":`)
+		err = buf.Encode(mj.DeviceInfo)
+		if err != nil {
+			return err
+		}
+	} else {
+		buf.WriteString(`"info":null`)
 	}
 	buf.WriteByte('}')
 	return nil
