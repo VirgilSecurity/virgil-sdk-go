@@ -155,7 +155,10 @@ func BenchmarkEd25519Verifier_Verify(b *testing.B) {
 
 	sign, err := Signer.Sign(data, keypair.PrivateKey())
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		Verifier.Verify(data, pk, sign)
-	}
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Verifier.Verify(data, pk, sign)
+		}
+	})
 }

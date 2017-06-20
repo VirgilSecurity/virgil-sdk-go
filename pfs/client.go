@@ -30,12 +30,12 @@ func NewClient(accessToken string, opts ...func(*clients.BaseClient)) (*Client, 
 // CreateLTCCard posts user LTC card to PFS server. Card must be self-signed and user-identity signed
 func (c *Client) CreateRecipient(icCardID string, ltc *virgil.SignableRequest, otcs []*virgil.SignableRequest) (*Recipient, error) {
 	if ltc == nil || len(ltc.Snapshot) == 0 || len(ltc.Meta.Signatures) != 2 || len(otcs) == 0 {
-		return nil, errors.New("ltc is empty or number of signatures is not 2 or otcs list is empty")
+		return nil, errors.New("ltc is empty or number of signatures is not 1 or otcs list is empty")
 	}
 
 	for _, otc := range otcs {
 		if otc == nil || len(otc.Snapshot) == 0 || len(otc.Meta.Signatures) != 2 {
-			return nil, errors.New("otc is empty or number of signatures is not 2")
+			return nil, errors.New("otc is empty or number of signatures is not 1")
 		}
 	}
 
@@ -164,6 +164,10 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 
 		if r.OTC != nil {
 			otc, err := c.ConvertToCardAndValidateExtra(r.OTC, identityKey)
+
+			/*otcj, _ := json.Marshal(r.OTC)
+			fmt.Printf("%s\n", otcj)*/
+
 			if err != nil {
 				return nil, err
 			}

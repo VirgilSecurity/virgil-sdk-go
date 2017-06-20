@@ -121,8 +121,14 @@ func (a *Api) Bootstrap() error {
 		}
 
 		otcReq, err := virgil.NewCreateCardRequest(a.identityCardID, "otc", otcKey.PublicKey(), virgil.CardParams{})
-		otcReq.SelfSign(otcKey.PrivateKey())
-		otcReq.AuthoritySign(a.identityCardID, a.privateKey)
+		err = otcReq.SelfSign(otcKey.PrivateKey())
+		if err != nil {
+			return err
+		}
+		err = otcReq.AuthoritySign(a.identityCardID, a.privateKey)
+		if err != nil {
+			return err
+		}
 
 		otcRequests = append(otcRequests, otcReq)
 		otcKeys[otcReq.ID()] = otcKey.PrivateKey()
