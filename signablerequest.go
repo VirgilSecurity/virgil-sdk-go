@@ -14,7 +14,7 @@ import (
 type CardParams struct {
 	Scope      Enum
 	Data       map[string]string
-	DeviceInfo DeviceInfo
+	DeviceInfo *DeviceInfo
 }
 type CardModel struct {
 	Identity     string            `json:"identity"`
@@ -22,7 +22,7 @@ type CardModel struct {
 	PublicKey    []byte            `json:"public_key"` //DER encoded public key
 	Scope        Enum              `json:"scope"`
 	Data         map[string]string `json:"data,omitempty"`
-	DeviceInfo   DeviceInfo        `json:"info"`
+	DeviceInfo   *DeviceInfo       `json:"info"`
 }
 
 type SignableRequest struct {

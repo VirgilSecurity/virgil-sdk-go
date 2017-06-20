@@ -51,7 +51,7 @@ type Card struct {
 	PublicKey    virgilcrypto.PublicKey
 	Scope        Enum
 	Data         map[string]string
-	DeviceInfo   DeviceInfo
+	DeviceInfo   *DeviceInfo
 	CreatedAt    string
 	CardVersion  string
 	Signatures   map[string][]byte

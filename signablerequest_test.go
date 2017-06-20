@@ -21,7 +21,7 @@ func TestNewCreateCardRequest_CheckCorrectStructFilling(t *testing.T) {
 		Data: map[string]string{
 			"test": "test data",
 		},
-		DeviceInfo: DeviceInfo{
+		DeviceInfo: &DeviceInfo{
 			Device:     "test device",
 			DeviceName: "my device",
 		},
@@ -121,7 +121,7 @@ func TestExportCreateCardRequest(t *testing.T) {
 			"key3": "value3",
 			"key4": "value4",
 		},
-		DeviceInfo: DeviceInfo{
+		DeviceInfo: &DeviceInfo{
 			Device:     "iPhone",
 			DeviceName: "7",
 		},
@@ -160,7 +160,7 @@ func TestImportCreateCardRequest(t *testing.T) {
 			"key3": "value3",
 			"key4": "value4",
 		},
-		DeviceInfo: DeviceInfo{
+		DeviceInfo: &DeviceInfo{
 			Device:     "iPhone",
 			DeviceName: "7",
 		},

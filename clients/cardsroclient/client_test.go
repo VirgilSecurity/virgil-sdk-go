@@ -188,7 +188,7 @@ MCowBQYDK2VwAyEA5Fle51URZN2seVuToVQKSFZ8OkF051jlUjBuM9OZSHk=
 		Data: map[string]string{
 			"Test": "Data",
 		},
-		DeviceInfo: virgil.DeviceInfo{
+		DeviceInfo: &virgil.DeviceInfo{
 			Device:     "iphone7",
 			DeviceName: "my iphone",
 		},
