@@ -56,7 +56,7 @@ func NewClient(accessToken string, url string, endpoints map[transport.Endpoint]
 	return c, nil
 }
 
-func (b *BaseClient) ConvertToCardAndValidateExtra(response *virgil.CardResponse, extraKeys map[string]virgilcrypto.PublicKey) (*virgil.Card, error) {
+func (b *BaseClient) ConvertToCardAndValidateExtra(response *virgil.CardResponse, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) (*virgil.Card, error) {
 
 	card, err := response.ToCard()
 
@@ -65,7 +65,7 @@ func (b *BaseClient) ConvertToCardAndValidateExtra(response *virgil.CardResponse
 	}
 
 	if b.CardsValidator != nil {
-		err := b.CardsValidator.ValidateExtra(card, extraKeys)
+		err := b.CardsValidator.ValidateExtra(card, extraKeys, validateSelfSign)
 		if err != nil {
 			return nil, err
 		}
@@ -75,5 +75,5 @@ func (b *BaseClient) ConvertToCardAndValidateExtra(response *virgil.CardResponse
 
 func (b *BaseClient) ConvertToCardAndValidate(response *virgil.CardResponse) (*virgil.Card, error) {
 
-	return b.ConvertToCardAndValidateExtra(response, nil)
+	return b.ConvertToCardAndValidateExtra(response, nil, true)
 }

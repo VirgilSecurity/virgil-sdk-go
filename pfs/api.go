@@ -102,10 +102,6 @@ func (a *Api) Bootstrap() error {
 	if err != nil {
 		return err
 	}
-	err = ltcReq.SelfSign(ltcKey.PrivateKey())
-	if err != nil {
-		return err
-	}
 
 	err = ltcReq.AuthoritySign(a.identityCardID, a.privateKey)
 	if err != nil {
@@ -121,10 +117,6 @@ func (a *Api) Bootstrap() error {
 		}
 
 		otcReq, err := virgil.NewCreateCardRequest(a.identityCardID, "otc", otcKey.PublicKey(), virgil.CardParams{})
-		err = otcReq.SelfSign(otcKey.PrivateKey())
-		if err != nil {
-			return err
-		}
 		err = otcReq.AuthoritySign(a.identityCardID, a.privateKey)
 		if err != nil {
 			return err
@@ -134,14 +126,14 @@ func (a *Api) Bootstrap() error {
 		otcKeys[otcReq.ID()] = otcKey.PrivateKey()
 	}
 
-	recipient, err := a.pfsClient.CreateRecipient(a.identityCardID, ltcReq, otcRequests)
+	err = a.pfsClient.CreateRecipient(a.identityCardID, ltcReq, otcRequests)
 
 	if err != nil {
 		return err
 	}
 
 	a.storage.Store(&virgil.StorageItem{
-		Name: recipient.LTC.ID,
+		Name: ltcReq.ID(),
 		Data: ltc,
 		Meta: map[string]string{
 			"type":    "ltc",

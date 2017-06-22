@@ -13,7 +13,7 @@ import (
 type CardsValidator interface {
 	//if the result is false then error must not be nil
 	Validate(card *Card) error
-	ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey) error
+	ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) error
 }
 
 // NewCardsValidator create a cards validator
@@ -30,7 +30,7 @@ type VirgilCardValidator struct {
 }
 
 // Validate that all signatures were added
-func (v *VirgilCardValidator) ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey) error {
+func (v *VirgilCardValidator) ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) error {
 	if card == nil || len(card.Snapshot) == 0 {
 		return errors.New("nil card")
 	}
@@ -50,15 +50,17 @@ func (v *VirgilCardValidator) ValidateExtra(card *Card, extraKeys map[string]vir
 		return errors.Errorf("card id %s does not match fingerprint %s", card.ID, hexfp)
 	}
 
-	//check self signature
-	selfsign, ok := card.Signatures[hexfp]
-	if !ok {
-		return errors.Errorf("no self signature found for card " + card.ID)
-	}
+	if validateSelfSign {
+		//check self signature
+		selfsign, ok := card.Signatures[hexfp]
+		if !ok {
+			return errors.Errorf("no self signature found for card " + card.ID)
+		}
 
-	err := Crypto().Verify(fp, selfsign, card.PublicKey)
-	if err != nil {
-		return errors.Wrap(err, "self signature validation failed")
+		err := Crypto().Verify(fp, selfsign, card.PublicKey)
+		if err != nil {
+			return errors.Wrap(err, "self signature validation failed")
+		}
 	}
 
 	for id, key := range v.validators {
@@ -90,7 +92,7 @@ func (v *VirgilCardValidator) ValidateExtra(card *Card, extraKeys map[string]vir
 
 // Validate that all signatures were added
 func (v *VirgilCardValidator) Validate(card *Card) error {
-	return v.ValidateExtra(card, nil)
+	return v.ValidateExtra(card, nil, true)
 }
 
 // AddVerifier add new service for validation
