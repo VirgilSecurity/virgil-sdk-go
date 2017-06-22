@@ -12,7 +12,7 @@ const (
 	UploadOTCCards
 	GetUserCredentials
 	GetOTCCardCount
-	URL = "https://pfs-stg.virgilsecurity.com"
+	URL = "https://pfs.virgilsecurity.com"
 )
 
 var (
