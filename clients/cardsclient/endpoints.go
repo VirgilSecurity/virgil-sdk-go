@@ -17,12 +17,12 @@ var (
 	Endpoints = map[transport.Endpoint]*transport.HTTPEndpoint{
 		AddRelation: {
 			Method: http.MethodPost,
-			URL:    "%s/v5/card/%s/collections/relations",
+			URL:    "%s/v4/card/%s/collections/relations",
 			Params: 1,
 		},
 		DeleteRelation: {
 			Method: http.MethodDelete,
-			URL:    "%s/v5/card/%s/collections/relations",
+			URL:    "%s/v4/card/%s/collections/relations",
 			Params: 1,
 		}}
 )

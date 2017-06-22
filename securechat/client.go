@@ -10,6 +10,7 @@ import (
 
 type Client struct {
 	*clients.BaseClient
+	ephemeralCardsValidator virgil.CardsValidator
 }
 
 // NewClient create a new instance of Virgil Identity service client
@@ -22,8 +23,10 @@ func NewClient(accessToken string, opts ...func(*clients.BaseClient)) (*Client, 
 	}
 
 	c := &Client{
-		BaseClient: baseClient,
+		BaseClient:              baseClient,
+		ephemeralCardsValidator: virgil.NewCardsValidator(),
 	}
+
 	return c, nil
 }
 
@@ -54,26 +57,6 @@ func (c *Client) CreateRecipient(icCardID string, ltc *virgil.SignableRequest, o
 	if len(otcs) != len(res.OTCS) {
 		return errors.New("The number of added and returned OTCs does not match.")
 	}
-
-	/*ltcCard, err := c.ConvertToCardAndValidate(res.LTC)
-	if err != nil {
-		return err
-	}
-
-	recipient := &Recipient{
-		LTC: ltcCard,
-	}
-
-	otcCards := make([]*virgil.Card, 0, len(res.OTCS))
-	for _, otcc := range res.OTCS {
-		otcCard, err := c.ConvertToCardAndValidate(otcc)
-		if err != nil {
-			return err
-		}
-		otcCards = append(otcCards, otcCard)
-
-	}
-	recipient.OTCs = otcCards*/
 
 	return nil
 }
@@ -158,9 +141,6 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 		if r.OTC != nil {
 			otc, err := c.ConvertToCardAndValidateExtra(r.OTC, identityKey, false)
 
-			/*otcj, _ := json.Marshal(r.OTC)
-			fmt.Printf("%s\n", otcj)*/
-
 			if err != nil {
 				return nil, err
 			}
@@ -169,4 +149,21 @@ func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error
 		creds[i] = cred
 	}
 	return creds, nil
+}
+
+func (c *Client) ConvertToCardAndValidateExtra(response *virgil.CardResponse, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) (*virgil.Card, error) {
+
+	card, err := response.ToCard()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if c.ephemeralCardsValidator != nil {
+		err := c.ephemeralCardsValidator.ValidateExtra(card, extraKeys, validateSelfSign)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return card, nil
 }

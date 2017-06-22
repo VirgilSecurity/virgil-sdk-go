@@ -15,7 +15,7 @@ import (
 var endpoints = map[Endpoint]*HTTPEndpoint{
 	0: {
 		Method: http.MethodGet,
-		URL:    "%s/v5/card/%s",
+		URL:    "%s/v4/card/%s",
 		Params: 1,
 	},
 }
