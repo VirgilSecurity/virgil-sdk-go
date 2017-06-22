@@ -3,7 +3,7 @@ package cardsroclient
 import (
 	"net/http"
 
-	"gopkg.in/virgil.v4/transport"
+	"gopkg.in/virgil.v5/transport"
 )
 
 const (
@@ -17,12 +17,12 @@ var (
 	Endpoints = map[transport.Endpoint]*transport.HTTPEndpoint{
 		GetCard: {
 			Method: http.MethodGet,
-			URL:    "%s/v4/card/%s",
+			URL:    "%s/v5/card/%s",
 			Params: 1,
 		},
 		SearchCards: {
 			Method: http.MethodPost,
-			URL:    "%s/v4/card/actions/search",
+			URL:    "%s/v5/card/actions/search",
 		},
 	}
 )

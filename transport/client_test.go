@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/valyala/fasthttp"
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 var endpoints = map[Endpoint]*HTTPEndpoint{
 	0: {
 		Method: http.MethodGet,
-		URL:    "%s/v4/card/%s",
+		URL:    "%s/v5/card/%s",
 		Params: 1,
 	},
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 func makeFakeCard() (*Card, virgilcrypto.Keypair) {

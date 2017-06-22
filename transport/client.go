@@ -10,7 +10,7 @@ import (
 	"crypto/tls"
 
 	"github.com/valyala/fasthttp"
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 // TransportClientDoer set a doer to Http Transport client

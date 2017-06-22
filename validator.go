@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"gopkg.in/virgil.v4/errors"
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5/errors"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 // A CardsValidator validate response from server

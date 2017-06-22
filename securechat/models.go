@@ -1,6 +1,6 @@
 package securechat
 
-import "gopkg.in/virgil.v4"
+import "gopkg.in/virgil.v5"
 
 // Credentials represent user's cards needed to establish a PFS session
 type Credentials struct {

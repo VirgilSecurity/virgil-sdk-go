@@ -5,7 +5,7 @@
 package virgil
 
 import (
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 //Crypto returns a new instance of virgilcrypto with a default cipher

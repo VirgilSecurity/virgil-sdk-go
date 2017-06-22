@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"gopkg.in/virgil.v4/virgilcrypto/gcm"
+	"gopkg.in/virgil.v5/virgilcrypto/gcm"
 )
 
 func TestStream(t *testing.T) {

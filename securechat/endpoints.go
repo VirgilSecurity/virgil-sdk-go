@@ -3,7 +3,7 @@ package securechat
 import (
 	"net/http"
 
-	"gopkg.in/virgil.v4/transport"
+	"gopkg.in/virgil.v5/transport"
 )
 
 const (

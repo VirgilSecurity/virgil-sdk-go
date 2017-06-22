@@ -1,6 +1,6 @@
 package virgilapi
 
-import "gopkg.in/virgil.v4"
+import "gopkg.in/virgil.v5"
 
 type IdentityVerificationAttempt struct {
 	context     *Context

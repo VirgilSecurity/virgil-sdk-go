@@ -1,9 +1,9 @@
 package clients
 
 import (
-	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/transport"
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/transport"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 type BaseClient struct {

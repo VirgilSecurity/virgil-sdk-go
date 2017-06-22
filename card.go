@@ -38,7 +38,7 @@ package virgil
 
 import (
 	"github.com/pkg/errors"
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 //Card is basically a public key + meta information like identity, its type and so on

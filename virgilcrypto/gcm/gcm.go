@@ -40,7 +40,7 @@ import (
 	"crypto/subtle"
 	"io"
 
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 const GcmStreamBufSize = 1024 * 1024 //megabyte virgilbuffer

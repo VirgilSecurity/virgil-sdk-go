@@ -1,6 +1,6 @@
 package virgilcrypto
 
-import "gopkg.in/virgil.v4/errors"
+import "gopkg.in/virgil.v5/errors"
 
 type CryptoError string
 

@@ -8,12 +8,12 @@ For a full overview head over to our Go [Get Started][_getstarted] guides.
 
 ## Installation
 
-Run `go get -u gopkg.in/virgil.v4`
+Run `go get -u gopkg.in/virgil.v5`
 
 then add import
 
 ```go
-import "gopkg.in/virgil.v4"
+import "gopkg.in/virgil.v5"
 ```
 
 __Next:__ [Get Started with the Go SDK][_getstarted].

@@ -1,8 +1,8 @@
 package securechat
 
 import (
-	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/clients/cardsroclient"
+	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/clients/cardsroclient"
 )
 
 type Config struct {

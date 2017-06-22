@@ -6,11 +6,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/clients"
-	"gopkg.in/virgil.v4/errors"
-	"gopkg.in/virgil.v4/transport"
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/clients"
+	"gopkg.in/virgil.v5/errors"
+	"gopkg.in/virgil.v5/transport"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 type FakeTransport struct {

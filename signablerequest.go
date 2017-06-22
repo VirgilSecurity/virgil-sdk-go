@@ -7,7 +7,7 @@ import (
 
 	"encoding/hex"
 
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 // ffjson: skip

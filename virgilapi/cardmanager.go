@@ -6,8 +6,8 @@ import (
 
 	"encoding/json"
 
-	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/errors"
 )
 
 type CardManager interface {

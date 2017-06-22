@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 func TestNewCreateCardRequest_CheckCorrectStructFilling(t *testing.T) {

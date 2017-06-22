@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
-	"gopkg.in/virgil.v4"
-	"gopkg.in/virgil.v4/virgilcrypto"
+	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
 type SecureTalk struct {

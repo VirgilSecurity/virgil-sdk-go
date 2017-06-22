@@ -40,7 +40,7 @@ import (
 	"strconv"
 
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 type VirgilSigner interface {

@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"gopkg.in/virgil.v4/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 type KeyStorage interface {

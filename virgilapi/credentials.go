@@ -1,6 +1,6 @@
 package virgilapi
 
-import virgil "gopkg.in/virgil.v4"
+import "gopkg.in/virgil.v5"
 
 type AppCredentials struct {
 	AppId              string

@@ -40,8 +40,8 @@ import (
 
 	"github.com/minio/sha256-simd"
 
-	"gopkg.in/virgil.v4/errors"
-	"gopkg.in/virgil.v4/virgilcrypto/keytypes"
+	"gopkg.in/virgil.v5/errors"
+	"gopkg.in/virgil.v5/virgilcrypto/keytypes"
 )
 
 type (

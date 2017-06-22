@@ -38,7 +38,7 @@ The Virgil SDK is provided as a package named *virgil*. The package is distribut
 
 ### Installing the package
 
-1. go get -u gopkg.in/virgil.v4
+1. go get -u gopkg.in/virgil.v5
 
 ## User and App Credentials
 
@@ -61,7 +61,7 @@ client := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]")
 ```
 
 you can also customize initialization using your own parameters
-> import "gopkg.in/virgil.v4/transport/virgilhttp"
+> import "gopkg.in/virgil.v5/transport/virgilhttp"
 
 ```go
 client, err := virgil.NewClient("[YOUR_ACCESS_TOKEN_HERE]",

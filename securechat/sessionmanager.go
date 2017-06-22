@@ -1,6 +1,6 @@
 package securechat
 
-import "gopkg.in/virgil.v4/virgilcrypto"
+import "gopkg.in/virgil.v5/virgilcrypto"
 
 type SessionManager struct {
 	Sessions map[uint64]*virgilcrypto.PFSSession
