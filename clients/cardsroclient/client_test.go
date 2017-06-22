@@ -49,8 +49,8 @@ func (v *FakeValidator) Validate(c *virgil.Card) error {
 	return args.Error(0)
 }
 
-func (v *FakeValidator) ValidateExtra(c *virgil.Card, extraKeys map[string]virgilcrypto.PublicKey) error {
-	args := v.Called(c, extraKeys)
+func (v *FakeValidator) ValidateExtra(c *virgil.Card, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) error {
+	args := v.Called(c, extraKeys, validateSelfSign)
 	return args.Error(0)
 }
 
@@ -168,7 +168,7 @@ func TestTable_CardValidated_ReturnNilErr(t *testing.T) {
 
 	v := &FakeValidator{}
 	v.On("Validate", mock.Anything).Return(nil)
-	v.On("ValidateExtra", mock.Anything, mock.Anything).Return(nil)
+	v.On("ValidateExtra", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 	for _, err := range clientInvokes(tr, v) {
 		assert.Nil(t, err)

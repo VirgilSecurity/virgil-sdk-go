@@ -1,4 +1,4 @@
-package pfs
+package securechat
 
 import (
 	"gopkg.in/virgil.v4"

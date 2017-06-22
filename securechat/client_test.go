@@ -1,10 +1,11 @@
-package pfs
+package securechat
 
 import (
 	"encoding/json"
 	"testing"
 
 	"encoding/base64"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/virgilcrypto"
 )
@@ -18,11 +19,11 @@ func BenchmarkClient_ResponseToCard(b *testing.B) {
 
 	pubBytes, err := base64.StdEncoding.DecodeString(pubText)
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 	pub, err := virgil.Crypto().ImportPublicKey([]byte(pubBytes))
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 
 	b.ResetTimer()
@@ -30,19 +31,19 @@ func BenchmarkClient_ResponseToCard(b *testing.B) {
 		var resp *virgil.CardResponse
 		err := json.Unmarshal([]byte(responseText), &resp)
 		if err != nil {
-			panic(err)
+			b.Fatal(err)
 		}
 
 		card, err := resp.ToCard()
 		if err != nil {
-			panic(err)
+			b.Fatal(err)
 		}
 		err = validator.ValidateExtra(card, map[string]virgilcrypto.PublicKey{
 			"765ad0ad7a24aa8639de71d15ffacdfe438373449c2ccf17204bdaa96a9fa412": pub,
-		})
+		}, true)
 
 		if err != nil {
-			panic(err)
+			b.Fatal(err)
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package pfs
+package securechat
 
 import (
 	"time"
@@ -6,6 +6,10 @@ import (
 	"strconv"
 
 	"os"
+
+	"fmt"
+
+	"encoding/json"
 
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/clients/cardsroclient"
@@ -19,7 +23,7 @@ type Api struct {
 	pfsClient          *Client
 	cardsClient        *cardsroclient.Client
 	crypto             virgilcrypto.PFS
-	sessionManager     *SessionManager
+	talkManager        *TalkManager
 	storage            virgil.KeyStorage
 	identityCardID     string
 	privateKey         virgilcrypto.PrivateKey
@@ -67,10 +71,13 @@ func New(config *Config) (*Api, error) {
 	}
 
 	api := &Api{
-		pfsClient:          cli,
-		cardsClient:        cardsCli,
-		crypto:             pfsCrypto,
-		sessionManager:     &SessionManager{Sessions: make(map[uint64]*virgilcrypto.PFSSession)},
+		pfsClient:   cli,
+		cardsClient: cardsCli,
+		crypto:      pfsCrypto,
+		talkManager: &TalkManager{
+			TalksByCardId:    make(map[uint64]*SecureTalk),
+			TalksBySessionId: make(map[uint64]*SecureTalk),
+		},
 		storage:            &virgil.FileStorage{RootDir: path},
 		identityCardID:     config.IdentityCardID,
 		privateKey:         pk,
@@ -87,13 +94,13 @@ func New(config *Config) (*Api, error) {
 
 }
 
-func (a *Api) Bootstrap() error {
+func (a *Api) BootstrapCardsSet() error {
 	ltcKey, err := crypto.GenerateKeypair()
 	if err != nil {
 		return err
 	}
 
-	ltc, err := a.EncryptEphemeralKey(ltcKey.PrivateKey())
+	ltc, err := a.encryptEphemeralKey(ltcKey.PrivateKey())
 	if err != nil {
 		return err
 	}
@@ -126,7 +133,9 @@ func (a *Api) Bootstrap() error {
 		otcKeys[otcReq.ID()] = otcKey.PrivateKey()
 	}
 
+	t := time.Now()
 	err = a.pfsClient.CreateRecipient(a.identityCardID, ltcReq, otcRequests)
+	fmt.Println("req", time.Since(t))
 
 	if err != nil {
 		return err
@@ -143,7 +152,7 @@ func (a *Api) Bootstrap() error {
 
 	for id, key := range otcKeys {
 
-		otc, err := a.EncryptEphemeralKey(key)
+		otc, err := a.encryptEphemeralKey(key)
 		if err != nil {
 			return err
 		}
@@ -160,7 +169,7 @@ func (a *Api) Bootstrap() error {
 	return nil
 }
 
-func (a *Api) EncryptEphemeralKey(key virgilcrypto.PrivateKey) ([]byte, error) {
+func (a *Api) encryptEphemeralKey(key virgilcrypto.PrivateKey) ([]byte, error) {
 	exportedKey, err := crypto.ExportPrivateKey(key, "")
 	if err != nil {
 		return nil, err
@@ -177,7 +186,7 @@ func (a *Api) EncryptEphemeralKey(key virgilcrypto.PrivateKey) ([]byte, error) {
 	return ct, err
 }
 
-func (a *Api) DecryptEphemeralKey(data []byte) (virgilcrypto.PrivateKey, error) {
+func (a *Api) decryptEphemeralKey(data []byte) (virgilcrypto.PrivateKey, error) {
 	pt, err := crypto.Decrypt(data, a.privateKey)
 	if err != nil {
 		return nil, err
@@ -186,13 +195,17 @@ func (a *Api) DecryptEphemeralKey(data []byte) (virgilcrypto.PrivateKey, error) 
 	return crypto.ImportPrivateKey(pt, "")
 }
 
-func (a *Api) InitTalkWith(identity string, message virgil.Buffer) ([]*Message, error) {
+func (a *Api) InitTalkWith(cardId string) (*SecureTalk, error) {
 
-	creds, err := a.pfsClient.GetUserCredentials(identity)
+	if talk := a.talkManager.GetByCardId(cardId); talk != nil {
+		return talk, nil
+	}
+
+	creds, err := a.pfsClient.GetUserCredentials(cardId)
 	if err != nil {
 		return nil, err
 	}
-	messages := make([]*Message, 0, len(creds))
+
 	for _, c := range creds {
 		EKa, err := crypto.GenerateKeypair()
 		if err != nil {
@@ -203,13 +216,22 @@ func (a *Api) InitTalkWith(identity string, message virgil.Buffer) ([]*Message, 
 		ad = append(ad, []byte(c.LTC.ID)...)
 		var otcPub virgilcrypto.PublicKey
 		var otcID string
+		ads, adw := ad, ad
+		var session_s, session_w *virgilcrypto.PFSSession
 		if c.OTC != nil {
 			otcPub = c.OTC.PublicKey
 			otcID = c.OTC.ID
-			ad = append(ad, []byte(otcID)...)
+			ads = append(ad, []byte(otcID)...)
+			session_s, err = a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ads)
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		session, err := a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ad)
+		session_w, err = a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, nil, a.privateKey, EKa.PrivateKey(), adw)
+		if err != nil {
+			return nil, err
+		}
 
 		EKaPub, err := crypto.ExportPublicKey(EKa.PublicKey())
 		if err != nil {
@@ -221,44 +243,62 @@ func (a *Api) InitTalkWith(identity string, message virgil.Buffer) ([]*Message, 
 			return nil, err
 		}
 
-		salt, ciphertext := session.Encrypt(message)
-
 		messageData := &Message{
-			ID:         a.identityCardID,
-			Eph:        EKaPub,
-			Signature:  sign,
-			ICID:       c.IdentityCard.ID,
-			LTCID:      c.LTC.ID,
-			OTCID:      otcID,
-			Salt:       salt,
-			Ciphertext: ciphertext,
+			ID:        a.identityCardID,
+			Eph:       EKaPub,
+			Signature: sign,
+			ICID:      c.IdentityCard.ID,
+			LTCID:     c.LTC.ID,
+			StrongSession: &StrongMessageSession{
+				OTCID: c.OTC.ID,
+			},
 		}
 
-		a.sessionManager.AddSession(session)
-		messages = append(messages, messageData)
+		talk := &SecureTalk{
+			weakSession:     session_w,
+			strongSession:   session_s,
+			responderCardId: cardId,
+			initialMessage:  messageData,
+			SessionManager: &SessionManager{
+				Sessions: map[uint64]*virgilcrypto.PFSSession{
+					HashKey(session_w.SessionID): session_w,
+					HashKey(session_s.SessionID): session_s,
+				},
+			},
+		}
+
+		a.talkManager.AddBySessionID(session_s.SessionID, talk)
+		a.talkManager.AddBySessionID(session_w.SessionID, talk)
+		a.talkManager.AddByCardId(talk)
+		return talk, nil
 
 	}
-	return messages, nil
+	return nil, errors.New("No credentials found for card")
 }
 
-func (a *Api) ReceiveMessage(message *Message) (virgil.Buffer, error) {
-	if message == nil {
-		return nil, errors.New("Message is nil")
+func (a *Api) InitTalkFromMessage(message virgil.Buffer) (*SecureTalk, error) {
+
+	var msg *Message
+
+	err := json.Unmarshal(message, &msg)
+	if err != nil {
+		return nil, err
 	}
 
-	if message.SessionId != nil {
-		return a.ReceiveSessionMessage(message)
+	if msg.SessionId != nil {
+		if talk := a.talkManager.GetBySessionId(msg.SessionId); talk != nil {
+			return talk, nil
+		}
+		return nil, errors.New("Session not found")
 	}
 
-	if message.ID != "" {
-		return a.ReceiveInitialMessage(message)
-	}
-	return nil, errors.New("invalid message")
+	return a.receiveInitialMessage(msg)
+
 }
 
-func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
+func (a *Api) receiveInitialMessage(message *Message) (*SecureTalk, error) {
 
-	err := a.ValidateInitialMessage(message)
+	err := a.validateInitialMessage(message)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +332,7 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 		return nil, errors.Errorf("Supplied card ID %s is not LTC", message.LTCID)
 	}
 
-	ltcKey, err := a.DecryptEphemeralKey(ltcKeyData.Data)
+	ltcKey, err := a.decryptEphemeralKey(ltcKeyData.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -301,9 +341,11 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 	ad = append(ad, []byte(message.LTCID)...)
 
 	var otcKey virgilcrypto.PrivateKey
+	adw, ads := ad, ad
+	var session_w, session_s *virgilcrypto.PFSSession
 
-	if message.OTCID != "" {
-		otcKeyData, err := a.storage.Load(message.OTCID)
+	if message.StrongSession != nil && message.StrongSession.OTCID != "" {
+		otcKeyData, err := a.storage.Load(message.StrongSession.OTCID)
 		if err != nil {
 			return nil, err
 		}
@@ -315,37 +357,45 @@ func (a *Api) ReceiveInitialMessage(message *Message) (virgil.Buffer, error) {
 		}
 
 		if typ != "otc" {
-			return nil, errors.Errorf("Supplied card ID %s is not OTC", message.OTCID)
+			return nil, errors.Errorf("Supplied card ID %s is not OTC", message.StrongSession.OTCID)
 		}
 
-		otcKey, err = a.DecryptEphemeralKey(otcKeyData.Data)
+		otcKey, err = a.decryptEphemeralKey(otcKeyData.Data)
 		if err != nil {
 			return nil, err
 		}
-		a.storage.Delete(message.OTCID) //This is the core idea of PFS
-		ad = append(ad, []byte(message.OTCID)...)
+		a.storage.Delete(message.StrongSession.OTCID) //This is the core idea of PFS
+		ads = append(ad, []byte(message.StrongSession.OTCID)...)
+
+		session_s, err = a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ads)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	sess, err := a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
+	session_w, err = a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, nil, adw)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var plaintext virgil.Buffer
-	if message.Salt != nil && message.Ciphertext != nil {
-		plaintext, err = sess.Decrypt(message.Salt, message.Ciphertext)
-		if err != nil {
-			return nil, err
-		}
+	talk := &SecureTalk{
+		responderCardId: message.ID,
+		strongSession:   session_s,
+		weakSession:     session_w,
+		SessionManager: &SessionManager{
+			Sessions: map[uint64]*virgilcrypto.PFSSession{
+				HashKey(session_w.SessionID): session_w,
+				HashKey(session_s.SessionID): session_s,
+			},
+		},
 	}
 
-	a.sessionManager.AddSession(sess)
-
-	return plaintext, nil
+	return talk, nil
 }
 
-func (a *Api) ValidateInitialMessage(msg *Message) error {
+func (a *Api) validateInitialMessage(msg *Message) error {
 	if len(msg.ID) != 64 || len(msg.ICID) != 64 || len(msg.LTCID) != 64 ||
 		msg.Eph == nil || msg.Signature == nil {
 		return errors.New("initial message is incomplete")
@@ -359,7 +409,7 @@ func (a *Api) ValidateInitialMessage(msg *Message) error {
 		return errors.New("Identity card ID mismatch")
 	}
 
-	if msg.OTCID != "" && (len(msg.OTCID) != 64 || !isHex(msg.OTCID)) {
+	if msg.StrongSession != nil && msg.StrongSession.OTCID != "" && (len(msg.StrongSession.OTCID) != 64 || !isHex(msg.StrongSession.OTCID)) {
 		return errors.New("incorrect otc id")
 	}
 
@@ -398,30 +448,4 @@ func fromHexChar(c byte) bool {
 	}
 
 	return false
-}
-
-func (a *Api) ReceiveSessionMessage(message *Message) (virgil.Buffer, error) {
-
-	if len(message.SessionId) != 32 {
-		return nil, errors.New("Invalid session id")
-	}
-
-	if len(message.Salt) != 16 {
-		return nil, errors.New("Invalid salt")
-	}
-
-	if len(message.Ciphertext) < 16 {
-		return nil, errors.New("Invalid ciphertext")
-	}
-
-	session := a.sessionManager.GetSession(message.SessionId)
-	if session == nil {
-		return nil, errors.New("Session not found")
-	}
-
-	plaintext, err := session.Decrypt(message.Salt, message.Ciphertext)
-	if err != nil {
-		return nil, err
-	}
-	return plaintext, nil
 }

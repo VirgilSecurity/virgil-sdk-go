@@ -1,4 +1,4 @@
-package pfs
+package securechat
 
 import "gopkg.in/virgil.v4"
 
@@ -34,14 +34,26 @@ type CreateRecipientResponse struct {
 	OTCS []*virgil.CardResponse `json:"one_time_cards"`
 }
 
+//contains both initial & following messages
 type Message struct {
-	ID         string `json:"id,omitempty"`
-	SessionId  []byte `json:"session_id,omitempty"`
-	Eph        []byte `json:"eph,omitempty"`
-	Signature  []byte `json:"sign,omitempty"`
-	ICID       string `json:"ic_id"`
-	LTCID      string `json:"ltc_id,omitempty"`
-	OTCID      string `json:"otc_id,omitempty"`
+	ID            string                `json:"id,omitempty"`
+	SessionId     []byte                `json:"session_id,omitempty"`
+	Eph           []byte                `json:"eph,omitempty"`
+	Signature     []byte                `json:"sign,omitempty"`
+	ICID          string                `json:"ic_id"`
+	LTCID         string                `json:"ltc_id,omitempty"`
+	WeakSession   *WeakMessageSession   `json:"session_w, omitempty"`
+	StrongSession *StrongMessageSession `json:"session_s, omitempty"`
+	Salt          []byte                `json:"salt"`
+	Ciphertext    []byte                `json:"ciphertext"`
+}
+
+type WeakMessageSession struct {
 	Salt       []byte `json:"salt"`
 	Ciphertext []byte `json:"ciphertext"`
+}
+
+type StrongMessageSession struct {
+	WeakMessageSession
+	OTCID string `json:"responder_otc_id,omitempty"`
 }
