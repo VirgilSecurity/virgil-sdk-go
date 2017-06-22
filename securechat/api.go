@@ -7,8 +7,6 @@ import (
 
 	"os"
 
-	"fmt"
-
 	"encoding/json"
 
 	"gopkg.in/virgil.v5"
@@ -133,9 +131,7 @@ func (a *Api) BootstrapCardsSet() error {
 		otcKeys[otcReq.ID()] = otcKey.PrivateKey()
 	}
 
-	t := time.Now()
 	err = a.pfsClient.CreateRecipient(a.identityCardID, ltcReq, otcRequests)
-	fmt.Println("req", time.Since(t))
 
 	if err != nil {
 		return err
@@ -276,7 +272,7 @@ func (a *Api) InitTalkWith(cardId string) (*SecureTalk, error) {
 	return nil, errors.New("No credentials found for card")
 }
 
-func (a *Api) InitTalkFromMessage(message virgil.Buffer) (*SecureTalk, error) {
+func (a *Api) RespondToTalkWith(message virgil.Buffer) (*SecureTalk, error) {
 
 	var msg *Message
 
