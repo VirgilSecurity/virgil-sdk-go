@@ -34,7 +34,7 @@ var (
 		},
 		GetUserCredentials: {
 			Method: http.MethodPost,
-			URL:    "%s/v1/recipient/actions/search",
+			URL:    "%s/v1/recipient/actions/search-by-ids",
 		},
 		GetOTCCardCount: {
 			Method: http.MethodPost,

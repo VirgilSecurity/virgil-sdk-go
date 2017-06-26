@@ -76,9 +76,9 @@ func (s *SecureTalk) Decrypt(message virgil.Buffer) (virgil.Buffer, error) {
 	if err == nil {
 
 		//responder chose one of the sessions, drop another
-		/*if len(msgs) == 1 && len(s.SessionManager.Sessions) == 2 {
+		if len(msgs) == 1 && len(s.SessionManager.Sessions) == 2 {
 			s.SessionManager.DeleteAllExceptID(msgs[0].SessionId)
-		}*/
+		}
 
 		for _, msg := range msgs {
 			sess := s.SessionManager.GetBySessionId(msg.SessionId)
@@ -89,7 +89,7 @@ func (s *SecureTalk) Decrypt(message virgil.Buffer) (virgil.Buffer, error) {
 				}
 			}
 		}
-		return nil, errors.Wrap(err, "Could not decrypt message")
+		return nil, errors.Wrap(err, "Could not find session for message")
 	}
 
 	var msg *Message

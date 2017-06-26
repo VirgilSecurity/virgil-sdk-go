@@ -21,7 +21,7 @@ type CredentialsResponse struct {
 }
 
 type CredentialsRequest struct {
-	Identities []string `json:"identities"`
+	CardIds []string `json:"identity_cards_ids"`
 }
 
 type CreateRecipientRequest struct {

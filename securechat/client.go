@@ -97,17 +97,17 @@ func (c *Client) UploadOTCCards(icCardID string, requests []*virgil.SignableRequ
 }
 
 // GetUserCredentials receives a set of credentials for specified identities
-func (c *Client) GetUserCredentials(identities ...string) ([]*Credentials, error) {
-	if len(identities) == 0 {
+func (c *Client) GetUserCredentials(cardIds ...string) ([]*Credentials, error) {
+	if len(cardIds) == 0 {
 		return nil, errors.New("nothing to search for")
 	}
-	for _, i := range identities {
+	for _, i := range cardIds {
 		if i == "" {
-			return nil, errors.New("identity is empty")
+			return nil, errors.New("cardId is empty")
 		}
 	}
 	var res []*CredentialsResponse
-	err := c.TransportClient.Call(GetUserCredentials, &CredentialsRequest{Identities: identities}, &res)
+	err := c.TransportClient.Call(GetUserCredentials, &CredentialsRequest{CardIds: cardIds}, &res)
 
 	if err != nil {
 		return nil, err
