@@ -36,12 +36,12 @@ type CreateRecipientResponse struct {
 
 //contains both initial & following messages
 type Message struct {
-	ID         string `json:"id,omitempty"`
+	ID         string `json:"initiator_ic_id,omitempty"`
 	SessionId  []byte `json:"session_id,omitempty"`
 	Eph        []byte `json:"eph,omitempty"`
 	Signature  []byte `json:"sign,omitempty"`
-	ICID       string `json:"ic_id"`
-	LTCID      string `json:"ltc_id,omitempty"`
+	ICID       string `json:"responder_ic_id"`
+	LTCID      string `json:"responder_ltc_id,omitempty"`
 	OTCID      string `json:"responder_otc_id,omitempty"`
 	Salt       []byte `json:"salt"`
 	Ciphertext []byte `json:"ciphertext"`
