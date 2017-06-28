@@ -7,6 +7,7 @@ import (
 	"gopkg.in/virgil.v5/errors"
 )
 
+//easyjson:json
 type ResponseMeta struct {
 	CreatedAt   string            `json:"created_at"`
 	CardVersion string            `json:"card_version"`
@@ -14,6 +15,7 @@ type ResponseMeta struct {
 	Relations   map[string][]byte `json:"relations"`
 }
 
+//easyjson:json
 type CardResponse struct {
 	ID       string       `json:"id"`
 	Snapshot []byte       `json:"content_snapshot"`

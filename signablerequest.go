@@ -10,12 +10,13 @@ import (
 	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
-// ffjson: skip
 type CardParams struct {
 	Scope      Enum
 	Data       map[string]string
 	DeviceInfo *DeviceInfo
 }
+
+//easyjson:json
 type CardModel struct {
 	Identity     string            `json:"identity"`
 	IdentityType string            `json:"identity_type"`
@@ -25,16 +26,19 @@ type CardModel struct {
 	DeviceInfo   *DeviceInfo       `json:"info"`
 }
 
+//easyjson:json
 type SignableRequest struct {
 	Snapshot []byte      `json:"content_snapshot"`
 	Meta     RequestMeta `json:"meta"`
 }
 
+//easyjson:json
 type RequestMeta struct {
 	Signatures map[string][]byte `json:"signs"`
 	Validation *ValidationInfo   `json:"validation,omitempty"`
 }
 
+//easyjson:json
 type ValidationInfo struct {
 	Token string `json:"token,omitempty"`
 }
