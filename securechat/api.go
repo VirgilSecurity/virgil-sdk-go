@@ -212,19 +212,14 @@ func (a *Api) InitTalkWith(cardId string) (*SecureTalk, error) {
 		ad = append(ad, []byte(c.LTC.ID)...)
 		var otcPub virgilcrypto.PublicKey
 		var otcID string
-		ads, adw := ad, ad
-		var session_s, session_w *virgilcrypto.PFSSession
 		if c.OTC != nil {
 			otcPub = c.OTC.PublicKey
 			otcID = c.OTC.ID
-			ads = append(ad, []byte(otcID)...)
-			session_s, err = a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ads)
-			if err != nil {
-				return nil, err
-			}
+			ad = append(ad, []byte(otcID)...)
+
 		}
 
-		session_w, err = a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, nil, a.privateKey, EKa.PrivateKey(), adw)
+		session, err := a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ad)
 		if err != nil {
 			return nil, err
 		}
@@ -245,26 +240,16 @@ func (a *Api) InitTalkWith(cardId string) (*SecureTalk, error) {
 			Signature: sign,
 			ICID:      c.IdentityCard.ID,
 			LTCID:     c.LTC.ID,
-			StrongSession: &StrongMessageSession{
-				OTCID: c.OTC.ID,
-			},
+			OTCID:     c.OTC.ID,
 		}
 
 		talk := &SecureTalk{
-			weakSession:     session_w,
-			strongSession:   session_s,
+			Session:         session,
 			responderCardId: cardId,
 			initialMessage:  messageData,
-			SessionManager: &SessionManager{
-				Sessions: map[uint64]*virgilcrypto.PFSSession{
-					HashKey(session_w.SessionID): session_w,
-					HashKey(session_s.SessionID): session_s,
-				},
-			},
 		}
 
-		a.talkManager.AddBySessionID(session_s.SessionID, talk)
-		a.talkManager.AddBySessionID(session_w.SessionID, talk)
+		a.talkManager.AddBySessionID(session.SessionID, talk)
 		a.talkManager.AddByCardId(talk)
 		return talk, nil
 
@@ -337,11 +322,9 @@ func (a *Api) receiveInitialMessage(message *Message) (*SecureTalk, error) {
 	ad = append(ad, []byte(message.LTCID)...)
 
 	var otcKey virgilcrypto.PrivateKey
-	adw, ads := ad, ad
-	var session_w, session_s *virgilcrypto.PFSSession
 
-	if message.StrongSession != nil && message.StrongSession.OTCID != "" {
-		otcKeyData, err := a.storage.Load(message.StrongSession.OTCID)
+	if message.OTCID != "" {
+		otcKeyData, err := a.storage.Load(message.OTCID)
 		if err != nil {
 			return nil, err
 		}
@@ -353,24 +336,19 @@ func (a *Api) receiveInitialMessage(message *Message) (*SecureTalk, error) {
 		}
 
 		if typ != "otc" {
-			return nil, errors.Errorf("Supplied card ID %s is not OTC", message.StrongSession.OTCID)
+			return nil, errors.Errorf("Supplied card ID %s is not OTC", message.OTCID)
 		}
 
 		otcKey, err = a.decryptEphemeralKey(otcKeyData.Data)
 		if err != nil {
 			return nil, err
 		}
-		a.storage.Delete(message.StrongSession.OTCID) //This is the core idea of PFS
-		ads = append(ad, []byte(message.StrongSession.OTCID)...)
+		a.storage.Delete(message.OTCID) //This is the core idea of PFS
+		ad = append(ad, []byte(message.OTCID)...)
 
-		session_s, err = a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ads)
-
-		if err != nil {
-			return nil, err
-		}
 	}
 
-	session_w, err = a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, nil, adw)
+	session, err := a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
 
 	if err != nil {
 		return nil, err
@@ -378,14 +356,7 @@ func (a *Api) receiveInitialMessage(message *Message) (*SecureTalk, error) {
 
 	talk := &SecureTalk{
 		responderCardId: message.ID,
-		strongSession:   session_s,
-		weakSession:     session_w,
-		SessionManager: &SessionManager{
-			Sessions: map[uint64]*virgilcrypto.PFSSession{
-				HashKey(session_w.SessionID): session_w,
-				HashKey(session_s.SessionID): session_s,
-			},
-		},
+		Session:         session,
 	}
 
 	return talk, nil
@@ -405,7 +376,7 @@ func (a *Api) validateInitialMessage(msg *Message) error {
 		return errors.New("Identity card ID mismatch")
 	}
 
-	if msg.StrongSession != nil && msg.StrongSession.OTCID != "" && (len(msg.StrongSession.OTCID) != 64 || !isHex(msg.StrongSession.OTCID)) {
+	if msg.OTCID != "" && (len(msg.OTCID) != 64 || !isHex(msg.OTCID)) {
 		return errors.New("incorrect otc id")
 	}
 
