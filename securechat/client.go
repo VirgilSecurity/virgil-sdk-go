@@ -82,8 +82,8 @@ func (c *Client) UploadOTCCards(icCardID string, requests []*virgil.SignableRequ
 	}
 
 	for _, r := range requests {
-		if r == nil || len(r.Snapshot) == 0 || len(r.Meta.Signatures) != 2 {
-			return errors.New("request is empty or number of signatures is not 2")
+		if r == nil || len(r.Snapshot) == 0 || len(r.Meta.Signatures) != 1 {
+			return errors.New("request is empty or number of signatures is not 1")
 		}
 	}
 	var res []*virgil.CardResponse
