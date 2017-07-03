@@ -1,5 +1,7 @@
 package errors
 
+import "fmt"
+
 // HTTPError stores HTTP Status error.
 type HTTPError struct {
 	code int
@@ -27,6 +29,12 @@ type SDKError struct {
 }
 
 func (e SDKError) Error() string {
+	if e.IsServiceError() {
+		return fmt.Sprintf("http status code %d, service code: %d, message: %s", e.HTTPErrorCode(), e.ServiceErrorCode(), e.Message)
+	}
+	if e.IsHTTPError() {
+		return fmt.Sprintf("http error %d", e.HTTPErrorCode())
+	}
 	return e.Message
 }
 
