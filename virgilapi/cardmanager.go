@@ -142,7 +142,7 @@ func (c *cardManager) Import(card string) (*Card, error) {
 		return nil, err
 	}
 
-	err = c.context.validator.Validate(model)
+	err = virgil.NewCardsValidator().Validate(model)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "imported card validation failed")

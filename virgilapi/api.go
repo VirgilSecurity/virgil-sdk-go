@@ -100,6 +100,12 @@ func NewWithConfig(config Config) (*Api, error) {
 			cardsROParams = append(cardsROParams, clients.ClientCardsValidator(validator))
 			identityParams = append(identityParams, clients.ClientCardsValidator(validator))
 			raParams = append(raParams, clients.ClientCardsValidator(validator))
+		} else {
+			val, err := virgil.MakeDefaultCardsValidator()
+			if err != nil {
+				return nil, err
+			}
+			validator = val
 		}
 	}
 
