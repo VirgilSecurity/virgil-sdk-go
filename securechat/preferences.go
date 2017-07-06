@@ -5,7 +5,7 @@ import (
 	"gopkg.in/virgil.v5/clients/cardsroclient"
 )
 
-type Config struct {
+type Preferences struct {
 	AccessToken        string
 	IdentityCardID     string
 	PrivateKey         virgil.Buffer

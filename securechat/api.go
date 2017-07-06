@@ -21,7 +21,7 @@ type Api struct {
 	pfsClient          *Client
 	cardsClient        *cardsroclient.Client
 	crypto             virgilcrypto.PFS
-	talkManager        *TalkManager
+	sessionManager     *SessionManager
 	storage            virgil.KeyStorage
 	identityCardID     string
 	privateKey         virgilcrypto.PrivateKey
@@ -31,19 +31,19 @@ type Api struct {
 
 var crypto = virgil.Crypto()
 
-func New(config *Config) (*Api, error) {
+func New(preferences *Preferences) (*Api, error) {
 
-	cli, err := config.PFSClient, error(nil)
-	cardsCli := config.CardsClient
+	cli, err := preferences.PFSClient, error(nil)
+	cardsCli := preferences.CardsClient
 
-	if config.PFSClient == nil {
-		cli, err = NewClient(config.AccessToken)
+	if preferences.PFSClient == nil {
+		cli, err = NewClient(preferences.AccessToken)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if config.CardsClient == nil {
-		cardsCli, err = cardsroclient.New(config.AccessToken)
+	if preferences.CardsClient == nil {
+		cardsCli, err = cardsroclient.New(preferences.AccessToken)
 		if err != nil {
 			return nil, err
 		}
@@ -55,13 +55,13 @@ func New(config *Config) (*Api, error) {
 		return nil, errors.New("Crypto does not implement PFS")
 	}
 
-	pk, err := crypto.ImportPrivateKey(config.PrivateKey, config.PrivateKeyPassword)
+	pk, err := crypto.ImportPrivateKey(preferences.PrivateKey, preferences.PrivateKeyPassword)
 	if err != nil {
 		return nil, err
 	}
 	path := "."
-	if config.KeyStoragePath != "" {
-		path = config.KeyStoragePath
+	if preferences.KeyStoragePath != "" {
+		path = preferences.KeyStoragePath
 	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -72,27 +72,76 @@ func New(config *Config) (*Api, error) {
 		pfsClient:   cli,
 		cardsClient: cardsCli,
 		crypto:      pfsCrypto,
-		talkManager: &TalkManager{
-			TalksByCardId:    make(map[uint64]*SecureTalk),
-			TalksBySessionId: make(map[uint64]*SecureTalk),
+		sessionManager: &SessionManager{
+			SessionsByCardId: make(map[uint64]*Session),
+			SessionsById:     make(map[uint64]*Session),
 		},
 		storage:            &virgil.FileStorage{RootDir: path},
-		identityCardID:     config.IdentityCardID,
+		identityCardID:     preferences.IdentityCardID,
 		privateKey:         pk,
-		privateKeyPassword: config.PrivateKeyPassword,
+		privateKeyPassword: preferences.PrivateKeyPassword,
 	}
 
-	if config.OTCCount < 1 {
+	if preferences.OTCCount < 1 {
 		api.otcCount = MaxOTCs
 	} else {
-		api.otcCount = config.OTCCount
+		api.otcCount = preferences.OTCCount
 	}
 
 	return api, nil
 
 }
 
-func (a *Api) BootstrapCardsSet() error {
+func (a *Api) GetActiveSession(cardId string) *Session {
+	sess := a.sessionManager.GetByCardId(cardId)
+	if sess == nil || sess.IsExpired() {
+		return nil
+	}
+	return sess
+}
+
+func (a *Api) LoadUpSession(card *virgil.Card, message virgil.Buffer) (sess *Session, err error) {
+	sess = a.sessionManager.GetByCardId(card.ID)
+	if sess == nil {
+		sess, err = a.EstablishSessionByMessage(card, message)
+		if err != nil {
+			return nil, err
+		}
+		a.sessionManager.AddByCardId(sess)
+	}
+	return sess, nil
+}
+
+func (a *Api) SendMessage(receiver string, message virgil.Buffer) (virgil.Buffer, error) {
+	sess := a.sessionManager.GetByCardId(receiver)
+	var err error
+	if sess == nil || sess.IsExpired() {
+		sess, err = a.StartNewSessionWith(receiver)
+		if err != nil {
+			return nil, err
+		}
+		a.sessionManager.AddByCardId(sess)
+	}
+
+	return sess.Encrypt(message)
+}
+
+/*func (a *Api) ReceiveMessage(sender string, message virgil.Buffer) (virgil.Buffer, error) {
+	sess := a.sessionManager.GetByCardId(sender)
+	var err error
+	if sess == nil {
+
+		sess, err = a.EstablishSessionByMessage(message)
+		if err != nil {
+			return nil, err
+		}
+		a.sessionManager.AddByCardId(sess)
+	}
+
+	return sess.Decrypt(message)
+}*/
+
+func (a *Api) Initialize() error {
 	ltcKey, err := crypto.GenerateKeypair()
 	if err != nil {
 		return err
@@ -191,9 +240,9 @@ func (a *Api) decryptEphemeralKey(data []byte) (virgilcrypto.PrivateKey, error) 
 	return crypto.ImportPrivateKey(pt, "")
 }
 
-func (a *Api) InitTalkWith(cardId string) (*SecureTalk, error) {
+func (a *Api) StartNewSessionWith(cardId string) (*Session, error) {
 
-	if talk := a.talkManager.GetByCardId(cardId); talk != nil {
+	if talk := a.sessionManager.GetByCardId(cardId); talk != nil {
 		return talk, nil
 	}
 
@@ -243,21 +292,21 @@ func (a *Api) InitTalkWith(cardId string) (*SecureTalk, error) {
 			OTCID:     c.OTC.ID,
 		}
 
-		talk := &SecureTalk{
+		talk := &Session{
 			Session:         session,
 			responderCardId: cardId,
 			initialMessage:  messageData,
 		}
 
-		a.talkManager.AddBySessionID(session.SessionID, talk)
-		a.talkManager.AddByCardId(talk)
+		a.sessionManager.AddBySessionID(session.SessionID, talk)
+		a.sessionManager.AddByCardId(talk)
 		return talk, nil
 
 	}
 	return nil, errors.New("No credentials found for card")
 }
 
-func (a *Api) RespondToTalkWith(message virgil.Buffer) (*SecureTalk, error) {
+func (a *Api) EstablishSessionByMessage(card *virgil.Card, message virgil.Buffer) (*Session, error) {
 
 	var msg *Message
 
@@ -267,29 +316,32 @@ func (a *Api) RespondToTalkWith(message virgil.Buffer) (*SecureTalk, error) {
 	}
 
 	if msg.SessionId != nil {
-		if talk := a.talkManager.GetBySessionId(msg.SessionId); talk != nil {
+		if talk := a.sessionManager.GetBySessionId(msg.SessionId); talk != nil {
 			return talk, nil
 		}
 		return nil, errors.New("Session not found")
 	}
 
-	return a.receiveInitialMessage(msg)
+	return a.receiveInitialMessage(card, msg)
 
 }
 
-func (a *Api) receiveInitialMessage(message *Message) (*SecureTalk, error) {
+func (a *Api) receiveInitialMessage(identityCard *virgil.Card, message *Message) (*Session, error) {
 
 	err := a.validateInitialMessage(message)
 	if err != nil {
 		return nil, err
 	}
 
-	ICa, err := a.cardsClient.GetCard(message.ID)
-	if err != nil {
-		return nil, err
+	if identityCard == nil {
+		return nil, errors.New("No identity card provided")
 	}
 
-	err = crypto.Verify(message.Eph, message.Signature, ICa.PublicKey)
+	if identityCard.ID != message.ID {
+		return nil, errors.New("The provided card does not correspond to the identity card ID in message")
+	}
+
+	err = crypto.Verify(message.Eph, message.Signature, identityCard.PublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -348,13 +400,13 @@ func (a *Api) receiveInitialMessage(message *Message) (*SecureTalk, error) {
 
 	}
 
-	session, err := a.crypto.ReceivePFCSession(ICa.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
+	session, err := a.crypto.ReceivePFCSession(identityCard.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
 
 	if err != nil {
 		return nil, err
 	}
 
-	talk := &SecureTalk{
+	talk := &Session{
 		responderCardId: message.ID,
 		Session:         session,
 	}

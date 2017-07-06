@@ -3,19 +3,21 @@ package securechat
 import (
 	"encoding/json"
 
+	"time"
+
 	"github.com/pkg/errors"
 	"gopkg.in/virgil.v5"
 	"gopkg.in/virgil.v5/virgilcrypto"
 )
 
-type SecureTalk struct {
+type Session struct {
 	responderCardId string
 	Session         *virgilcrypto.PFSSession
-	used            bool
 	initialMessage  *Message
+	ExpirationDate  time.Time
 }
 
-func (s *SecureTalk) Encrypt(message virgil.Buffer) (virgil.Buffer, error) {
+func (s *Session) Encrypt(message virgil.Buffer) (virgil.Buffer, error) {
 
 	salt, ct := s.Session.Encrypt(message)
 
@@ -41,7 +43,15 @@ func (s *SecureTalk) Encrypt(message virgil.Buffer) (virgil.Buffer, error) {
 	return js, err
 }
 
-func (s *SecureTalk) Decrypt(message virgil.Buffer) (virgil.Buffer, error) {
+func (s *Session) IsExpired() bool {
+	if s.ExpirationDate.IsZero() {
+		return false
+	}
+
+	return time.Now().After(s.ExpirationDate)
+}
+
+func (s *Session) Decrypt(message virgil.Buffer) (virgil.Buffer, error) {
 	var msgs []*Message
 
 	err := json.Unmarshal(message, &msgs)
@@ -58,15 +68,12 @@ func (s *SecureTalk) Decrypt(message virgil.Buffer) (virgil.Buffer, error) {
 	}
 
 	var msg *Message
+
 	err = json.Unmarshal(message, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not deserialize message")
 	}
 
-	res, err := s.Session.Decrypt(msg.Salt, msg.Ciphertext)
-	if err == nil {
-		return res, nil
-	}
+	return s.Session.Decrypt(msg.Salt, msg.Ciphertext)
 
-	return nil, nil //empty message
 }

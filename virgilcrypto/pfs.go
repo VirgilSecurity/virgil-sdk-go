@@ -121,6 +121,9 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 }
 
 func (s *PFSSession) Decrypt(salt, ciphertext []byte) ([]byte, error) {
+	if salt == nil && ciphertext == nil {
+		return nil, nil
+	}
 
 	keyAndNonce := make([]byte, 44)
 
