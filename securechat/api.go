@@ -112,11 +112,14 @@ func (a *Api) LoadUpSession(card *virgil.Card, message virgil.Buffer) (sess *Ses
 	return sess, nil
 }
 
-func (a *Api) SendMessage(receiver string, message virgil.Buffer) (virgil.Buffer, error) {
-	sess := a.sessionManager.GetByCardId(receiver)
+func (a *Api) SendMessage(responderCard *virgil.Card, message virgil.Buffer) (virgil.Buffer, error) {
+	if responderCard == nil {
+		return nil, errors.New("responder's card is nil")
+	}
+	sess := a.sessionManager.GetByCardId(responderCard.ID)
 	var err error
 	if sess == nil || sess.IsExpired() {
-		sess, err = a.StartNewSessionWith(receiver)
+		sess, err = a.StartNewSessionWith(responderCard)
 		if err != nil {
 			return nil, err
 		}
@@ -240,13 +243,17 @@ func (a *Api) decryptEphemeralKey(data []byte) (virgilcrypto.PrivateKey, error) 
 	return crypto.ImportPrivateKey(pt, "")
 }
 
-func (a *Api) StartNewSessionWith(cardId string) (*Session, error) {
+func (a *Api) StartNewSessionWith(card *virgil.Card) (*Session, error) {
 
-	if talk := a.sessionManager.GetByCardId(cardId); talk != nil {
-		return talk, nil
+	if card == nil {
+		return nil, errors.New("card is nil")
 	}
 
-	creds, err := a.pfsClient.GetUserCredentials(cardId)
+	if session := a.sessionManager.GetByCardId(card.ID); session != nil {
+		return session, nil
+	}
+
+	creds, err := a.pfsClient.GetUserCredentials(card.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +301,7 @@ func (a *Api) StartNewSessionWith(cardId string) (*Session, error) {
 
 		talk := &Session{
 			Session:         session,
-			responderCardId: cardId,
+			responderCardId: card.ID,
 			initialMessage:  messageData,
 		}
 
