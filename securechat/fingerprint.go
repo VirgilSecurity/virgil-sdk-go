@@ -35,20 +35,21 @@ func NumberFingerprint(cardIds []string) (string, error) {
 			h.Write([]byte(tmp[j]))
 		}
 	}
-	hash := h.Sum(nil)[:36] //we need only 32 bytes (256 bits)
+	hash := h.Sum(nil)
 
 	return HashToStr(hash), nil
 }
 
 //makes 60 digit number from 288 bit hash
 func HashToStr(hash []byte) (res string) {
-	if len(hash) != 36 {
+	if len(hash) != 48 {
 		panic("hash len is not 36")
 	}
-	for i := 0; i < 36; i += 3 {
+	for i := 0; i < 48; i += 4 {
 		t := uint32(hash[i])
 		t += uint32(hash[i+1]) << 8
 		t += uint32(hash[i+2]) << 16
+		t += uint32(hash[i+3]) << 24
 		t = t % uint32(100000)
 		res += fmt.Sprintf("%05d ", t)
 	}
