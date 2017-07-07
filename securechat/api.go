@@ -418,7 +418,7 @@ func (a *Api) receiveInitialMessage(identityCard *virgil.Card, message *Message)
 		return nil, err
 	}
 
-	securityNumber, err := NumberFingerprint([]string{identityCard.ID, a.identityCardID})
+	securityNumber, err := NumberFingerprint([]string{a.identityCardID, identityCard.ID})
 	session := &Session{
 		responderCardId: message.ID,
 		Session:         pfsSession,

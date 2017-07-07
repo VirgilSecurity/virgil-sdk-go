@@ -12,27 +12,27 @@ const iterations = 4096
 
 //NumberFingerprint generates a string representation of
 func NumberFingerprint(cardIds []string) (string, error) {
-
+	//fmt.Println(cardIds)
 	if len(cardIds) == 0 {
 		return "", errors.New("no cards provided")
 	}
 
-	tmp := make([]string, 0, len(cardIds))
+	sortedIds := make([]string, 0, len(cardIds))
 	for _, c := range cardIds {
 		if c == "" {
 			return "", errors.New("one of the supplied cards is nil")
 		}
-		tmp = append(tmp, c)
+		sortedIds = append(sortedIds, c)
 	}
 
-	sort.Slice(tmp, func(i, j int) bool {
-		return tmp[i] < tmp[j]
+	sort.Slice(sortedIds, func(i, j int) bool {
+		return sortedIds[i] < sortedIds[j]
 	})
 
 	h := sha512.New384()
 	for i := 0; i < iterations; i++ {
-		for j := 0; j < len(tmp); j++ {
-			h.Write([]byte(tmp[j]))
+		for j := 0; j < len(sortedIds); j++ {
+			h.Write([]byte(sortedIds[j]))
 		}
 	}
 	hash := h.Sum(nil)
