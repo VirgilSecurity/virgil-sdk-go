@@ -15,6 +15,7 @@ type Session struct {
 	Session         *virgilcrypto.PFSSession
 	initialMessage  *Message
 	ExpirationDate  time.Time
+	SecurityNumber  string
 }
 
 func (s *Session) Encrypt(message virgil.Buffer) (virgil.Buffer, error) {

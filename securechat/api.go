@@ -275,7 +275,7 @@ func (a *Api) StartNewSessionWith(card *virgil.Card) (*Session, error) {
 
 		}
 
-		session, err := a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ad)
+		pfsSession, err := a.crypto.StartPFSSession(c.IdentityCard.PublicKey, c.LTC.PublicKey, otcPub, a.privateKey, EKa.PrivateKey(), ad)
 		if err != nil {
 			return nil, err
 		}
@@ -299,15 +299,20 @@ func (a *Api) StartNewSessionWith(card *virgil.Card) (*Session, error) {
 			OTCID:     c.OTC.ID,
 		}
 
-		talk := &Session{
-			Session:         session,
+		securityNumber, err := NumberFingerprint([]string{a.identityCardID, card.ID})
+		if err != nil {
+			return nil, err
+		}
+		session := &Session{
+			Session:         pfsSession,
 			responderCardId: card.ID,
 			initialMessage:  messageData,
+			SecurityNumber:  securityNumber,
 		}
 
-		a.sessionManager.AddBySessionID(session.SessionID, talk)
-		a.sessionManager.AddByCardId(talk)
-		return talk, nil
+		a.sessionManager.AddBySessionID(pfsSession.SessionID, session)
+		a.sessionManager.AddByCardId(session)
+		return session, nil
 
 	}
 	return nil, errors.New("No credentials found for card")
@@ -407,18 +412,20 @@ func (a *Api) receiveInitialMessage(identityCard *virgil.Card, message *Message)
 
 	}
 
-	session, err := a.crypto.ReceivePFCSession(identityCard.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
+	pfsSession, err := a.crypto.ReceivePFCSession(identityCard.PublicKey, EKa, a.privateKey, ltcKey, otcKey, ad)
 
 	if err != nil {
 		return nil, err
 	}
 
-	talk := &Session{
+	securityNumber, err := NumberFingerprint([]string{identityCard.ID, a.identityCardID})
+	session := &Session{
 		responderCardId: message.ID,
-		Session:         session,
+		Session:         pfsSession,
+		SecurityNumber:  securityNumber,
 	}
 
-	return talk, nil
+	return session, nil
 }
 
 func (a *Api) validateInitialMessage(msg *Message) error {
