@@ -10,7 +10,7 @@ import (
 
 const iterations = 4096
 
-//NumberFingerprint generates a string representation of
+//NumberFingerprint generates a 60-digit string representation of 384 bit hash of supplied strings
 func NumberFingerprint(cardIds []string) (string, error) {
 	//fmt.Println(cardIds)
 	if len(cardIds) == 0 {
@@ -43,7 +43,7 @@ func NumberFingerprint(cardIds []string) (string, error) {
 //makes 60 digit number from 384 bit hash
 func HashToStr(hash []byte) (res string) {
 	if len(hash) != 48 {
-		panic("hash len is not 36")
+		panic("hash len is not 48")
 	}
 	for i := 0; i < 48; i += 4 {
 		t := uint32(hash[i+0]) << 0
