@@ -40,13 +40,13 @@ func NumberFingerprint(cardIds []string) (string, error) {
 	return HashToStr(hash), nil
 }
 
-//makes 60 digit number from 288 bit hash
+//makes 60 digit number from 384 bit hash
 func HashToStr(hash []byte) (res string) {
 	if len(hash) != 48 {
 		panic("hash len is not 36")
 	}
 	for i := 0; i < 48; i += 4 {
-		t := uint32(hash[i])
+		t := uint32(hash[i+0]) << 0
 		t += uint32(hash[i+1]) << 8
 		t += uint32(hash[i+2]) << 16
 		t += uint32(hash[i+3]) << 24
