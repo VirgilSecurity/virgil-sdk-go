@@ -30,12 +30,15 @@ func NumberFingerprint(cardIds []string) (string, error) {
 	})
 
 	h := sha512.New384()
+	var hash []byte
 	for i := 0; i < iterations; i++ {
 		for j := 0; j < len(sortedIds); j++ {
 			h.Write([]byte(sortedIds[j]))
 		}
+		h.Write(hash)
+		hash = h.Sum(nil)
+		h.Reset()
 	}
-	hash := h.Sum(nil)
 
 	return HashToStr(hash), nil
 }
