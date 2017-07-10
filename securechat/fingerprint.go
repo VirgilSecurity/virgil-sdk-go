@@ -29,12 +29,15 @@ func NumberFingerprint(cardIds []string) (string, error) {
 		return sortedIds[i] < sortedIds[j]
 	})
 
+	var idsSlice []byte
+	for _, id := range sortedIds {
+		idsSlice = append(idsSlice, []byte(id)...)
+	}
+
 	h := sha512.New384()
 	var hash []byte
 	for i := 0; i < iterations; i++ {
-		for j := 0; j < len(sortedIds); j++ {
-			h.Write([]byte(sortedIds[j]))
-		}
+		h.Write(idsSlice)
 		h.Write(hash)
 		hash = h.Sum(nil)
 		h.Reset()
