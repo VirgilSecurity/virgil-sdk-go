@@ -136,6 +136,9 @@ func (c *cardManager) Import(card string) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	id := hex.EncodeToString(virgil.Crypto().CalculateFingerprint(resp.Snapshot))
+	resp.ID = id
 	model, err := resp.ToCard()
 
 	if err != nil {
