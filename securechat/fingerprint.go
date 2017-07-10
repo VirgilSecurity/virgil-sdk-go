@@ -39,7 +39,7 @@ func NumberFingerprint(cardIds []string) (string, error) {
 	for i := 0; i < iterations; i++ {
 		h.Write(idsSlice)
 		h.Write(hash)
-		hash = h.Sum(nil)
+		hash = h.Sum(hash[:0])
 		h.Reset()
 	}
 
