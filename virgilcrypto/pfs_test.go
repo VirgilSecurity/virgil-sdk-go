@@ -49,30 +49,32 @@ func TestPFS(t *testing.T) {
 
 	assert.Equal(t, plaintext, msg)
 
-	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
-	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
-	ICbb, _ := c.ExportPrivateKey(ICb.PrivateKey(), "")
-	LTCbb, _ := c.ExportPrivateKey(LTCb.PrivateKey(), "")
-	OTCbb, _ := c.ExportPrivateKey(OTCb.PrivateKey(), "")
+	//generating test vectors
+	/*
+		ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
+		EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
+		ICbb, _ := c.ExportPrivateKey(ICb.PrivateKey(), "")
+		LTCbb, _ := c.ExportPrivateKey(LTCb.PrivateKey(), "")
+		OTCbb, _ := c.ExportPrivateKey(OTCb.PrivateKey(), "")
 
-	vec := map[string]interface{}{
-		"ICa":            ICab,
-		"EKa":            EKab,
-		"ICb":            ICbb,
-		"LTCb":           LTCbb,
-		"OTCb":           OTCbb,
-		"AdditionalData": append(ad, []byte("Virgil")...),
-		"SKa":            sessA.SKa,
-		"SKb":            sessA.SKb,
-		"AD":             sessA.AD,
-		"SessionID":      sessA.SessionID,
-		"Salt":           salt,
-		"Plaintext":      plaintext,
-		"Ciphertext":     ciphertext,
-	}
+		vec := map[string]interface{}{
+			"ICa":            ICab,
+			"EKa":            EKab,
+			"ICb":            ICbb,
+			"LTCb":           LTCbb,
+			"OTCb":           OTCbb,
+			"AdditionalData": ad,
+			"SKa":            sessA.SKa,
+			"SKb":            sessA.SKb,
+			"AD":             sessA.AD,
+			"SessionID":      sessA.SessionID,
+			"Salt":           salt,
+			"Plaintext":      plaintext,
+			"Ciphertext":     ciphertext,
+		}
 
-	res, _ := json.Marshal(vec)
-	fmt.Printf("%s\n\n\n", res)*/
+		res, _ := json.Marshal(vec)
+		fmt.Printf("%s\n\n\n", res)*/
 
 	salt, ciphertext = sessB.Encrypt(msg)
 
@@ -133,18 +135,18 @@ func TestPFSNoOTC(t *testing.T) {
 	LTCbb, _ := c.ExportPrivateKey(LTCb.PrivateKey(), "")
 
 	vec := map[string]interface{}{
-		"ICa":         ICab,
-		"EKa":         EKab,
-		"ICb":         ICbb,
-		"LTCb":        LTCbb,
-		"AdditionalData": append(ad, []byte("Virgil")...),
-		"SKa":         sessA.SKa,
-		"SKb":         sessA.SKb,
-		"AD":          sessA.AD,
-		"SessionID":   sessA.SessionID,
-		"Salt":        salt,
-		"Plaintext":   plaintext,
-		"Ciphertext":  ciphertext,
+		"ICa":            ICab,
+		"EKa":            EKab,
+		"ICb":            ICbb,
+		"LTCb":           LTCbb,
+		"AdditionalData": ad,
+		"SKa":            sessA.SKa,
+		"SKb":            sessA.SKb,
+		"AD":             sessA.AD,
+		"SessionID":      sessA.SessionID,
+		"Salt":           salt,
+		"Plaintext":      plaintext,
+		"Ciphertext":     ciphertext,
 	}
 
 	res, _ := json.Marshal(vec)

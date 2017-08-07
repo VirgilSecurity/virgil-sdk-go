@@ -30,29 +30,18 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 		return
 	}
 
-	ska, skb := sk[:64], sk[64:]
+	ska, skb, sid := sk[:32], sk[32:64], sk[64:]
 
-	toHash := make([]byte, 0, len(additionalData)+len(virgil))
-	toHash = append(toHash, additionalData...)
-	toHash = append(toHash, []byte(virgil)...)
+	kdf := hkdf.New(sha256.New, sid, additionalData, virgil)
 
-	hash := sha256.Sum256(toHash)
-
-	ad := hash[:]
-
-	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
-
-	toHash = append(sk, ad...)
-	toHash = append(toHash, []byte(virgil)...)
-
-	sessHash := sha256.Sum256(toHash)
-	sessionID := sessHash[:]
+	sessionID := make([]byte, 32)
+	kdf.Read(sessionID)
 
 	return &PFSSession{
 		Initiator: true,
 		SKa:       ska,
 		SKb:       skb,
-		AD:        ad,
+		AD:        additionalData,
 		SessionID: sessionID,
 	}, nil
 
@@ -64,29 +53,18 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb Pri
 	if err != nil {
 		return
 	}
-	ska, skb := sk[:64], sk[64:]
+	ska, skb, sid := sk[:32], sk[32:64], sk[64:]
 
-	toHash := make([]byte, 0, len(additionalData)+len(virgil))
-	toHash = append(toHash, additionalData...)
-	toHash = append(toHash, []byte(virgil)...)
+	kdf := hkdf.New(sha256.New, sid, additionalData, virgil)
 
-	hash := sha256.Sum256(toHash)
-
-	ad := hash[:]
-
-	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
-
-	toHash = append(sk, ad...)
-	toHash = append(toHash, []byte(virgil)...)
-
-	sessHash := sha256.Sum256(toHash)
-	sessionID := sessHash[:]
+	sessionID := make([]byte, 32)
+	kdf.Read(sessionID)
 
 	return &PFSSession{
 		Initiator: false,
 		SKa:       ska,
 		SKb:       skb,
-		AD:        ad,
+		AD:        additionalData,
 		SessionID: sessionID,
 	}, nil
 
