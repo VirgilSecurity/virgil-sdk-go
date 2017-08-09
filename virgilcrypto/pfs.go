@@ -30,10 +30,13 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 		return
 	}
 
-	ska, skb, sid := sk[:32], sk[32:64], sk[64:]
+	ska, skb, sid, adkey := sk[:32], sk[32:64], sk[64:96], sk[96:128]
 
-	kdf := hkdf.New(sha256.New, sid, additionalData, virgil)
+	kdf := hkdf.New(sha256.New, adkey, additionalData, virgil)
+	ad := make([]byte, 32)
+	kdf.Read(ad)
 
+	kdf = hkdf.New(sha256.New, sid, ad, virgil)
 	sessionID := make([]byte, 32)
 	kdf.Read(sessionID)
 
@@ -41,7 +44,7 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 		Initiator: true,
 		SKa:       ska,
 		SKb:       skb,
-		AD:        additionalData,
+		AD:        ad,
 		SessionID: sessionID,
 	}, nil
 
@@ -53,10 +56,14 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb Pri
 	if err != nil {
 		return
 	}
-	ska, skb, sid := sk[:32], sk[32:64], sk[64:]
 
-	kdf := hkdf.New(sha256.New, sid, additionalData, virgil)
+	ska, skb, sid, adkey := sk[:32], sk[32:64], sk[64:96], sk[96:128]
 
+	kdf := hkdf.New(sha256.New, adkey, additionalData, virgil)
+	ad := make([]byte, 32)
+	kdf.Read(ad)
+
+	kdf = hkdf.New(sha256.New, sid, ad, virgil)
 	sessionID := make([]byte, 32)
 	kdf.Read(sessionID)
 
@@ -64,7 +71,7 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb Pri
 		Initiator: false,
 		SKa:       ska,
 		SKb:       skb,
-		AD:        additionalData,
+		AD:        ad,
 		SessionID: sessionID,
 	}, nil
 
