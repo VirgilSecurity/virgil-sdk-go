@@ -15,6 +15,7 @@ type CardManager interface {
 	Create(identity string, key *Key, customFields map[string]string) (*Card, error)
 	CreateGlobal(identity string, key *Key) (*Card, error)
 	Import(card string) (*Card, error)
+	VerifyIdentity(identity string) (actionId string, err error)
 	ConfirmIdentity(actionId string, confirmationCode string) (validationToken string, err error)
 	Publish(card *Card) (*Card, error)
 	PublishGlobal(card *Card, validationToken string) (*Card, error)
@@ -152,6 +153,19 @@ func (c *cardManager) Import(card string) (*Card, error) {
 		context: c.context,
 		Card:    model,
 	}, nil
+}
+
+func (c *cardManager) VerifyIdentity(identity string) (actionId string, err error) {
+	req := &virgil.VerifyRequest{
+		Type:  "email",
+		Value: identity,
+	}
+
+	resp, err := c.context.client.VerifyIdentity(req)
+	if err != nil {
+		return "", err
+	}
+	return resp.ActionId, nil
 }
 
 func (c *cardManager) ConfirmIdentity(actionId string, confirmationCode string) (validationToken string, err error) {

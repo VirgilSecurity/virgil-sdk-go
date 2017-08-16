@@ -141,3 +141,35 @@ func TestStreamSignatures(t *testing.T) {
 		t.Fatal("Signature verification succeeded but must fail")
 	}
 }
+
+func BenchmarkEd25519Signer_Sign(b *testing.B) {
+	keypair, err := NewKeypair()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	sk := keypair.PrivateKey()
+
+	data := make([]byte, 300)
+
+	for i := 0; i < b.N; i++ {
+		Signer.Sign(data, sk)
+	}
+}
+
+func BenchmarkEd25519Verifier_Verify(b *testing.B) {
+	keypair, err := NewKeypair()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	pk := keypair.PublicKey()
+
+	data := make([]byte, 300)
+
+	sign, err := Signer.Sign(data, keypair.PrivateKey())
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Verifier.Verify(data, pk, sign)
+	}
+}

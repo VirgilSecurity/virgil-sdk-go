@@ -36,8 +36,9 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 import (
-	"crypto/sha256"
 	"io"
+
+	"github.com/minio/sha256-simd"
 
 	"gopkg.in/virgil.v4/errors"
 	"gopkg.in/virgil.v4/virgilcrypto/keytypes"
