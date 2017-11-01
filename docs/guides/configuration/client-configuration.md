@@ -5,7 +5,7 @@ To use the Virgil Infrastructure, set up your client and implement the required 
 
 ## Install SDK
 
-The Virgil Go SDK is provided as a package named virgil. The package is distributed via github.
+The Virgil Go SDK is provided as a package named **virgil**. The package is distributed via github.
 
 The package is available for Go 1.7.1 or newer.
 
