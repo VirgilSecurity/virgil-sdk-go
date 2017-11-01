@@ -8,18 +8,18 @@ Use **Virgil** to verify the integrity of data. **Data Integrity** is essential 
 <!-- ![Virgil Signature Intro](/img/Signature_introduction.png "Data integrity") -->
 
 ## <a name="head1"></a> Set Up Server
-Your server should be able to authorize your users, store Application Virgil Key and use **Virgil SDK** for cryptographic operations or for some requests to Virgil Services. You can configure your server using the [Setup Guide](/documentation/guides/configuration/server-configuration.md).
+Your server should be able to authorize your users, store Application Virgil Key and use **Virgil SDK** for cryptographic operations or for some requests to Virgil Services. You can configure your server using the [Setup Guide](/docs/guides/configuration/server-configuration.md).
 
 
 ## <a name="head2"></a> Set Up Clients
-Set up the client side. After users register at your Application Server, provide them with an access token that authenticates users for further operations and transmit their **Virgil Cards** to the server. Configure the client side using the [Setup Guide](/documentation/guides/configuration/client-configuration.md).
+Set up the client side. After users register at your Application Server, provide them with an access token that authenticates users for further operations and transmit their **Virgil Cards** to the server. Configure the client side using the [Setup Guide](/docs/guides/configuration/client-configuration.md).
 
 
 ## <a name="head3"></a> Register Users
 Now you need to register users. We are creating a Virgil Key and Card for each user that sends verified data.
 Cards are stored with Virgil and contain user's public encryption keys.
 
-![Virgil Card](/documentation/img/Card_introduct.png "Create Virgil Card")
+![Virgil Card](/docs/img/Card_introduct.png "Create Virgil Card")
 
 When we have already set up the Virgil SDK on the server and client sides, we can finally create Virgil Cards for the users and transmit the Cards to your Server for further publication on Virgil Services.
 
@@ -27,7 +27,7 @@ When we have already set up the Virgil SDK on the server and client sides, we ca
 ### Generate Keys and Create Virgil Card
 Use the Virgil SDK on client side to generate a new Key Pair, and then, using recently generated Virgil Key, create user's Virgil Card. All keys are generated and stored on the client side.
 
-In this example, we are passing on user's username and password, which will lock in their private encryption key. Each Virgil Card is signed by user's Virgil Key, which guarantees Virgil Card's content integrity over its life cycle.
+In this example, we are passing on user's username and password, which will lock in their private encryption key. Each Virgil Card is signed by user's Virgil Key, which guarantees Virgil Card content integrity over its life cycle.
 
 ```go
 // generate a new Virgil Key
@@ -44,7 +44,7 @@ aliceCard, err := api.Cards.Create("alice", aliceKey, nil/* custom fields */)
 
 **Note**: Recently created users' Virgil Cards are visible only for application users because they are related to the Application.
 
-Read more about Virgil Cards and their types [here](/documentation/guides/virgil-card/creating-card.md).
+Read more about Virgil Cards and their types [here](/docs/guides/virgil-card/creating-card.md).
 
 
 ### Transmit the Cards to Your Server
@@ -60,7 +60,7 @@ exportedCard, err := aliceCard.Export()
 TransmitToServer(exportedCard)
 ```
 
-Use the [approve & publish users guide](/documentation/guides/configuration/server.md#-approve--publish-cards) to publish users Virgil Cards on Virgil Services.
+Use the [approve & publish users guide](https://github.com/go-virgil/virgil/blob/docs-review/docs/guides/configuration/server-configuration.md#-approve--publish-cards) to publish users Virgil Cards on Virgil Services.
 
 ## <a name="head4"></a> Sign Data
 
@@ -74,7 +74,7 @@ message := "Hey Bob, hope you are doing well."
 signature, err := aliceKey.SignString(message)
 ```
 
-To create a signature, you need to load Alice's Virgil Key. The [Loading Key](/documentation/guides/virgil-key/loading-key.md) guide provides more details
+To create a signature, you need to load Alice's Virgil Key. The [Loading Key](/docs/guides/virgil-key/loading-key.md) guide provides more details
 
 ### Transmission
 
@@ -94,7 +94,7 @@ To look up sender's card, we use the same identifier as for card publishing: `al
 aliceCards, err := api.Cards.Find("alice");
 ```
 
-The identifier for a Virgil Card can be any ID you prefer, for example, a username or user ID. The [Finding Card](/documentation/guides/virgil-card/finding-card.md) guide provides more details.
+The identifier for a Virgil Card can be any ID you prefer, for example, a username or user ID. The [Finding Card](/docs/guides/virgil-card/finding-card.md) guide provides more details.
 
 This returns all cards for Alice, which we can use to verify the data.
 
@@ -111,4 +111,4 @@ if res, err := aliceCards.Verify(message, signature); !res || err != nil {
 ```
 
 
-To create a signature, you need to load Alice's Virgil Key. The [Loading Key](/documentation/guides/virgil-key/loading-key.md) guide provides more details.
+To create a signature, you need to load Alice's Virgil Key. The [Loading Key](/docs/guides/virgil-key/loading-key.md) guide provides more details.

@@ -2,10 +2,10 @@
 
 This guide shows how to find a **Virgil Card**. As previously noted, all Virgil Cards are saved at **Virgil Services** after their publication. Thus, every user can find their own Virgil Card or another user's Virgil Card on Virgil Services. It should be noted that users' Virgil Cards will only be visible to application users. Global Virgil Cards will be visible to anybody.
 
-Set up your project environment before you begin to find a Virgil Card, with the [getting started](/documentation/guides/configuration/client-configuration.md) guide.
+Set up your project environment before you begin to find a Virgil Card, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 
-In order to search for an **Application** or **Global Virgil Card** you need to initialize the **Virgil SDK**:
+To search for an **Application** or **Global Virgil Card** you need to initialize the **Virgil SDK**:
 
 ```go
 api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")

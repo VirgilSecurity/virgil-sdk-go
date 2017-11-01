@@ -6,13 +6,13 @@ This process is called **Authenticated Data Encryption**. It is a form of encryp
 
 
 
-Set up your project environment before you begin to work, with the [getting started](/documentation/guides/configuration/client-configuration.md) guide.
+Set up your project environment before you begin to work, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 The Authenticated Data Encryption procedure is shown in the figure below.
 
-![Authenticated Data Encryption](/documentation/img/Guides_introduction.png "Authenticated Data Encryption")
+![Authenticated Data Encryption](/docs/img/Guides_introduction.png "Authenticated Data Encryption")
 
-In order to **sign"** and **encrypt** a **message**, Alice has to have:
+To **sign"** and **encrypt** a **message**, Alice has to have:
  - Her Virgil Key
  - Bob's Virgil Card
 
@@ -50,4 +50,4 @@ api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")
 
 To load a Virgil Key from a specific storage, developers need to change the storage path during Virgil SDK initialization.
 
-In many cases you need receiver's Virgil Cards. See [Finding Cards](/documentation/guides/virgil-card/finding-card.md) guide to find them.
+In many cases you need receiver's Virgil Cards. See [Finding Cards](/docs/guides/virgil-card/finding-card.md) guide to find them.

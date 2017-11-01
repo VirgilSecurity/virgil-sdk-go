@@ -2,9 +2,9 @@
 
 This guide shows how to revoke a **Virgil Card** from Virgil Services.
 
-Set up your project environment before you begin to revoke a Virgil Card, with the [getting started](/documentation/guides/configuration/client-configuration.md) guide.
+Set up your project environment before you begin to revoke a Virgil Card, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
-In order to revoke a Virgil Card, we need to:
+To revoke a Virgil Card, we need to:
 
 - Initialize the **Virgil SDK** and enter Application **credentials** (**App ID**, **App Key**, **App Key password**)
 

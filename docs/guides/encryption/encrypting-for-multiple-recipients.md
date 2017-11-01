@@ -6,14 +6,14 @@ Encryption can be used to provide high levels of security to network communicati
 
 For original information about encryption, its syntax and parameters, follow the link [here](https://github.com/VirgilSecurity/virgil/blob/wiki/wiki/glossary.md#encryption).
 
-Set up your project environment before you begin to encrypt data, with the [getting started](/documentation/guides/configuration/client-configuration.md) guide.
+Set up your project environment before you begin to encrypt data, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 The Data Encryption procedure is shown in the figure below.
 
-![Virgil Encryption Intro](/documentation/img/Encryption_introduction.png "Data encryption")
+![Virgil Encryption Intro](/docs/img/Encryption_introduction.png "Data encryption")
 
 
-In order to encrypt a message, Alice has to have:
+To encrypt a message, Alice has to have:
  - The participants' Virgil Cards, which should be published on Virgil Services.
 
 Let's review data encryption for multiple recipients:
@@ -44,4 +44,4 @@ api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")
 
 Now Alice can send encrypted message to the recipients.
 
-In many cases you will need the receiver's Virgil Cards. See [Finding Cards](/documentation/guides/virgil-card/finding-card.md) guide to find them.
+In many cases you will need the receiver's Virgil Cards. See [Finding Cards](/docs/guides/virgil-card/finding-card.md) guide to find them.

@@ -1,6 +1,6 @@
 # Client Configuration
 
-In order to use the Virgil Infrastructure, set up your client and implement the required mechanisms using the following guide.
+To use the Virgil Infrastructure, set up your client and implement the required mechanisms using the following guide.
 
 
 ## Install SDK
@@ -35,7 +35,7 @@ api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")
 
 ### Without a Token
 
-In case of a **Global Virgil Card** creation you don't need to initialize the SDK with the Access Token. For more information about the Global Virgil Card creation check out the [Creating Global Card guide](/documentation/guides/virgil-card/creating-global-card.md).
+In case of a **Global Virgil Card** creation you don't need to initialize the SDK with the Access Token. For more information about the Global Virgil Card creation check out the [Creating Global Card guide](/docs/guides/virgil-card/creating-global-card.md).
 
 Use the following code to initialize Virgil SDK without Access Token.
 

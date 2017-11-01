@@ -5,13 +5,13 @@ This guide is short tutorial on how to decrypt and then verify data with Virgil 
 This process is called **Authenticated Data Decryption**. During this procedure you work with encrypted and signed data, decrypting and verifying them. A recipient uses their **Virgil Key** (to decrypt the data) and **Virgil Card** (to verify data integrity).
 
 
-Set up your project environment before you begin to work, with the [getting started](/documentation/guides/configuration/client-configuration.md) guide.
+Set up your project environment before you begin to work, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 The Authenticated Data Decryption procedure is shown in the figure below.
 
-![Virgil Intro](/documentation/img/Guides_introduction.png "Authenticated Data Decryption")
+![Virgil Intro](/docs/img/Guides_introduction.png "Authenticated Data Decryption")
 
-In order to decrypt and verify the message, Bob has to have:
+To decrypt and verify the message, Bob has to have:
  - His Virgil Key
  - Alice's Virgil Card
 
@@ -44,4 +44,4 @@ api, err := virgilapi.New("[YOUR_ACCESS_TOKEN_HERE]")
 
 To load a Virgil Key from a specific storage, developers need to change the storage path during Virgil SDK initialization.
 
-To decrypt data, you need Bob's stored Virgil Key. See the [Storing Keys](/documentation/guides/virgil-key/saving-key.md) guide for more details.
+To decrypt data, you need Bob's stored Virgil Key. See the [Storing Keys](/docs/guides/virgil-key/saving-key.md) guide for more details.

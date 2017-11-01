@@ -4,14 +4,14 @@ This guide is a short tutorial on how to verify a **Digital Signature** with Vir
 
 For original information about the Digital Signature follow the link [here](https://github.com/VirgilSecurity/virgil/blob/wiki/wiki/glossary.md#digital-signature).
 
-Set up your project environment before starting to verify a Digital Signature, with the [getting started](/documentation/guides/configuration/client-configuration.md) guide.
+Set up your project environment before starting to verify a Digital Signature, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 The Signature Verification procedure is shown in the figure below.
 
 
-![Virgil Signature Intro](/documentation/img/Signature_introduction.png "Verify Signature")
+![Virgil Signature Intro](/docs/img/Signature_introduction.png "Verify Signature")
 
-In order to verify the Digital Signature, Bob has to have Alice's **Virgil Card"**.
+To verify the Digital Signature, Bob has to have Alice's **Virgil Card"**.
 
 Let's review the Digital Signature verification process:
 
@@ -34,4 +34,4 @@ if res, err := aliceCard.Verify(message, signature); !res || err != nil {
 }
 ```
 
-See our guide on [Validating Cards](/documentation/guides/virgil-card/validating-card.md) for the best practices.
+See our guide on [Validating Cards](/docs/guides/virgil-card/validating-card.md) for the best practices.

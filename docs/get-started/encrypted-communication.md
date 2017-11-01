@@ -6,17 +6,17 @@ It is very easy to encrypt data for secure communications in a few simple steps.
 
 Due to limited time and resources, developers often resort to third-party solutions to transfer data, which do not have an open source API, a full cycle of data security that would ensure integrity and confidentiality. Thus, all of your data could be read by the third party. Virgil offers a solution without these weaknesses.
 
-![Encrypted Communication](/documentation/img/encrypted_communication_intro.png "Encrypted Communication")
+![Encrypted Communication](/docs/img/encrypted_communication_intro.png "Encrypted Communication")
 
 See our tutorial on [Virgil & Twilio Programmable Chat](https://github.com/VirgilSecurity/virgil-demo-twilio) for best practices.
 
 
 ## <a name="head1"></a> Set Up Server
-Your server should be able to authorize your users, store Application's Virgil Key and use **Virgil SDK** for cryptographic operations or for some requests to Virgil Services. You can configure your server using the [Setup Guide](/documentation/guides/configuration/server-configuration.md).
+Your server should be able to authorize your users, store Application's Virgil Key and use **Virgil SDK** for cryptographic operations or for some requests to Virgil Services. You can configure your server using the [Setup Guide](/docs/guides/configuration/server-configuration.md).
 
 
 ## <a name="head2"></a> Set Up Clients
-Set up the client side. After users register at your Application Server, provide them with an access token that authenticates users for further operations and transmit their **Virgil Cards** to the server. Configure the client side using the [Setup Guide](/documentation/guides/configuration/client-configuration.md).
+Set up the client side. After users register at your Application Server, provide them with an access token that authenticates users for further operations and transmit their **Virgil Cards** to the server. Configure the client side using the [Setup Guide](/docs/guides/configuration/client-configuration.md).
 
 
 ## <a name="head3"></a> Register Users
@@ -24,7 +24,7 @@ Now you need to register the users who will participate in encrypted communicati
 
 In order to sign and encrypt a message, each user must have his own tools, which allow him to perform cryptographic operations. These tools must contain the necessary information to identify users. In Virgil Security, such tools are the Virgil Key and the Virgil Card.
 
-![Virgil Card](/documentation/img/Card_introduct.png "Create Virgil Card")
+![Virgil Card](/docs/img/Card_introduct.png "Create Virgil Card")
 
 When we have already set up the Virgil SDK on the server and client sides, we can finally create Virgil Cards for the users and transmit the Cards to your Server for further publication on Virgil Services.
 
@@ -32,7 +32,7 @@ When we have already set up the Virgil SDK on the server and client sides, we ca
 ### Generate Keys and Create Virgil Card
 Use the Virgil SDK on the client side to generate a new Key Pair. Then, with recently generated Virgil Key, create user's Virgil Card. All keys are generated and stored on the client side.
 
-In this example, we are passing on the user's username and a password, which will lock in their private encryption key. Each Virgil Card is signed by user's Virgil Key, which guarantees the Virgil Card's content integrity over its life cycle.
+In this example, we are passing on the user's username and a password, which will lock in their private encryption key. Each Virgil Card is signed by user's Virgil Key, which guarantees the Virgil Card content integrity over its life cycle.
 
 ```go
 // generate a new Virgil Key
@@ -49,7 +49,7 @@ aliceCard, err := api.Cards.Create("alice", aliceKey, nil/* custom fields */)
 
 **Note**: Recently created users' Virgil Cards are visible only for application users because they are related to the Application.
 
-Read more about Virgil Cards and their types [here](/documentation/guides/virgil-card/creating-card.md).
+Read more about Virgil Cards and their types [here](/docs/guides/virgil-card/creating-card.md).
 
 
 ### Transmit the Cards to Your Server
@@ -64,7 +64,7 @@ exportedCard, err := aliceCard.Export()
 TransmitToServer(exportedCard)
 ```
 
-Use the [approve & publish users guide](/documentation/guides/configuration/server.md#-approve--publish-cards) to publish users Virgil Cards on Virgil Services.
+Use the [approve & publish users guide](https://github.com/go-virgil/virgil/blob/docs-review/docs/guides/configuration/server-configuration.md#-approve--publish-cards) to publish users Virgil Cards on Virgil Services.
 
 
 ## <a name="head4"></a> Sign & Encrypt a Message
@@ -73,7 +73,7 @@ With the user's Cards in place, we are now ready to encrypt a message for encryp
 
 As previously noted, we encrypt data for secure communication, but a recipient also must be sure that no third party modified any of the message's content and that they can trust a sender, which is why we provide **Data Integrity** by adding a **Digital Signature**. Therefore we must digitally sign data first and then encrypt.
 
-![Virgil Intro](/documentation/img/Guides_introduction.png "Sign & Encrypt")
+![Virgil Intro](/docs/img/Guides_introduction.png "Sign & Encrypt")
 
 In order to sign then encrypt messages, the Sender must load their own recently generated Virgil Key and search for the receiver's Virgil Cards at Virgil Services, where all Virgil Cards are saved.
 
@@ -93,7 +93,7 @@ ciphertextBuf, err := aliceKey.SignThenEncryptString(message, bobCards...)
 ciphertext :=   ciphertextBuf.ToBase64String()
 ```
 
-To sign a message, you will need to load Alice's Virgil Key. See [Loading Key](/documentation/guides/virgil-key/loading-key.md) guide for more details.
+To sign a message, you will need to load Alice's Virgil Key. See [Loading Key](/docs/guides/virgil-key/loading-key.md) guide for more details.
 
 Now the Receiver can verify that the message was sent by specific Sender.
 
@@ -122,4 +122,4 @@ originalMessageBuf, err := bobKey.DecryptThenVerify(ciphertext, aliceCard)
 originalMessage := originalMessageBuf.ToString()
 ```
 
-In many cases you need Sender's Virgil Cards. See [Finding Cards](/documentation/guides/virgil-card/finding-card.md) guide to find them.
+In many cases you need Sender's Virgil Cards. See [Finding Cards](/docs/guides/virgil-card/finding-card.md) guide to find them.
