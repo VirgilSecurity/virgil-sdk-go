@@ -10,7 +10,7 @@ Each Virgil Card contains a permanent digital signature that provides data integ
 
 ### Let's start to create a Global Virgil Card
 
-Set up your project environment before you begin to create a Global Virgil Card, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
+Before you begin to create a Global Virgil Card, set up your project environment with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 The Global Virgil Card creation procedure is shown in the figure below.
 

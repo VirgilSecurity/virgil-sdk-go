@@ -6,7 +6,7 @@ This process is called **Authenticated Data Encryption**. It is a form of encryp
 
 
 
-Set up your project environment before you begin to work, with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
+Before you begin, set up your project environment with the [getting started](/docs/guides/configuration/client-configuration.md) guide.
 
 The Authenticated Data Encryption procedure is shown in the figure below.
 
