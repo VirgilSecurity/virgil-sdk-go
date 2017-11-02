@@ -34,7 +34,7 @@ keyfile, err := ioutil.ReadFile("[YOUR_APP_KEY_FILEPATH_HERE]")
 api, err := virgilapi.NewWithConfig(virgilapi.Config{
         Token: "[YOUR_ACCESS_TOKEN_HERE]",
         Credentials: &virgilapi.AppCredentials{
-            AppId:      "[YOUR_APP_ID_HERE]",
+            AppId: "[YOUR_APP_ID_HERE]",
             PrivateKey: keyfile,
             PrivateKeyPassword : "[YOUR_APP_KEY_PASSWORD_HERE]",
         },
@@ -47,7 +47,7 @@ Virgil Security simplifies adding encryption to any application. With our SDK yo
 
 
 ```go
-// find Alice's Card(s) at Virgil Services
+// find Alice's Virgil Card(s) at Virgil Services
 aliceCards, err := api.Cards.Find("alice")
 
 // encrypt the message using Alice's Virgil Cards
