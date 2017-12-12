@@ -9,8 +9,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+type HttpClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 type VirgilHttpClient struct {
-	Client  *http.Client
+	Client  HttpClient
 	Address string
 }
 
@@ -36,15 +40,13 @@ func (vc *VirgilHttpClient) Send(method string, url string, payload interface{},
 	if resp.StatusCode == http.StatusNotFound {
 		return EntityNotFoundErr
 	}
-	if resp.StatusCode == http.StatusCreated {
-		return nil
-	}
+
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "VirgilHttpClient.Send: read response body")
 	}
 
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
 			err = json.Unmarshal(respBody, respObj)
 			if err != nil {
@@ -61,7 +63,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, payload interface{},
 	return virgilErr
 }
 
-func (vc *VirgilHttpClient) getHttpClient() *http.Client {
+func (vc *VirgilHttpClient) getHttpClient() HttpClient {
 	if vc.Client != nil {
 		return vc.Client
 	}

@@ -16,13 +16,15 @@ type Validator interface {
 	Validate(card Card) error
 }
 
+type HttpClient common.HttpClient
+
 type SignerType string
 
 const (
 	SignerTypeSelf        SignerType = "self"
 	SignerTypeApplication SignerType = "app"
 	SignerTypeVirgil      SignerType = "virgil"
-	SignerTypeCustom      SignerType = "extra"
+	SignerTypeExtra       SignerType = "extra"
 )
 
 type CardSignature struct {
@@ -44,9 +46,9 @@ type Card struct {
 }
 
 type RawCardSignature struct {
-	SignerCardId string `json:"signer_card_id"`
+	SignerCardId string `json:"signer_id"`
 	Signature    []byte `json:"signature"`
-	ExtraFields  []byte `json:"snapshot"`
+	ExtraFields  []byte `json:"snapshot,omitempty"`
 	SignerType   string `json:"signer_type"`
 }
 
@@ -55,28 +57,30 @@ type RawCardMeta struct {
 	CreatedAt  string            `json:"created_at"`
 	Version    string            `json:"card_version"`
 }
+
 type RawCardSnapshot struct {
 	Identity       string `json:"identity"`
 	PublicKeyBytes []byte `json:"public_key"`
+	PreviousCardID string `json:"previous_card_id"`
 	Version        string `json:"version"`
 	CreatedAt      int64  `json:"created_at"`
 }
 type RawCard struct {
 	Snapshot   []byte             `json:"content_snapshot"`
 	Signatures []RawCardSignature `json:"signatures"`
-	Meta       RawCardMeta        `json:"meta"`
+	Meta       *RawCardMeta       `json:"meta,omitempty"`
 }
 
 type CardsManager struct {
 	Crypto     cryptoapi.Crypto
 	Validator  Validator
 	ApiUrl     string
-	HttpClient *http.Client
+	HttpClient HttpClient
 }
 
 func (cm *CardsManager) GetCard(id string) (Card, error) {
 	var rawCard RawCard
-	err := cm.send(http.MethodGet, "/v5/card/"+id, nil, &rawCard)
+	err := cm.send(http.MethodGet, "/card/v5/"+id, nil, &rawCard)
 	if err != nil {
 		return Card{}, err
 	}
@@ -91,7 +95,7 @@ func (cm *CardsManager) GetCard(id string) (Card, error) {
 
 func (cm *CardsManager) SearchCards(identity string) ([]Card, error) {
 	var rawCards []RawCard
-	err := cm.send(http.MethodPost, "/v5/card/actions/search", map[string]string{"identity": identity}, &rawCards)
+	err := cm.send(http.MethodPost, "/card/v5/actions/search", map[string]string{"identity": identity}, &rawCards)
 	if err != nil {
 		return []Card{}, err
 	}
@@ -110,7 +114,7 @@ func (cm *CardsManager) SearchCards(identity string) ([]Card, error) {
 
 func (cm *CardsManager) PublishCard(scr CSR) (Card, error) {
 	var rawCard RawCard
-	err := cm.send(http.MethodPost, "/v5/card", RawCard{Signatures: scr.Signatures, Snapshot: scr.Snapshot}, &rawCard)
+	err := cm.send(http.MethodPost, "/card/v5", RawCard{Signatures: scr.Signatures, Snapshot: scr.Snapshot}, &rawCard)
 	if err != nil {
 		return Card{}, err
 	}
@@ -134,10 +138,12 @@ func (cm *CardsManager) GenerateCSR(param CSRParams) (CSR, error) {
 	if err != nil {
 		return CSR{}, err
 	}
+
 	t := time.Now().UTC().Unix()
 	cardInfo := RawCardSnapshot{
 		Identity:       param.Identity,
 		PublicKeyBytes: exportedPubKey,
+		PreviousCardID: param.PreviousCardID,
 		Version:        "5.0",
 		CreatedAt:      t,
 	}
@@ -276,7 +282,7 @@ func (cm *CardsManager) raw2Card(raw RawCard) (card Card, err error) {
 		card.Signature = make([]CardSignature, len(raw.Meta.Signatures))
 		var i = 0
 		for signerID, sign := range raw.Meta.Signatures {
-			var signType = SignerTypeCustom
+			var signType = SignerTypeExtra
 			if signerID == card.ID {
 				signType = SignerTypeSelf
 			}
@@ -318,7 +324,7 @@ func (cm *CardsManager) getUrl() string {
 	return "https://api.virgilsecurity.com"
 }
 
-func (cm *CardsManager) getHttpClient() *http.Client {
+func (cm *CardsManager) getHttpClient() HttpClient {
 	if cm.HttpClient != nil {
 		return cm.HttpClient
 	}

@@ -9,9 +9,12 @@ import (
 )
 
 type CSRParams struct {
-	Identity    string
-	PublicKey   cryptoapi.PublicKey
-	PrivateKey  cryptoapi.PrivateKey
+	Identity   string
+	PublicKey  cryptoapi.PublicKey
+	PrivateKey cryptoapi.PrivateKey
+
+	PreviousCardID string
+
 	ExtraFields map[string]string
 }
 type CSRSignParams struct {
@@ -41,7 +44,10 @@ func sliceIndex(n int, predicate func(i int) bool) int {
 }
 
 func (csr *CSR) Sign(crypto cryptoapi.Crypto, param CSRSignParams) error {
-	if param.SignerCardId == "" || param.SignerPrivateKey == nil || param.SignerType == "" {
+	if param.SignerPrivateKey == nil || param.SignerType == "" {
+		return CSRSignParamIncorrectErr
+	}
+	if param.SignerCardId == "" && param.SignerType != SignerTypeSelf {
 		return CSRSignParamIncorrectErr
 	}
 
@@ -73,7 +79,7 @@ func (csr *CSR) Sign(crypto cryptoapi.Crypto, param CSRSignParams) error {
 		csr.ID = param.SignerCardId
 	}
 
-	sign, err := crypto.Sign(signingSnapshot, param.SignerPrivateKey)
+	sign, err := crypto.Sign(crypto.CalculateFingerprint(signingSnapshot), param.SignerPrivateKey)
 	if err != nil {
 		return err
 	}

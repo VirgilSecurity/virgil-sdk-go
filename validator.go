@@ -34,7 +34,7 @@ func (v *ExtendedValidator) Validate(crypto cryptoapi.Crypto, card Card) (err er
 		return nil
 	}
 	for _, signer := range v.WhiteList {
-		err = v.checkSign(crypto, card, signer, SignerTypeCustom)
+		err = v.checkSign(crypto, card, signer, SignerTypeExtra)
 		if err == CardValidationExpectedSignerWasNotFoundErr {
 			continue
 		}
