@@ -2,6 +2,7 @@ package common
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -18,7 +19,7 @@ type VirgilHttpClient struct {
 	Address string
 }
 
-func (vc *VirgilHttpClient) Send(method string, url string, payload interface{}, respObj interface{}) error {
+func (vc *VirgilHttpClient) Send(ctx context.Context, method string, url string, payload interface{}, respObj interface{}) error {
 	var body []byte
 	var err error
 	if payload != nil {
