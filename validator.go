@@ -43,8 +43,22 @@ type SignerInfo struct {
 	PublicKey cryptoapi.PublicKey
 }
 
+const (
+	VirgilCardServiceCardId    = "e680bef87ba75d331b0a02bfa6a20f02eb5c5ba9bc96fc61ca595404b10026f4"
+	VirgilCardServicePublicKey = "MCowBQYDK2VwAyEAhvwMS/KZMd0hkZop+oLEh9ZdlSByj7r0lFzqS57rvLA="
+)
+
 var VirgilSignerInfo = SignerInfo{
-	CardID: "3e29d43373348cfb373b7eae189214dc01d7237765e572db685839b64adca853",
+	CardID:    VirgilCardServiceCardId,
+	PublicKey: loadServicePublicKey(),
+}
+
+func loadServicePublicKey() cryptoapi.PublicKey {
+	key, err := DefaultCrypto.ImportPublicKey([]byte(VirgilCardServicePublicKey))
+	if err != nil {
+		panic(err)
+	}
+	return key
 }
 
 type ExtendedValidator struct {

@@ -49,14 +49,13 @@ import (
 
 	"gopkg.in/virgil.v6"
 	"gopkg.in/virgil.v6/crypto-api"
+	"gopkg.in/virgil.v6/crypto-native"
 	"gopkg.in/virgil.v6/virgiljwt"
-	"gopkg.in/virgilsecurity/virgil-crypto-go.v6"
 )
 
 var cardsManager virgilcards.CardsManager
 var appCardID string
 var appSK cryptoapi.PrivateKey
-var extCrypto = &virgil_crypto_go.ExternalCrypto{}
 
 type StaticTokenClient struct {
 	Token  string
@@ -69,7 +68,6 @@ func (c StaticTokenClient) Do(req *http.Request) (resp *http.Response, err error
 }
 
 func TestMain(m *testing.M) {
-	virgilcards.DefaultCrypto = extCrypto
 
 	address := os.Getenv("TEST_ADDRESS")
 	accID := os.Getenv("TEST_ACC_ID")
@@ -80,7 +78,7 @@ func TestMain(m *testing.M) {
 	if apiKeySource == "" {
 		log.Fatal("TEST_API_KEY is required")
 	}
-	apiKey, err := extCrypto.ImportPrivateKey([]byte(apiKeySource), "")
+	apiKey, err := cryptonative.DefaultCrypto.ImportPrivateKey([]byte(apiKeySource), "")
 	if err != nil {
 		log.Fatal("Cannot import API private key: ", err)
 	}
@@ -94,7 +92,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("TEST_APP_SECRET_KEY is required")
 	}
 	appSKPassword := os.Getenv("TEST_APP_SECRET_KEY_PASSWORD")
-	appSK, err = extCrypto.ImportPrivateKey([]byte(appSKSource), appSKPassword)
+	appSK, err = cryptonative.DefaultCrypto.ImportPrivateKey([]byte(appSKSource), appSKPassword)
 	if err != nil {
 		log.Fatal("Cannot import private key: ", err)
 	}
@@ -114,7 +112,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCardManager_PublishCard_ReturnCard(t *testing.T) {
-	kp, err := extCrypto.GenerateKeypair()
+	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +140,7 @@ func TestCardManager_PublishCard_ReturnCard(t *testing.T) {
 }
 
 func TestCardManager_GetCard_ReturnCard(t *testing.T) {
-	kp, err := extCrypto.GenerateKeypair()
+	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -174,7 +172,7 @@ func TestCardManager_GetCard_ReturnCard(t *testing.T) {
 }
 
 func TestCardManager_SearchCard_ReturnCard(t *testing.T) {
-	kp, err := extCrypto.GenerateKeypair()
+	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,7 +205,7 @@ func TestCardManager_SearchCard_ReturnCard(t *testing.T) {
 }
 
 func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
-	kp, err := extCrypto.GenerateKeypair()
+	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -233,7 +231,7 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	kp, err = extCrypto.GenerateKeypair()
+	kp, err = cryptonative.DefaultCrypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
