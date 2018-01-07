@@ -49,11 +49,11 @@ func (err CardsAPIError) Error() string {
 }
 
 var (
-	CSRIdentityEmptyErr        = errors.New("Idneity field in CSR is mandatory")
+	CSRIdentityEmptyErr        = errors.New("Identity field in CSR is mandatory")
 	CSRSignParamIncorrectErr   = errors.New("CSR signature params incorrect")
 	CSRPublicKeyEmptyErr       = errors.New("Public key field in CSR is mandatory")
-	CSRSilfSignAlreadyExistErr = errors.New("The CSR is already has self signature")
-	CSRAppSignAlreadyExistErr  = errors.New("The CSR is already has application signature")
+	CSRSelfSignAlreadyExistErr = errors.New("The CSR already has a self signature")
+	CSRAppSignAlreadyExistErr  = errors.New("The CSR already has an application signature")
 
 	CardValidationSignerTypeIncorrectErr       = errors.New("Card validation: signer type incorrect")
 	CardValidationExpectedSignerWasNotFoundErr = errors.New("Card validation: expected signer was not found")

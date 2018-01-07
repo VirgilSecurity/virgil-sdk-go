@@ -93,7 +93,7 @@ func (csr *CSR) Sign(crypto cryptoapi.Crypto, param CSRSignParams) error {
 		})
 		if index != -1 {
 			if param.SignerType == SignerTypeSelf {
-				return CSRSilfSignAlreadyExistErr
+				return CSRSelfSignAlreadyExistErr
 			}
 			return CSRAppSignAlreadyExistErr
 		}

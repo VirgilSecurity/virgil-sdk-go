@@ -166,7 +166,7 @@ func (key *encryptedKeyWithPublicKey) Validate() error {
 	tag := key.Hmac
 
 	if !tag.HmacAlgo.Algorithm.Equal(oidSha384) {
-		return unsupported("hmac algorighm")
+		return unsupported("hmac algorithm")
 	}
 
 	if len(tag.Value) != 48 {
@@ -206,7 +206,7 @@ func (p *pbeS2Parameters) Validate() error {
 	kdf := p.KeyDerivationFunc
 
 	if !scheme.Algorithm.Equal(oidAES256CBC) {
-		return unsupported("key encryption algorighm")
+		return unsupported("key encryption algorithm")
 	}
 
 	if len(scheme.Parameters) != 16 {

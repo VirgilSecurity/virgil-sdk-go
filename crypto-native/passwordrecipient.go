@@ -94,7 +94,7 @@ func (p *passwordRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, err
 }
 func (p *passwordRecipient) decryptKey(id []byte, password []byte) ([]byte, error) {
 	if len(id) > 0 {
-		return nil, CryptoError("Wrong recepient")
+		return nil, CryptoError("Wrong recipient")
 	}
 	return decryptKeyWithPassword(p.encryptedKey, p.keyIv, p.kdfIv, p.iterations, password)
 }
