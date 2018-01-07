@@ -125,7 +125,7 @@ func (c *VirgilCrypto) ExportPrivateKey(key cryptoapi.PrivateKey, password strin
 		}
 		return ikey.Encode([]byte(password))
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) ExportPublicKey(key cryptoapi.PublicKey) ([]byte, error) {
@@ -135,7 +135,7 @@ func (c *VirgilCrypto) ExportPublicKey(key cryptoapi.PublicKey) ([]byte, error) 
 		}
 		return ikey.Encode()
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) Encrypt(data []byte, recipients ...cryptoapi.PublicKey) ([]byte, error) {
@@ -144,7 +144,7 @@ func (c *VirgilCrypto) Encrypt(data []byte, recipients ...cryptoapi.PublicKey) (
 		var ikey PublicKey
 		var ok bool
 		if ikey, ok = recipients[i].(PublicKey); !ok {
-			return nil, cryptoapi.InsupportedKeyErr
+			return nil, cryptoapi.UnsupportedKeyErr
 		}
 		ikeys[i] = ikey
 	}
@@ -164,7 +164,7 @@ func (c *VirgilCrypto) EncryptStream(in io.Reader, out io.Writer, recipients ...
 		var ikey PublicKey
 		var ok bool
 		if ikey, ok = recipients[i].(PublicKey); !ok {
-			return cryptoapi.InsupportedKeyErr
+			return cryptoapi.UnsupportedKeyErr
 		}
 		ikeys[i] = ikey
 	}
@@ -186,7 +186,7 @@ func (c *VirgilCrypto) Decrypt(data []byte, key cryptoapi.PrivateKey) ([]byte, e
 		}
 		return c.MakeCipher().DecryptWithPrivateKey(data, ikey.(*ed25519PrivateKey))
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key cryptoapi.PrivateKey) error {
@@ -196,7 +196,7 @@ func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key cryptoapi.
 		}
 		return c.getCipher().DecryptStream(in, out, key.(*ed25519PrivateKey))
 	}
-	return cryptoapi.InsupportedKeyErr
+	return cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) Sign(data []byte, key cryptoapi.PrivateKey) ([]byte, error) {
@@ -206,7 +206,7 @@ func (c *VirgilCrypto) Sign(data []byte, key cryptoapi.PrivateKey) ([]byte, erro
 		}
 		return Signer.Sign(data, ikey)
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) VerifySignature(data []byte, signature []byte, key cryptoapi.PublicKey) error {
@@ -216,7 +216,7 @@ func (c *VirgilCrypto) VerifySignature(data []byte, signature []byte, key crypto
 		}
 		return Verifier.Verify(data, ikey, signature)
 	}
-	return cryptoapi.InsupportedKeyErr
+	return cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) SignStream(in io.Reader, key cryptoapi.PrivateKey) ([]byte, error) {
@@ -230,7 +230,7 @@ func (c *VirgilCrypto) SignStream(in io.Reader, key cryptoapi.PrivateKey) ([]byt
 		}
 		return []byte(res), nil
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key cryptoapi.PublicKey) error {
@@ -240,7 +240,7 @@ func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key cryptoap
 		}
 		return Verifier.VerifyStream(in, ikey, signature)
 	}
-	return cryptoapi.InsupportedKeyErr
+	return cryptoapi.UnsupportedKeyErr
 }
 func (c *VirgilCrypto) CalculateFingerprint(data []byte) []byte {
 	hash := sha256.Sum256(data)
@@ -253,7 +253,7 @@ func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey cryptoapi.PrivateK
 		var ikey PublicKey
 		var ok bool
 		if ikey, ok = recipients[i].(PublicKey); !ok {
-			return nil, cryptoapi.InsupportedKeyErr
+			return nil, cryptoapi.UnsupportedKeyErr
 		}
 		ikeys[i] = ikey
 	}
@@ -271,7 +271,7 @@ func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey cryptoapi.PrivateK
 		}
 		return cipher.SignThenEncrypt(data, iSignerKey.(*ed25519PrivateKey))
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey cryptoapi.PrivateKey, verifierKeys ...cryptoapi.PublicKey) ([]byte, error) {
@@ -280,7 +280,7 @@ func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey cryptoapi.Pr
 		var ikey PublicKey
 		var ok bool
 		if ikey, ok = verifierKeys[i].(PublicKey); !ok {
-			return nil, cryptoapi.InsupportedKeyErr
+			return nil, cryptoapi.UnsupportedKeyErr
 		}
 		ikeys[i] = ikey
 	}
@@ -297,7 +297,7 @@ func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey cryptoapi.Pr
 
 		return c.getCipher().DecryptThenVerify(data, iDecryptkey.(*ed25519PrivateKey), verifiers...)
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) ExtractPublicKey(key cryptoapi.PrivateKey) (cryptoapi.PublicKey, error) {
@@ -307,7 +307,7 @@ func (c *VirgilCrypto) ExtractPublicKey(key cryptoapi.PrivateKey) (cryptoapi.Pub
 		}
 		return ikey.ExtractPublicKey()
 	}
-	return nil, cryptoapi.InsupportedKeyErr
+	return nil, cryptoapi.UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) getCipher() Cipher {

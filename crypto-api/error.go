@@ -39,5 +39,5 @@ package cryptoapi
 import "errors"
 
 var (
-	InsupportedKeyErr = errors.New("Key insupported")
+	UnsupportedKeyErr = errors.New("key unsupported")
 )
