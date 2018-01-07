@@ -49,7 +49,7 @@ import (
 )
 
 type Validator interface {
-	Validate(card Card) error
+	Validate(crypto cryptoapi.Crypto, card Card) error
 }
 
 type HttpClient common.HttpClient
@@ -252,7 +252,7 @@ func (cm *CardsManager) validate(cards []Card) error {
 		return nil
 	}
 	for _, card := range cards {
-		err := cm.Validator.Validate(card)
+		err := cm.Validator.Validate(cm.getCrypto(), card)
 		if err != nil {
 			return err
 		}
@@ -290,7 +290,7 @@ func (cm *CardsManager) raw2Card(raw RawCard) (card Card, err error) {
 				var exf map[string]string
 				err = json.Unmarshal(rs.ExtraFields, &exf)
 				if err != nil {
-					return card, errors.Wrap(err, "CardsManager: unmarshal extrafileds of signature")
+					return card, errors.Wrap(err, "CardsManager: unmarshal extra fields of signature")
 				}
 				cs.ExtraFields = exf
 				cs.Snapshot = rs.ExtraFields

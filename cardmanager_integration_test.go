@@ -104,6 +104,7 @@ func TestMain(m *testing.M) {
 	cardsManager = virgilcards.CardsManager{
 		ApiUrl:     address,
 		HttpClient: StaticTokenClient{Token: token, Client: &DebugClient{}},
+		Validator: &virgilcards.ExtendedValidator{},
 	}
 
 	os.Exit(m.Run())
@@ -257,7 +258,7 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 	}
 
 	_, err = cardsManager.GetCard(revokedCard.ID)
-	if err != nil {
+	if err == nil {
 		t.Fatal(err)
 	}
 }

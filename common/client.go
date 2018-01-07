@@ -38,7 +38,6 @@ package common
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
