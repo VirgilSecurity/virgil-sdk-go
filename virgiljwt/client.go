@@ -60,9 +60,10 @@ type JWTClient struct {
 }
 
 type JWTParam struct {
-	AppIDs   []string
+	AppID   string
 	TTL      uint      // count in minutes
 	IssuedAt time.Time //UTC date
+	PublicKeyID string
 }
 
 func (c JWTClient) Generate(p JWTParam) (string, error) {
@@ -74,11 +75,15 @@ func (c JWTClient) Generate(p JWTParam) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(makeVirgilSigningMethod(), jwt.MapClaims{
-		"accid":  c.accID,
-		"appids": p.AppIDs,
-		"ver":    "1.0",
+		"iss":    "virgil-" + p.AppID,
+		"sub":    "identity-"+c.accID,
 		"iat":    p.IssuedAt.UTC().Unix(),
 		"exp":    p.IssuedAt.Add(time.Duration(p.TTL) * time.Minute).UTC().Unix(),
 	})
+
+	token.Header["cty"] = "virgil-jwt;v=1"
+
+	token.Header["kid"] = p.PublicKeyID
+
 	return token.SignedString(secretKey{Crypto: c.crypto, Key: c.secretKey})
 }

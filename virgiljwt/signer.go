@@ -46,7 +46,7 @@ import (
 // Virgil signing constants.
 //
 const (
-	VirgilSigningAlgorithm = "VIRGIL"
+	VirgilSigningAlgorithm = "VEDS512"
 )
 
 //

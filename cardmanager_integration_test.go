@@ -82,6 +82,12 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal("Cannot import API private key: ", err)
 	}
+
+	apiID := os.Getenv("TEST_API_ID")
+	if accID == "" {
+		log.Fatal("TEST_API_ID is required")
+	}
+
 	appCardID = os.Getenv("TEST_APP_ID")
 	if appCardID == "" {
 		log.Fatal("TEST_APP_ID is required")
@@ -97,11 +103,14 @@ func TestMain(m *testing.M) {
 		log.Fatal("Cannot import private key: ", err)
 	}
 
+
 	jwtMaker := virgiljwt.Make(virgilcards.DefaultCrypto, apiKey, accID)
-	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppIDs: []string{appCardID}})
+	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppID: appCardID, PublicKeyID:apiID })
 	if err != nil {
 		log.Fatal("Cannot generate JWT token: ", err)
 	}
+
+	fmt.Println(token)
 	cardsManager = virgilcards.CardsManager{
 		ApiUrl:     address,
 		HttpClient: StaticTokenClient{Token: token, Client: &DebugClient{}},
