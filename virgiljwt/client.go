@@ -45,10 +45,11 @@ import (
 
 var DefaultTTL uint = 15
 
-func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, accID string) JWTClient {
+func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, publicKeyID string, accID string) JWTClient {
 	return JWTClient{
 		crypto:    crypto,
 		secretKey: sk,
+		publicKeyID: publicKeyID,
 		accID:     accID,
 	}
 }
@@ -56,6 +57,7 @@ func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, accID string) JWTCli
 type JWTClient struct {
 	crypto    cryptoapi.Crypto
 	secretKey cryptoapi.PrivateKey
+	publicKeyID string
 	accID     string
 }
 
@@ -63,7 +65,7 @@ type JWTParam struct {
 	AppID   string
 	TTL      uint      // count in minutes
 	IssuedAt time.Time //UTC date
-	PublicKeyID string
+
 }
 
 func (c JWTClient) Generate(p JWTParam) (string, error) {
@@ -83,7 +85,7 @@ func (c JWTClient) Generate(p JWTParam) (string, error) {
 
 	token.Header["cty"] = "virgil-jwt;v=1"
 
-	token.Header["kid"] = p.PublicKeyID
+	token.Header["kid"] = c.publicKeyID
 
 	return token.SignedString(secretKey{Crypto: c.crypto, Key: c.secretKey})
 }

@@ -104,8 +104,8 @@ func TestMain(m *testing.M) {
 	}
 
 
-	jwtMaker := virgiljwt.Make(virgilcards.DefaultCrypto, apiKey, accID)
-	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppID: appCardID, PublicKeyID:apiID })
+	jwtMaker := virgiljwt.Make(virgilcards.DefaultCrypto, apiKey, apiID,accID)
+	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppID: appCardID})
 	if err != nil {
 		log.Fatal("Cannot generate JWT token: ", err)
 	}
