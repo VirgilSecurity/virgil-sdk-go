@@ -103,9 +103,8 @@ func TestMain(m *testing.M) {
 		log.Fatal("Cannot import private key: ", err)
 	}
 
-
-	jwtMaker := virgiljwt.Make(virgilcards.DefaultCrypto, apiKey, apiID,accID)
-	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppID: appCardID})
+	jwtMaker := virgiljwt.Make(virgilcards.DefaultCrypto, apiKey, apiID)
+	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppID: appCardID, Identity: accID})
 	if err != nil {
 		log.Fatal("Cannot generate JWT token: ", err)
 	}

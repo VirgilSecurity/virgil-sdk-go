@@ -45,24 +45,23 @@ import (
 
 var DefaultTTL uint = 15
 
-func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, publicKeyID string, accID string) JWTClient {
+func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, publicKeyID string) JWTClient {
 	return JWTClient{
-		crypto:    crypto,
-		secretKey: sk,
+		crypto:      crypto,
+		secretKey:   sk,
 		publicKeyID: publicKeyID,
-		accID:     accID,
 	}
 }
 
 type JWTClient struct {
-	crypto    cryptoapi.Crypto
-	secretKey cryptoapi.PrivateKey
+	crypto      cryptoapi.Crypto
+	secretKey   cryptoapi.PrivateKey
 	publicKeyID string
-	accID     string
 }
 
 type JWTParam struct {
-	AppID   string
+	AppID    string
+	Identity string
 	TTL      uint      // count in minutes
 	IssuedAt time.Time //UTC date
 
@@ -77,10 +76,10 @@ func (c JWTClient) Generate(p JWTParam) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(makeVirgilSigningMethod(), jwt.MapClaims{
-		"iss":    "virgil-" + p.AppID,
-		"sub":    "identity-"+c.accID,
-		"iat":    p.IssuedAt.UTC().Unix(),
-		"exp":    p.IssuedAt.Add(time.Duration(p.TTL) * time.Minute).UTC().Unix(),
+		"iss": "virgil-" + p.AppID,
+		"sub": "identity-" + p.Identity,
+		"iat": p.IssuedAt.UTC().Unix(),
+		"exp": p.IssuedAt.Add(time.Duration(p.TTL) * time.Minute).UTC().Unix(),
 	})
 
 	token.Header["cty"] = "virgil-jwt;v=1"
