@@ -41,7 +41,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"gopkg.in/virgil.v6/crypto-native/gcm"
+	"gopkg.in/virgil.v5/crypto-native/gcm"
 )
 
 func TestStream(t *testing.T) {

@@ -39,7 +39,7 @@ package virgilcards
 import (
 	"errors"
 
-	"gopkg.in/virgil.v6/common"
+	"gopkg.in/virgil.v5/common"
 )
 
 type CardsAPIError common.VirgilAPIError

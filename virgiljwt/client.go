@@ -40,7 +40,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"gopkg.in/virgil.v6/crypto-api"
+	"gopkg.in/virgil.v5/crypto-api"
 )
 
 var DefaultTTL uint = 15

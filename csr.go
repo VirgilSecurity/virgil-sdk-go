@@ -41,7 +41,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
-	cryptoapi "gopkg.in/virgil.v6/crypto-api"
+	cryptoapi "gopkg.in/virgil.v5/crypto-api"
 )
 
 type CSRParams struct {

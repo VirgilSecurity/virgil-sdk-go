@@ -47,10 +47,10 @@ import (
 	"os"
 	"testing"
 
-	"gopkg.in/virgil.v6"
-	"gopkg.in/virgil.v6/crypto-api"
-	"gopkg.in/virgil.v6/crypto-native"
-	"gopkg.in/virgil.v6/virgiljwt"
+	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/crypto-api"
+	"gopkg.in/virgil.v5/crypto-native"
+	"gopkg.in/virgil.v5/virgiljwt"
 )
 
 var cardsManager virgilcards.CardsManager

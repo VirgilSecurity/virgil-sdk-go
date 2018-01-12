@@ -39,7 +39,7 @@ package virgiljwt
 import (
 	"github.com/dgrijalva/jwt-go"
 
-	cryptoapi "gopkg.in/virgil.v6/crypto-api"
+	cryptoapi "gopkg.in/virgil.v5/crypto-api"
 )
 
 //

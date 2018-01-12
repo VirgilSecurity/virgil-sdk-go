@@ -41,7 +41,7 @@ import (
 	"crypto/cipher"
 	"io"
 
-	"gopkg.in/virgil.v6/crypto-native/gcm"
+	"gopkg.in/virgil.v5/crypto-native/gcm"
 )
 
 type VirgilChunkCipher interface {

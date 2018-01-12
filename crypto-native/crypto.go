@@ -76,9 +76,9 @@ import (
 
 	"github.com/minio/sha256-simd"
 
-	"gopkg.in/virgil.v6/crypto-api"
-	"gopkg.in/virgil.v6/crypto-native/errors"
-	"gopkg.in/virgil.v6/crypto-native/keytypes"
+	"gopkg.in/virgil.v5/crypto-api"
+	"gopkg.in/virgil.v5/crypto-native/errors"
+	"gopkg.in/virgil.v5/crypto-native/keytypes"
 )
 
 type (

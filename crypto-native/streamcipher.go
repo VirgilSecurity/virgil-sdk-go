@@ -75,7 +75,7 @@ import (
 	"crypto/aes"
 	"io"
 
-	"gopkg.in/virgil.v6/crypto-native/gcm"
+	"gopkg.in/virgil.v5/crypto-native/gcm"
 )
 
 type VirgilStreamCipher interface {

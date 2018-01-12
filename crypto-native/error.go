@@ -36,7 +36,7 @@
 
 package cryptonative
 
-import "gopkg.in/virgil.v6/crypto-native/errors"
+import "gopkg.in/virgil.v5/crypto-native/errors"
 
 type CryptoError string
 

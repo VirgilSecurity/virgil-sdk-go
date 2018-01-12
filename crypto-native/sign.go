@@ -76,7 +76,7 @@ import (
 	"strconv"
 
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v6/crypto-native/errors"
+	"gopkg.in/virgil.v5/crypto-native/errors"
 )
 
 type VirgilSigner interface {

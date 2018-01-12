@@ -7,7 +7,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/virgil.v6/crypto-native"
+	"gopkg.in/virgil.v5/crypto-native"
 )
 
 func TestVirgilSigner_Sign(t *testing.T) {

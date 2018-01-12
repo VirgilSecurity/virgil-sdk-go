@@ -36,7 +36,7 @@
 
 package virgilcards
 
-import "gopkg.in/virgil.v6/crypto-api"
+import "gopkg.in/virgil.v5/crypto-api"
 
 type SignerInfo struct {
 	CardID    string

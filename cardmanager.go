@@ -44,8 +44,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gopkg.in/virgil.v6/common"
-	"gopkg.in/virgil.v6/crypto-api"
+	"gopkg.in/virgil.v5/common"
+	"gopkg.in/virgil.v5/crypto-api"
 )
 
 type Validator interface {
