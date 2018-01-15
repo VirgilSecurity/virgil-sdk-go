@@ -3,6 +3,7 @@ package virgilapi
 import (
 	"encoding/base64"
 	"encoding/json"
+	"io"
 
 	"encoding/hex"
 
@@ -22,6 +23,10 @@ func (c *Card) Encrypt(data Buffer) (Buffer, error) {
 
 func (c *Card) EncryptString(data string) (Buffer, error) {
 	return c.encrypt(BufferFromString(data))
+}
+
+func (c *Card) EncryptStream(in io.Reader, out io.Writer) error{
+	return virgil.Crypto().EncryptStream(in, out, c.PublicKey)
 }
 
 func (c *Card) encrypt(data Buffer) (Buffer, error) {
@@ -79,6 +84,10 @@ func (c Cards) Encrypt(data Buffer) (Buffer, error) {
 
 func (c Cards) EncryptString(data string) (Buffer, error) {
 	return virgil.Crypto().Encrypt(BufferFromString(data), c.ToRecipients()...)
+}
+
+func (c *Cards) EncryptStream(in io.Reader, out io.Writer) error{
+	return virgil.Crypto().EncryptStream(in, out, c.ToRecipients()...)
 }
 
 func (c Cards) SignThenEncrypt(data Buffer, signerKey *Key) (Buffer, error) {
