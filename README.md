@@ -1,4 +1,4 @@
-# Virgil Security Go SDK 
+# Virgil Security Go SDK v5 (preview)
 
 [Installation](#installation) | [Encryption Example](#encryption-example) | [Initialization](#initialization) | [Documentation](#documentation) | [Support](#support)
 
