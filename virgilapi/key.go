@@ -1,6 +1,8 @@
 package virgilapi
 
 import (
+	"io"
+
 	"gopkg.in/virgil.v4"
 	"gopkg.in/virgil.v4/virgilcrypto"
 )
@@ -20,6 +22,10 @@ func (k *Key) Sign(data Buffer) (Buffer, error) {
 
 func (k *Key) SignString(data string) (Buffer, error) {
 	return virgil.Crypto().Sign(BufferFromString(data), k.privateKey)
+}
+
+func (k *Key) DecryptStream(in io.Reader, out io.Writer) error {
+	return virgil.Crypto().DecryptStream(in, out, k.privateKey)
 }
 
 func (k *Key) Decrypt(data Buffer) (Buffer, error) {
