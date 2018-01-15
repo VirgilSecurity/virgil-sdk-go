@@ -1,126 +1,118 @@
-package virgil
+/*
+ * Copyright (C) 2015-2018 Virgil Security Inc.
+ *
+ * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   (1) Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ *   (2) Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in
+ *   the documentation and/or other materials provided with the
+ *   distribution.
+ *
+ *   (3) Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
-import (
-	"encoding/hex"
-	"strings"
+package virgilcards
 
-	"gopkg.in/virgil.v5/errors"
-	"gopkg.in/virgil.v5/virgilcrypto"
+import "gopkg.in/virgil.v5/crypto-api"
+
+type SignerInfo struct {
+	CardID    string
+	PublicKey cryptoapi.PublicKey
+}
+
+const (
+	VirgilCardServiceCardId    = "e680bef87ba75d331b0a02bfa6a20f02eb5c5ba9bc96fc61ca595404b10026f4"
+	VirgilCardServicePublicKey = "MCowBQYDK2VwAyEAhvwMS/KZMd0hkZop+oLEh9ZdlSByj7r0lFzqS57rvLA="
 )
 
-// A CardsValidator validate response from server
-// Validator check that a card was signed by all services
-type CardsValidator interface {
-	//if the result is false then error must not be nil
-	Validate(card *Card) error
-	ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) error
+var VirgilSignerInfo = SignerInfo{
+	CardID:    VirgilCardServiceCardId,
+	PublicKey: loadServicePublicKey(),
 }
 
-// NewCardsValidator create a cards validator
-func NewCardsValidator() *VirgilCardValidator {
-	validator := &VirgilCardValidator{
-		validators: make(map[string]virgilcrypto.PublicKey),
+func loadServicePublicKey() cryptoapi.PublicKey {
+	key, err := DefaultCrypto.ImportPublicKey([]byte(VirgilCardServicePublicKey))
+	if err != nil {
+		panic(err)
 	}
-
-	return validator
+	return key
 }
 
-type VirgilCardValidator struct {
-	validators map[string]virgilcrypto.PublicKey
+type ExtendedValidator struct {
+	WhiteList             []SignerInfo
+	IgnoreSelfSignature   bool
+	IgnoreVirgilSignature bool
 }
 
-// Validate that all signatures were added
-func (v *VirgilCardValidator) ValidateExtra(card *Card, extraKeys map[string]virgilcrypto.PublicKey, validateSelfSign bool) error {
-	if card == nil || len(card.Snapshot) == 0 {
-		return errors.New("nil card")
+func (v *ExtendedValidator) Validate(crypto cryptoapi.Crypto, card Card) (err error) {
+	if !v.IgnoreSelfSignature {
+		err = v.checkSign(crypto, card, SignerInfo{CardID: card.ID, PublicKey: card.PublicKey}, SignerTypeSelf)
+		if err != nil {
+			return err
+		}
 	}
-	// Support for legacy Cards.
-	if card.CardVersion == "3.0" && card.Scope == CardScope.Global {
+	if !v.IgnoreVirgilSignature {
+		err = v.checkSign(crypto, card, VirgilSignerInfo, SignerTypeVirgil)
+		if err != nil {
+			return err
+		}
+	}
+	if len(v.WhiteList) == 0 {
 		return nil
 	}
-	if len(card.Signatures) == 0 {
-		return errors.New("no signatures provided")
-	}
-
-	fp := Crypto().CalculateFingerprint(card.Snapshot)
-
-	//check that id looks like fingerprint
-	hexfp := hex.EncodeToString(fp)
-	if !strings.EqualFold(hexfp, card.ID) {
-		return errors.Errorf("card id %s does not match fingerprint %s", card.ID, hexfp)
-	}
-
-	if validateSelfSign {
-		//check self signature
-		selfsign, ok := card.Signatures[hexfp]
-		if !ok {
-			return errors.Errorf("no self signature found for card " + card.ID)
+	for _, signer := range v.WhiteList {
+		err = v.checkSign(crypto, card, signer, SignerTypeExtra)
+		if err == CardValidationExpectedSignerWasNotFoundErr {
+			continue
 		}
-
-		err := Crypto().Verify(fp, selfsign, card.PublicKey)
 		if err != nil {
-			return errors.Wrap(err, "self signature validation failed")
+			return err
 		}
+		return nil
 	}
-
-	for id, key := range v.validators {
-		sign, ok := card.Signatures[id]
-		if !ok {
-			return errors.Errorf("Card %s does not have signature for verifier ID %s", card.ID, id)
-		}
-
-		err := Crypto().Verify(fp, sign, key)
-		if err != nil {
-			return errors.Wrap(err, "signature validation failed")
-		}
-	}
-
-	for id, key := range extraKeys {
-		sign, ok := card.Signatures[id]
-		if !ok {
-			return errors.Errorf("Card %s does not have signature for verifier ID %s", card.ID, id)
-		}
-
-		err := Crypto().Verify(fp, sign, key)
-		if err != nil {
-			return errors.Wrap(err, "signature validation failed")
-		}
-	}
-
-	return nil
+	return CardValidationExpectedSignerWasNotFoundErr
 }
 
-// Validate that all signatures were added
-func (v *VirgilCardValidator) Validate(card *Card) error {
-	return v.ValidateExtra(card, nil, true)
-}
-
-// AddVerifier add new service for validation
-func (v *VirgilCardValidator) AddVerifier(cardId string, key virgilcrypto.PublicKey) {
-	v.validators[cardId] = key
-}
-
-// AddVerifier adds default card service card
-func (v *VirgilCardValidator) AddDefaultVerifiers() error {
-	crypto := Crypto()
-
-	key, err := crypto.ImportPublicKey([]byte(`-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAYR501kV1tUne2uOdkw4kErRRbJrc2Syaz5V1fuG+rVs=
------END PUBLIC KEY-----`))
-
-	if err != nil {
-		return err
+func (v *ExtendedValidator) checkSign(crypto cryptoapi.Crypto, card Card, signer SignerInfo, signerType SignerType) error {
+	if len(card.Signature) == 0 {
+		return CardValidationExpectedSignerWasNotFoundErr
 	}
-	v.AddVerifier("3e29d43373348cfb373b7eae189214dc01d7237765e572db685839b64adca853", key)
-	return nil
-}
-
-func MakeDefaultCardsValidator() (CardsValidator, error) {
-
-	validator := NewCardsValidator()
-	err := validator.AddDefaultVerifiers()
-	if err != nil {
-		return nil, err
+	for _, s := range card.Signature {
+		if s.SignerCardId == signer.CardID {
+			if s.SignerType != signerType {
+				return CardValidationSignerTypeIncorrectErr
+			}
+			snapshot := append(card.Snapshot, s.Snapshot...)
+			err := crypto.VerifySignature(crypto.CalculateFingerprint(snapshot), s.Signature, signer.PublicKey)
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		}
 	}
-	return validator, nil
+	return CardValidationExpectedSignerWasNotFoundErr
 }
