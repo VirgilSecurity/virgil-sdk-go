@@ -53,9 +53,10 @@ import (
 	"gopkg.in/virgil.v5/virgiljwt"
 )
 
-var cardsManager virgilcards.CardsManager
+var cardsManager *virgilcards.CardsManager
 var appCardID string
 var appSK cryptoapi.PrivateKey
+var crypto = cryptonative.DefaultCrypto
 
 type StaticTokenClient struct {
 	Token  string
@@ -78,7 +79,7 @@ func TestMain(m *testing.M) {
 	if apiKeySource == "" {
 		log.Fatal("TEST_API_KEY is required")
 	}
-	apiKey, err := cryptonative.DefaultCrypto.ImportPrivateKey([]byte(apiKeySource), "")
+	apiKey, err := crypto.ImportPrivateKey([]byte(apiKeySource), "")
 	if err != nil {
 		log.Fatal("Cannot import API private key: ", err)
 	}
@@ -98,7 +99,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("TEST_APP_SECRET_KEY is required")
 	}
 	appSKPassword := os.Getenv("TEST_APP_SECRET_KEY_PASSWORD")
-	appSK, err = cryptonative.DefaultCrypto.ImportPrivateKey([]byte(appSKSource), appSKPassword)
+	appSK, err = crypto.ImportPrivateKey([]byte(appSKSource), appSKPassword)
 	if err != nil {
 		log.Fatal("Cannot import private key: ", err)
 	}
@@ -109,8 +110,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("Cannot generate JWT token: ", err)
 	}
 
-	fmt.Println(token)
-	cardsManager = virgilcards.CardsManager{
+	cardsManager = &virgilcards.CardsManager{
 		ApiUrl:     address,
 		HttpClient: StaticTokenClient{Token: token, Client: &DebugClient{}},
 		Validator:  &virgilcards.ExtendedValidator{},
@@ -120,11 +120,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestCardManager_PublishCard_ReturnCard(t *testing.T) {
-	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
+	kp, err := crypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(virgilcards.CSRParams{
+	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
 		Identity:   genRandomID(),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
@@ -132,7 +132,7 @@ func TestCardManager_PublishCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(&csr, virgilcards.CSRSignParams{
+	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
 		SignerCardId:     appCardID,
 		SignerPrivateKey: appSK,
 		SignerType:       virgilcards.SignerTypeApplication,
@@ -148,11 +148,11 @@ func TestCardManager_PublishCard_ReturnCard(t *testing.T) {
 }
 
 func TestCardManager_GetCard_ReturnCard(t *testing.T) {
-	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
+	kp, err := crypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(virgilcards.CSRParams{
+	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
 		Identity:   genRandomID(),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
@@ -160,7 +160,7 @@ func TestCardManager_GetCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(&csr, virgilcards.CSRSignParams{
+	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
 		SignerCardId:     appCardID,
 		SignerPrivateKey: appSK,
 		SignerType:       virgilcards.SignerTypeApplication,
@@ -180,11 +180,11 @@ func TestCardManager_GetCard_ReturnCard(t *testing.T) {
 }
 
 func TestCardManager_SearchCard_ReturnCard(t *testing.T) {
-	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
+	kp, err := crypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(virgilcards.CSRParams{
+	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
 		Identity:   genRandomID(),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
@@ -192,7 +192,7 @@ func TestCardManager_SearchCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(&csr, virgilcards.CSRSignParams{
+	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
 		SignerCardId:     appCardID,
 		SignerPrivateKey: appSK,
 		SignerType:       virgilcards.SignerTypeApplication,
@@ -213,11 +213,11 @@ func TestCardManager_SearchCard_ReturnCard(t *testing.T) {
 }
 
 func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
-	kp, err := cryptonative.DefaultCrypto.GenerateKeypair()
+	kp, err := crypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(virgilcards.CSRParams{
+	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
 		Identity:   genRandomID(),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
@@ -225,7 +225,7 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(&csr, virgilcards.CSRSignParams{
+	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
 		SignerCardId:     appCardID,
 		SignerPrivateKey: appSK,
 		SignerType:       virgilcards.SignerTypeApplication,
@@ -239,11 +239,11 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	kp, err = cryptonative.DefaultCrypto.GenerateKeypair()
+	kp, err = crypto.GenerateKeypair()
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err = cardsManager.GenerateCSR(virgilcards.CSRParams{
+	csr, err = cardsManager.GenerateCSR(&virgilcards.CSRParams{
 		Identity:       revokedCard.Identity,
 		PreviousCardID: revokedCard.ID,
 		PrivateKey:     kp.PrivateKey(),
@@ -252,7 +252,7 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(&csr, virgilcards.CSRSignParams{
+	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
 		SignerCardId:     appCardID,
 		SignerPrivateKey: appSK,
 		SignerType:       virgilcards.SignerTypeApplication,

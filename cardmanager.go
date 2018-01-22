@@ -49,7 +49,7 @@ import (
 )
 
 type Validator interface {
-	Validate(crypto cryptoapi.Crypto, card Card) error
+	Validate(crypto cryptoapi.Crypto, card *Card) error
 }
 
 type HttpClient common.HttpClient
@@ -63,50 +63,6 @@ const (
 	SignerTypeExtra       SignerType = "extra"
 )
 
-type CardSignature struct {
-	SignerCardId string
-	Signature    []byte
-	ExtraFields  map[string]string
-	SignerType   SignerType
-	Snapshot     []byte
-}
-
-type Card struct {
-	ID        string
-	Identity  string
-	PublicKey cryptoapi.PublicKey
-	Version   string
-	CreatedAt time.Time
-	Signature []CardSignature
-	Snapshot  []byte
-}
-
-type RawCardSignature struct {
-	SignerCardId string `json:"signer_id"`
-	Signature    []byte `json:"signature"`
-	ExtraFields  []byte `json:"snapshot,omitempty"`
-	SignerType   string `json:"signer_type"`
-}
-
-type RawCardMeta struct {
-	Signatures map[string][]byte `json:"signs"`
-	CreatedAt  string            `json:"created_at"`
-	Version    string            `json:"card_version"`
-}
-
-type RawCardSnapshot struct {
-	Identity       string `json:"identity"`
-	PublicKeyBytes []byte `json:"public_key"`
-	PreviousCardID string `json:"previous_card_id"`
-	Version        string `json:"version"`
-	CreatedAt      int64  `json:"created_at"`
-}
-type RawCard struct {
-	Snapshot   []byte             `json:"content_snapshot"`
-	Signatures []RawCardSignature `json:"signatures"`
-	Meta       *RawCardMeta       `json:"meta,omitempty"`
-}
-
 type CardsManager struct {
 	Crypto     cryptoapi.Crypto
 	Validator  Validator
@@ -114,33 +70,33 @@ type CardsManager struct {
 	HttpClient HttpClient
 }
 
-func (cm *CardsManager) GetCard(id string) (Card, error) {
-	var rawCard RawCard
+func (cm *CardsManager) GetCard(id string) (*Card, error) {
+	var rawCard *RawCard
 	err := cm.send(http.MethodGet, "/card/v5/"+id, nil, &rawCard)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 	card, err := cm.raw2Card(rawCard)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
-	err = cm.validate([]Card{card})
+	err = cm.validate([]*Card{card})
 	return card, err
 }
 
-func (cm *CardsManager) SearchCards(identity string) ([]Card, error) {
-	var rawCards []RawCard
+func (cm *CardsManager) SearchCards(identity string) ([]*Card, error) {
+	var rawCards []*RawCard
 	err := cm.send(http.MethodPost, "/card/v5/actions/search", map[string]string{"identity": identity}, &rawCards)
 	if err != nil {
-		return []Card{}, err
+		return nil, err
 	}
 
-	cards := make([]Card, len(rawCards))
+	cards := make([]*Card, len(rawCards))
 	for i, rc := range rawCards {
 		cards[i], err = cm.raw2Card(rc)
 		if err != nil {
-			return []Card{}, err
+			return nil, err
 		}
 	}
 
@@ -148,35 +104,35 @@ func (cm *CardsManager) SearchCards(identity string) ([]Card, error) {
 	return cards, err
 }
 
-func (cm *CardsManager) PublishCard(scr CSR) (Card, error) {
-	var rawCard RawCard
-	err := cm.send(http.MethodPost, "/card/v5", RawCard{Signatures: scr.Signatures, Snapshot: scr.Snapshot}, &rawCard)
+func (cm *CardsManager) PublishCard(scr *CSR) (*Card, error) {
+	var rawCard *RawCard
+	err := cm.send(http.MethodPost, "/card/v5", &RawCard{Signatures: scr.Signatures, Snapshot: scr.Snapshot}, &rawCard)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 	card, err := cm.raw2Card(rawCard)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
-	err = cm.validate([]Card{card})
+	err = cm.validate([]*Card{card})
 	return card, err
 }
 
-func (cm *CardsManager) GenerateCSR(param CSRParams) (CSR, error) {
+func (cm *CardsManager) GenerateCSR(param *CSRParams) (*CSR, error) {
 	if param.PublicKey == nil {
-		return CSR{}, CSRPublicKeyEmptyErr
+		return nil, CSRPublicKeyEmptyErr
 	}
 	if param.Identity == "" {
-		return CSR{}, CSRIdentityEmptyErr
+		return nil, CSRIdentityEmptyErr
 	}
 	exportedPubKey, err := cm.getCrypto().ExportPublicKey(param.PublicKey)
 	if err != nil {
-		return CSR{}, err
+		return nil, err
 	}
 
 	t := time.Now().UTC().Unix()
-	cardInfo := RawCardSnapshot{
+	cardInfo := &RawCardSnapshot{
 		Identity:       param.Identity,
 		PublicKeyBytes: exportedPubKey,
 		PreviousCardID: param.PreviousCardID,
@@ -185,19 +141,18 @@ func (cm *CardsManager) GenerateCSR(param CSRParams) (CSR, error) {
 	}
 	snapshot, err := json.Marshal(cardInfo)
 	if err != nil {
-		return CSR{}, errors.Wrap(err, "CardsManager: marshaling card's info")
+		return nil, errors.Wrap(err, "CardsManager: marshaling card's info")
 	}
-	csr := CSR{
+	csr := &CSR{
 		ID:             hex.EncodeToString(cm.getCrypto().CalculateFingerprint(snapshot)),
 		CreatedAt:      cardInfo.CreatedAt,
 		Identity:       cardInfo.Identity,
 		PublicKeyBytes: cardInfo.PublicKeyBytes,
 		Version:        cardInfo.Version,
 		Snapshot:       snapshot,
-		Signatures:     []RawCardSignature{},
 	}
 	if param.PrivateKey != nil {
-		err := csr.Sign(cm.getCrypto(), CSRSignParams{
+		err := csr.Sign(cm.getCrypto(), &CSRSignParams{
 			ExtraFields:      param.ExtraFields,
 			SignerCardId:     "",
 			SignerType:       SignerTypeSelf,
@@ -210,7 +165,7 @@ func (cm *CardsManager) GenerateCSR(param CSRParams) (CSR, error) {
 	return csr, nil
 }
 
-func (cm *CardsManager) SignCSR(csr *CSR, params CSRSignParams) error {
+func (cm *CardsManager) SignCSR(csr *CSR, params *CSRSignParams) error {
 	return csr.Sign(cm.getCrypto(), params)
 }
 
@@ -221,7 +176,7 @@ func (cm *CardsManager) ImportCSR(source []byte) (CSR, error) {
 	if err != nil {
 		return csr, errors.Wrap(err, "CardsMangerImportCSR.: unmarshal source")
 	}
-	var info RawCardSnapshot
+	var info *RawCardSnapshot
 	err = json.Unmarshal(raw.Snapshot, &info)
 	if err != nil {
 		return csr, errors.Wrap(err, "CardsMangerImportCSR.: unmarshal csr snapshot info")
@@ -247,7 +202,7 @@ func (cm *CardsManager) ImportCSR(source []byte) (CSR, error) {
 	return csr, nil
 }
 
-func (cm *CardsManager) validate(cards []Card) error {
+func (cm *CardsManager) validate(cards []*Card) error {
 	if cm.Validator == nil {
 		return nil
 	}
@@ -260,27 +215,29 @@ func (cm *CardsManager) validate(cards []Card) error {
 	return nil
 }
 
-func (cm *CardsManager) raw2Card(raw RawCard) (card Card, err error) {
-	var cardInfo RawCardSnapshot
+func (cm *CardsManager) raw2Card(raw *RawCard) (card *Card, err error) {
+	var cardInfo *RawCardSnapshot
 
 	err = json.Unmarshal(raw.Snapshot, &cardInfo)
 	if err != nil {
-		return card, errors.Wrap(err, "CardsManager: cannot unmarshal card snapshot")
+		return nil, errors.Wrap(err, "CardsManager: cannot unmarshal card snapshot")
 	}
 	pubKey, err := cm.getCrypto().ImportPublicKey(cardInfo.PublicKeyBytes)
 	if err != nil {
-		return card, err
+		return nil, err
 	}
-	card.PublicKey = pubKey
-	card.Identity = cardInfo.Identity
-	card.Snapshot = raw.Snapshot
+	card = &Card{
+		PublicKey: pubKey,
+		Identity:  cardInfo.Identity,
+		Snapshot:  raw.Snapshot,
+	}
 
 	if cardInfo.Version == "5.0" {
 		card.CreatedAt = time.Unix(cardInfo.CreatedAt, 0)
 		card.Version = cardInfo.Version
-		card.Signature = make([]CardSignature, len(raw.Signatures))
+		card.Signature = make([]*CardSignature, len(raw.Signatures))
 		for i, rs := range raw.Signatures {
-			cs := CardSignature{
+			cs := &CardSignature{
 				SignerCardId: rs.SignerCardId,
 				Signature:    rs.Signature,
 				SignerType:   SignerType(rs.SignerType),
@@ -315,14 +272,14 @@ func (cm *CardsManager) raw2Card(raw RawCard) (card Card, err error) {
 		fp := cm.getCrypto().CalculateFingerprint(raw.Snapshot)
 		card.ID = hex.EncodeToString(fp)
 
-		card.Signature = make([]CardSignature, len(raw.Meta.Signatures))
+		card.Signature = make([]*CardSignature, len(raw.Meta.Signatures))
 		var i = 0
 		for signerID, sign := range raw.Meta.Signatures {
 			var signType = SignerTypeExtra
 			if signerID == card.ID {
 				signType = SignerTypeSelf
 			}
-			card.Signature[i] = CardSignature{
+			card.Signature[i] = &CardSignature{
 				Signature:    sign,
 				SignerCardId: signerID,
 				SignerType:   signType,

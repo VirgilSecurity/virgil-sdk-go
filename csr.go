@@ -67,7 +67,7 @@ type CSR struct {
 	Version        string
 	CreatedAt      int64
 	Snapshot       []byte
-	Signatures     []RawCardSignature
+	Signatures     []*RawCardSignature
 }
 
 func sliceIndex(n int, predicate func(i int) bool) int {
@@ -79,7 +79,7 @@ func sliceIndex(n int, predicate func(i int) bool) int {
 	return -1
 }
 
-func (csr *CSR) Sign(crypto cryptoapi.Crypto, param CSRSignParams) error {
+func (csr *CSR) Sign(crypto cryptoapi.Crypto, param *CSRSignParams) error {
 	if param.SignerPrivateKey == nil || param.SignerType == "" {
 		return CSRSignParamIncorrectErr
 	}
@@ -119,7 +119,7 @@ func (csr *CSR) Sign(crypto cryptoapi.Crypto, param CSRSignParams) error {
 	if err != nil {
 		return err
 	}
-	csr.Signatures = append(csr.Signatures, RawCardSignature{
+	csr.Signatures = append(csr.Signatures, &RawCardSignature{
 		ExtraFields:  extraSnapshot,
 		Signature:    sign,
 		SignerCardId: param.SignerCardId,
