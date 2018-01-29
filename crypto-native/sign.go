@@ -64,16 +64,16 @@ func (s *ed25519Signer) Sign(data []byte, signer PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {
 		return nil, errors.New("key is nil")
 	}
-	hash := Hash.Sum(data)
-	return signInternal(hash[:], signer.(*ed25519PrivateKey))
+	//hash := Hash.Sum(data)
+	return signInternal(data, signer.(*ed25519PrivateKey))
 
 }
 func (s *ed25519Verifier) Verify(data []byte, key PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
 		return errors.New("key is nil")
 	}
-	hash := Hash.Sum(data)
-	return verifyInternal(hash[:], key.(*ed25519PublicKey), signature)
+	//hash := Hash.Sum(data)
+	return verifyInternal(data, key.(*ed25519PublicKey), signature)
 }
 func (s *ed25519Signer) SignStream(data io.Reader, signer PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {

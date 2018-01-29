@@ -113,7 +113,7 @@ func TestMain(m *testing.M) {
 	cardsManager = &virgilcards.CardsManager{
 		ApiUrl:     address,
 		HttpClient: StaticTokenClient{Token: token, Client: &DebugClient{}},
-		Validator:  &virgilcards.ExtendedValidator{},
+		Validator:  &virgilcards.ExtendedValidator{IgnoreVirgilSignature: false},
 	}
 
 	os.Exit(m.Run())

@@ -115,7 +115,7 @@ func (csr *CSR) Sign(crypto cryptoapi.Crypto, param *CSRSignParams) error {
 		csr.ID = param.SignerCardId
 	}
 
-	sign, err := crypto.Sign(crypto.CalculateFingerprint(signingSnapshot), param.SignerPrivateKey)
+	sign, err := crypto.Sign(signingSnapshot, param.SignerPrivateKey)
 	if err != nil {
 		return err
 	}

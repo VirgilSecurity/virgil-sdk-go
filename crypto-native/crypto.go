@@ -39,8 +39,9 @@ package cryptonative
 import (
 	"io"
 
-	"github.com/minio/sha256-simd"
+	"crypto/sha512"
 
+	"github.com/minio/sha256-simd"
 	"gopkg.in/virgil.v5/crypto-api"
 	"gopkg.in/virgil.v5/crypto-native/errors"
 	"gopkg.in/virgil.v5/crypto-native/keytypes"
@@ -48,7 +49,8 @@ import (
 
 type (
 	VirgilCrypto struct {
-		MakeCipher func() Cipher
+		MakeCipher            func() Cipher
+		UseSHA256Fingerprints bool
 	}
 )
 
@@ -208,8 +210,23 @@ func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key cryptoap
 	return cryptoapi.UnsupportedKeyErr
 }
 func (c *VirgilCrypto) CalculateFingerprint(data []byte) []byte {
-	hash := sha256.Sum256(data)
-	return hash[:]
+	var hash []byte
+	if c.UseSHA256Fingerprints {
+		hash = sha256.Sum256(data)[:]
+	} else {
+		hash = sha512.Sum512(data)[:32]
+	}
+	return hash
+}
+
+func (c *VirgilCrypto) CalculateReceiverId(data []byte) []byte {
+	var hash []byte
+	if c.UseSHA256Fingerprints {
+		hash = sha256.Sum256(data)[:]
+	} else {
+		hash = sha512.Sum512(data)[:8]
+	}
+	return hash
 }
 
 func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey cryptoapi.PrivateKey, recipients ...cryptoapi.PublicKey) ([]byte, error) {

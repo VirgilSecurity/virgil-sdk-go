@@ -119,7 +119,7 @@ func (v *ExtendedValidator) checkSign(crypto cryptoapi.Crypto, card *Card, signe
 				return CardValidationSignerTypeIncorrectErr
 			}
 			snapshot := append(card.Snapshot, s.Snapshot...)
-			err := crypto.VerifySignature(crypto.CalculateFingerprint(snapshot), s.Signature, signer.PublicKey)
+			err := crypto.VerifySignature(snapshot, s.Signature, signer.PublicKey)
 			if err != nil {
 				return err
 			} else {

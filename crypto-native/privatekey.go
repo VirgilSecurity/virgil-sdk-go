@@ -190,7 +190,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 		return nil, cryptoError(err, "")
 	}
 
-	fp := DefaultCrypto.CalculateFingerprint(snapshot)
+	fp := DefaultCrypto.CalculateReceiverId(snapshot)
 	edpriv.receiverID = fp
 
 	return edpriv, nil
