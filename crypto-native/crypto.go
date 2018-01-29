@@ -212,9 +212,11 @@ func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key cryptoap
 func (c *VirgilCrypto) CalculateFingerprint(data []byte) []byte {
 	var hash []byte
 	if c.UseSHA256Fingerprints {
-		hash = sha256.Sum256(data)[:]
+		t := sha256.Sum256(data)
+		hash = t[:]
 	} else {
-		hash = sha512.Sum512(data)[:32]
+		t := sha512.Sum512(data)
+		hash = t[:32]
 	}
 	return hash
 }
@@ -222,9 +224,11 @@ func (c *VirgilCrypto) CalculateFingerprint(data []byte) []byte {
 func (c *VirgilCrypto) CalculateReceiverId(data []byte) []byte {
 	var hash []byte
 	if c.UseSHA256Fingerprints {
-		hash = sha256.Sum256(data)[:]
+		t := sha256.Sum256(data)
+		hash = t[:]
 	} else {
-		hash = sha512.Sum512(data)[:8]
+		t := sha512.Sum512(data)
+		hash = t[:8]
 	}
 	return hash
 }
