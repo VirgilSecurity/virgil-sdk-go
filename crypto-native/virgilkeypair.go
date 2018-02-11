@@ -84,7 +84,7 @@ func generateEd25519Keypair() (Keypair, error) {
 	if err != nil {
 		return nil, cryptoError(err, "")
 	}
-	fp := DefaultCrypto.CalculateReceiverId(snapshot)
+	fp := (&VirgilCrypto{}).CalculateReceiverId(snapshot)
 
 	pub.receiverID = fp
 	priv.receiverID = make([]byte, len(fp))

@@ -48,18 +48,18 @@ type VirgilHash interface {
 
 var Hash VirgilHash
 
-type sha384Hash struct{}
+type sha512Hash struct{}
 
-func (v *sha384Hash) Sum(data []byte) []byte {
+func (v *sha512Hash) Sum(data []byte) []byte {
 	h := v.New()
 	h.Write(data)
 	return h.Sum(nil)
 }
 
-func (v *sha384Hash) New() hash.Hash {
-	return sha512.New384()
+func (v *sha512Hash) New() hash.Hash {
+	return sha512.New()
 }
 
 func init() {
-	Hash = &sha384Hash{}
+	Hash = &sha512Hash{}
 }

@@ -40,12 +40,12 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"gopkg.in/virgil.v5/crypto-api"
+	"gopkg.in/virgil.v5/cryptoapi"
 )
 
 var DefaultTTL uint = 15
 
-func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, publicKeyID string) JWTClient {
+func Make(crypto cryptoapi.CardCrypto, sk cryptoapi.PrivateKey, publicKeyID string) JWTClient {
 	return JWTClient{
 		crypto:      crypto,
 		secretKey:   sk,
@@ -54,7 +54,7 @@ func Make(crypto cryptoapi.Crypto, sk cryptoapi.PrivateKey, publicKeyID string) 
 }
 
 type JWTClient struct {
-	crypto      cryptoapi.Crypto
+	crypto      cryptoapi.CardCrypto
 	secretKey   cryptoapi.PrivateKey
 	publicKeyID string
 }

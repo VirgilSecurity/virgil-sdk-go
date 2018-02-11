@@ -39,7 +39,7 @@ package virgiljwt
 import (
 	"github.com/dgrijalva/jwt-go"
 
-	cryptoapi "gopkg.in/virgil.v5/crypto-api"
+	cryptoapi "gopkg.in/virgil.v5/cryptoapi"
 )
 
 //
@@ -64,12 +64,12 @@ func makeVirgilSigningMethod() jwt.SigningMethod {
 }
 
 type secretKey struct {
-	Crypto cryptoapi.Crypto
+	Crypto cryptoapi.CardCrypto
 	Key    cryptoapi.PrivateKey
 }
 
 type publicKey struct {
-	Crypto cryptoapi.Crypto
+	Crypto cryptoapi.CardCrypto
 	Key    cryptoapi.PublicKey
 }
 
@@ -111,7 +111,7 @@ func (s *virgilSigner) Sign(signingString string, key interface{}) (string, erro
 		return "", jwt.ErrInvalidKeyType
 	}
 
-	signature, err := sk.Crypto.Sign([]byte(signingString), sk.Key)
+	signature, err := sk.Crypto.GenerateSignature([]byte(signingString), sk.Key)
 	if nil != err {
 		return "", err
 	}

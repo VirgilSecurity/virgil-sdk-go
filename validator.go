@@ -34,22 +34,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package virgilcards
+package virgil
 
-import "gopkg.in/virgil.v5/crypto-api"
+import "gopkg.in/virgil.v5/cryptoapi"
 
 type VerifierCredentials struct {
-	ID        string
+	Signer    string
 	PublicKey cryptoapi.PublicKey
 }
 
 const (
-	VirgilCardServiceCardId    = "a3dda3d499d91d8287194d399f992c2317f9b6c529d9a0e4972c6e244c399f25"
+	VirgilCardServiceSigner    = "virgil"
 	VirgilCardServicePublicKey = "MCowBQYDK2VwAyEAr0rjTWlCLJ8q9em0og33grHEh/3vmqp0IewosUaVnQg="
 )
 
 var VirgilSignerInfo = &VerifierCredentials{
-	ID:        VirgilCardServiceCardId,
+	Signer:    VirgilCardServiceSigner,
 	PublicKey: loadServicePublicKey(),
 }
 
@@ -67,15 +67,15 @@ type ExtendedValidator struct {
 	IgnoreVirgilSignature bool
 }
 
-func (v *ExtendedValidator) Validate(crypto cryptoapi.Crypto, card *Card) (err error) {
+func (v *ExtendedValidator) Validate(crypto cryptoapi.CardCrypto, card *Card) (err error) {
 	if !v.IgnoreSelfSignature {
-		err = v.checkSign(crypto, card, &VerifierCredentials{ID: card.ID, PublicKey: card.PublicKey}, SignerTypeSelf)
+		err = v.checkSign(crypto, card, &VerifierCredentials{Signer: SignerTypeSelf, PublicKey: card.PublicKey})
 		if err != nil {
 			return err
 		}
 	}
 	if !v.IgnoreVirgilSignature {
-		err = v.checkSign(crypto, card, VirgilSignerInfo, SignerTypeVirgil)
+		err = v.checkSign(crypto, card, VirgilSignerInfo)
 		if err != nil {
 			return err
 		}
@@ -89,7 +89,7 @@ func (v *ExtendedValidator) Validate(crypto cryptoapi.Crypto, card *Card) (err e
 		ok := false
 		var lastErr error
 		for _, cred := range whiteList.VerifierCredentials {
-			err = v.checkSign(crypto, card, cred, SignerTypeExtra)
+			err = v.checkSign(crypto, card, cred)
 			if err == nil {
 				ok = true
 				break
@@ -109,17 +109,14 @@ func (v *ExtendedValidator) Validate(crypto cryptoapi.Crypto, card *Card) (err e
 	return nil
 }
 
-func (v *ExtendedValidator) checkSign(crypto cryptoapi.Crypto, card *Card, signer *VerifierCredentials, signerType SignerType) error {
+func (v *ExtendedValidator) checkSign(crypto cryptoapi.CardCrypto, card *Card, verifier *VerifierCredentials) error {
 	if len(card.Signature) == 0 {
 		return CardValidationExpectedSignerWasNotFoundErr
 	}
 	for _, s := range card.Signature {
-		if s.SignerCardId == signer.ID {
-			if s.SignerType != signerType {
-				return CardValidationSignerTypeIncorrectErr
-			}
+		if s.Signer == verifier.Signer {
 			snapshot := append(card.Snapshot, s.Snapshot...)
-			err := crypto.VerifySignature(snapshot, s.Signature, signer.PublicKey)
+			err := crypto.VerifySignature(snapshot, s.Signature, verifier.PublicKey)
 			if err != nil {
 				return err
 			} else {

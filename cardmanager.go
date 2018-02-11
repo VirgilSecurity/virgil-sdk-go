@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package virgilcards
+package virgil
 
 import (
 	"encoding/hex"
@@ -45,26 +45,24 @@ import (
 	"github.com/pkg/errors"
 
 	"gopkg.in/virgil.v5/common"
-	"gopkg.in/virgil.v5/crypto-api"
+	"gopkg.in/virgil.v5/cryptoapi"
 )
 
 type Validator interface {
-	Validate(crypto cryptoapi.Crypto, card *Card) error
+	Validate(crypto cryptoapi.CardCrypto, card *Card) error
 }
 
 type HttpClient common.HttpClient
 
-type SignerType string
-
 const (
-	SignerTypeSelf        SignerType = "self"
-	SignerTypeApplication SignerType = "app"
-	SignerTypeVirgil      SignerType = "virgil"
-	SignerTypeExtra       SignerType = "extra"
+	SignerTypeSelf        = "self"
+	SignerTypeApplication = "app"
+	SignerTypeVirgil      = "virgil"
+	SignerTypeExtra       = "extra"
 )
 
 type CardsManager struct {
-	Crypto     cryptoapi.Crypto
+	Crypto     cryptoapi.CardCrypto
 	Validator  Validator
 	ApiUrl     string
 	HttpClient HttpClient
@@ -144,7 +142,7 @@ func (cm *CardsManager) GenerateCSR(param *CSRParams) (*CSR, error) {
 		return nil, errors.Wrap(err, "CardsManager: marshaling card's info")
 	}
 	csr := &CSR{
-		ID:             hex.EncodeToString(cm.getCrypto().CalculateFingerprint(snapshot)),
+		ID:             hex.EncodeToString(cm.getCrypto().GenerateSHA512(snapshot)[:32]),
 		CreatedAt:      cardInfo.CreatedAt,
 		Identity:       cardInfo.Identity,
 		PublicKeyBytes: cardInfo.PublicKeyBytes,
@@ -154,8 +152,7 @@ func (cm *CardsManager) GenerateCSR(param *CSRParams) (*CSR, error) {
 	if param.PrivateKey != nil {
 		err := csr.Sign(cm.getCrypto(), &CSRSignParams{
 			ExtraFields:      param.ExtraFields,
-			SignerCardId:     "",
-			SignerType:       SignerTypeSelf,
+			Signer:           SignerTypeSelf,
 			SignerPrivateKey: param.PrivateKey,
 		})
 		if err != nil {
@@ -192,12 +189,12 @@ func (cm *CardsManager) ImportCSR(source []byte) (CSR, error) {
 
 	sn := raw.Snapshot
 	index := sliceIndex(len(csr.Signatures), func(i int) bool {
-		return csr.Signatures[i].SignerType == string(SignerTypeSelf)
+		return csr.Signatures[i].Signer == string(SignerTypeSelf)
 	})
 	if index != -1 && len(csr.Signatures[index].ExtraFields) != 0 {
 		sn = append(sn, csr.Signatures[index].ExtraFields...)
 	}
-	csr.ID = hex.EncodeToString(cm.getCrypto().CalculateFingerprint(sn))
+	csr.ID = hex.EncodeToString(cm.getCrypto().GenerateSHA512(sn)[:32])
 
 	return csr, nil
 }
@@ -238,10 +235,9 @@ func (cm *CardsManager) raw2Card(raw *RawCard) (card *Card, err error) {
 		card.Signature = make([]*CardSignature, len(raw.Signatures))
 		for i, rs := range raw.Signatures {
 			cs := &CardSignature{
-				SignerCardId: rs.SignerCardId,
-				Signature:    rs.Signature,
-				SignerType:   SignerType(rs.SignerType),
-				Snapshot:     []byte{},
+				Signer:    rs.Signer,
+				Signature: rs.Signature,
+				Snapshot:  []byte{},
 			}
 			if rs.ExtraFields != nil {
 				var exf map[string]string
@@ -254,9 +250,9 @@ func (cm *CardsManager) raw2Card(raw *RawCard) (card *Card, err error) {
 			}
 
 			card.Signature[i] = cs
-			if card.Signature[i].SignerType == SignerTypeSelf {
+			if card.Signature[i].Signer == SignerTypeSelf {
 				fpData := append(raw.Snapshot, rs.ExtraFields...)
-				fp := cm.getCrypto().CalculateFingerprint(fpData)
+				fp := cm.getCrypto().GenerateSHA512(fpData)[:32]
 				card.ID = hex.EncodeToString(fp)
 			}
 		}
@@ -269,21 +265,16 @@ func (cm *CardsManager) raw2Card(raw *RawCard) (card *Card, err error) {
 		}
 		card.CreatedAt = t
 
-		fp := cm.getCrypto().CalculateFingerprint(raw.Snapshot)
+		fp := cm.getCrypto().GenerateSHA512(raw.Snapshot)
 		card.ID = hex.EncodeToString(fp)
 
 		card.Signature = make([]*CardSignature, len(raw.Meta.Signatures))
 		var i = 0
 		for signerID, sign := range raw.Meta.Signatures {
-			var signType = SignerTypeExtra
-			if signerID == card.ID {
-				signType = SignerTypeSelf
-			}
 			card.Signature[i] = &CardSignature{
-				Signature:    sign,
-				SignerCardId: signerID,
-				SignerType:   signType,
-				Snapshot:     []byte{},
+				Signature: sign,
+				Signer:    signerID,
+				Snapshot:  []byte{},
 			}
 		}
 	}
@@ -303,7 +294,7 @@ func (cm *CardsManager) send(method string, url string, payload interface{}, res
 	return nil
 }
 
-func (cm *CardsManager) getCrypto() cryptoapi.Crypto {
+func (cm *CardsManager) getCrypto() cryptoapi.CardCrypto {
 	if cm.Crypto != nil {
 		return cm.Crypto
 	}

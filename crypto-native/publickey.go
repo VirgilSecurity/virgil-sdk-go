@@ -82,7 +82,7 @@ func DecodePublicKey(keyBytes []byte) (PublicKey, error) {
 		return nil, err
 	}
 
-	fp := DefaultCrypto.CalculateReceiverId(snapshot)
+	fp := (&VirgilCrypto{}).CalculateReceiverId(snapshot)
 	edPublicKey.receiverID = fp
 	return edPublicKey, nil
 }

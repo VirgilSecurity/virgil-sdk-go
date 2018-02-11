@@ -36,7 +36,7 @@
 
 package cryptonative
 
-import "gopkg.in/virgil.v5/crypto-native/errors"
+import "gopkg.in/virgil.v5/errors"
 
 type CryptoError string
 
@@ -54,3 +54,5 @@ func cryptoError(err error, msg string) error {
 	}
 	return errors.Wrap(CryptoError(err.Error()), msg)
 }
+
+var UnsupportedKeyErr = CryptoError("key unsupported")

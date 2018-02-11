@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package virgilcards_test
+package virgil_test
 
 import (
 	"bytes"
@@ -48,19 +48,19 @@ import (
 	"testing"
 
 	"gopkg.in/virgil.v5"
-	"gopkg.in/virgil.v5/crypto-api"
 	"gopkg.in/virgil.v5/crypto-native"
+	"gopkg.in/virgil.v5/cryptoapi"
 	"gopkg.in/virgil.v5/virgiljwt"
 )
 
-var cardsManager *virgilcards.CardsManager
+var cardsManager *virgil.CardsManager
 var appCardID string
 var appSK cryptoapi.PrivateKey
-var crypto = cryptonative.DefaultCrypto
+var crypto = &cryptonative.VirgilCrypto{UseSHA256Fingerprints: false}
 
 type StaticTokenClient struct {
 	Token  string
-	Client virgilcards.HttpClient
+	Client virgil.HttpClient
 }
 
 func (c StaticTokenClient) Do(req *http.Request) (resp *http.Response, err error) {
@@ -85,9 +85,17 @@ func TestMain(m *testing.M) {
 	}
 
 	apiID := os.Getenv("TEST_API_ID")
-	if accID == "" {
+	if apiID == "" {
 		log.Fatal("TEST_API_ID is required")
 	}
+
+	/*kk := apiKey.(cryptonative.PrivateKey).ReceiverID()
+	apiID = hex.EncodeToString(kk)
+	fmt.Println(apiID)
+
+	tt, _ := base64.StdEncoding.DecodeString("MCowBQYDK2VwAyEAnD9CZWX8uswilnml+N3g5deo/dA6xrNu/Hpd40o3m2M=")
+	hash := sha512.Sum512(tt)
+	fmt.Println(hex.EncodeToString(hash[:]))*/
 
 	appCardID = os.Getenv("TEST_APP_ID")
 	if appCardID == "" {
@@ -104,16 +112,16 @@ func TestMain(m *testing.M) {
 		log.Fatal("Cannot import private key: ", err)
 	}
 
-	jwtMaker := virgiljwt.Make(virgilcards.DefaultCrypto, apiKey, apiID)
+	jwtMaker := virgiljwt.Make(virgil.DefaultCrypto, apiKey, apiID)
 	token, err := jwtMaker.Generate(virgiljwt.JWTParam{AppID: appCardID, Identity: accID})
 	if err != nil {
 		log.Fatal("Cannot generate JWT token: ", err)
 	}
 
-	cardsManager = &virgilcards.CardsManager{
+	cardsManager = &virgil.CardsManager{
 		ApiUrl:     address,
 		HttpClient: StaticTokenClient{Token: token, Client: &DebugClient{}},
-		Validator:  &virgilcards.ExtendedValidator{IgnoreVirgilSignature: false},
+		Validator:  &virgil.ExtendedValidator{IgnoreVirgilSignature: false},
 	}
 
 	os.Exit(m.Run())
@@ -124,18 +132,17 @@ func TestCardManager_PublishCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
-		Identity:   genRandomID(),
+	csr, err := cardsManager.GenerateCSR(&virgil.CSRParams{
+		Identity:   os.Getenv("TEST_ACC_ID"),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
-		SignerCardId:     appCardID,
+	err = cardsManager.SignCSR(csr, &virgil.CSRSignParams{
+		Signer:           appCardID,
 		SignerPrivateKey: appSK,
-		SignerType:       virgilcards.SignerTypeApplication,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -152,18 +159,17 @@ func TestCardManager_GetCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
-		Identity:   genRandomID(),
+	csr, err := cardsManager.GenerateCSR(&virgil.CSRParams{
+		Identity:   os.Getenv("TEST_ACC_ID"),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
-		SignerCardId:     appCardID,
+	err = cardsManager.SignCSR(csr, &virgil.CSRSignParams{
+		Signer:           appCardID,
 		SignerPrivateKey: appSK,
-		SignerType:       virgilcards.SignerTypeApplication,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -184,18 +190,17 @@ func TestCardManager_SearchCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
-		Identity:   genRandomID(),
+	csr, err := cardsManager.GenerateCSR(&virgil.CSRParams{
+		Identity:   os.Getenv("TEST_ACC_ID"),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
-		SignerCardId:     appCardID,
+	err = cardsManager.SignCSR(csr, &virgil.CSRSignParams{
+		Signer:           appCardID,
 		SignerPrivateKey: appSK,
-		SignerType:       virgilcards.SignerTypeApplication,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -217,18 +222,17 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err := cardsManager.GenerateCSR(&virgilcards.CSRParams{
-		Identity:   genRandomID(),
+	csr, err := cardsManager.GenerateCSR(&virgil.CSRParams{
+		Identity:   os.Getenv("TEST_ACC_ID"),
 		PrivateKey: kp.PrivateKey(),
 		PublicKey:  kp.PublicKey(),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
-		SignerCardId:     appCardID,
+	err = cardsManager.SignCSR(csr, &virgil.CSRSignParams{
+		Signer:           appCardID,
 		SignerPrivateKey: appSK,
-		SignerType:       virgilcards.SignerTypeApplication,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -243,7 +247,7 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	csr, err = cardsManager.GenerateCSR(&virgilcards.CSRParams{
+	csr, err = cardsManager.GenerateCSR(&virgil.CSRParams{
 		Identity:       revokedCard.Identity,
 		PreviousCardID: revokedCard.ID,
 		PrivateKey:     kp.PrivateKey(),
@@ -252,10 +256,9 @@ func TestCardManager_RevokeCard_ReturnCard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cardsManager.SignCSR(csr, &virgilcards.CSRSignParams{
-		SignerCardId:     appCardID,
+	err = cardsManager.SignCSR(csr, &virgil.CSRSignParams{
+		Signer:           appCardID,
 		SignerPrivateKey: appSK,
-		SignerType:       virgilcards.SignerTypeApplication,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -279,7 +282,7 @@ func genRandomID() string {
 }
 
 type DebugClient struct {
-	Client virgilcards.HttpClient
+	Client virgil.HttpClient
 }
 
 func (c *DebugClient) Do(req *http.Request) (*http.Response, error) {
@@ -323,7 +326,7 @@ func (c *DebugClient) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c *DebugClient) getClient() virgilcards.HttpClient {
+func (c *DebugClient) getClient() virgil.HttpClient {
 	if c.Client == nil {
 		return http.DefaultClient
 	}

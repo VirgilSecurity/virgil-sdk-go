@@ -40,8 +40,10 @@ import (
 	"io"
 	"strconv"
 
+	"crypto/sha512"
+
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v5/crypto-native/errors"
+	"gopkg.in/virgil.v5/errors"
 )
 
 type VirgilSigner interface {
@@ -64,16 +66,16 @@ func (s *ed25519Signer) Sign(data []byte, signer PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {
 		return nil, errors.New("key is nil")
 	}
-	//hash := Hash.Sum(data)
-	return signInternal(data, signer.(*ed25519PrivateKey))
+	hash := Hash.Sum(data)
+	return signInternal(hash, signer.(*ed25519PrivateKey))
 
 }
 func (s *ed25519Verifier) Verify(data []byte, key PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
 		return errors.New("key is nil")
 	}
-	//hash := Hash.Sum(data)
-	return verifyInternal(data, key.(*ed25519PublicKey), signature)
+
+	return verifyInternal(data, key.(*ed25519PublicKey), signature, false)
 }
 func (s *ed25519Signer) SignStream(data io.Reader, signer PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {
@@ -93,7 +95,7 @@ func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature 
 	if err != nil {
 		return err
 	}
-	return verifyInternal(h, key.(*ed25519PublicKey), signature)
+	return verifyInternal(h, key.(*ed25519PublicKey), signature, true)
 }
 
 func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
@@ -113,7 +115,7 @@ func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
 
 	return sBytes, nil
 }
-func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) error {
+func verifyInternal(data []byte, key *ed25519PublicKey, signature []byte, doNotHash bool) error {
 	if key == nil || key.Empty() {
 		return CryptoError("public key for verification is not provided")
 	}
@@ -121,7 +123,26 @@ func verifyInternal(hash []byte, key *ed25519PublicKey, signature []byte) error 
 		return CryptoError("Invalid key size for signature")
 	}
 
-	sign, err := decodeSignature(signature)
+	sign, algo, err := decodeSignature(signature)
+	if err != nil {
+		return err
+	}
+
+	var hash []byte
+
+	if doNotHash {
+		hash = data
+	} else {
+		if algo.Equal(OidSha384) {
+			tmp := sha512.Sum384(data)
+			hash = tmp[:]
+		} else if algo.Equal(OidSha512) {
+			tmp := sha512.Sum512(data)
+			hash = tmp[:]
+		} else {
+			return cryptoError(errors.New("unsupported signature hash"), algo.String())
+		}
+	}
 
 	if err != nil {
 		return err

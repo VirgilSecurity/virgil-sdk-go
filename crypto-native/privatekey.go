@@ -190,7 +190,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 		return nil, cryptoError(err, "")
 	}
 
-	fp := DefaultCrypto.CalculateReceiverId(snapshot)
+	fp := (&VirgilCrypto{}).CalculateReceiverId(snapshot)
 	edpriv.receiverID = fp
 
 	return edpriv, nil

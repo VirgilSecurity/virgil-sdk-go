@@ -1,17 +1,16 @@
-package virgilcards
+package virgil
 
 import (
 	"time"
 
-	"gopkg.in/virgil.v5/crypto-api"
+	"gopkg.in/virgil.v5/cryptoapi"
 )
 
 type CardSignature struct {
-	SignerCardId string
-	Signature    []byte
-	ExtraFields  map[string]string
-	SignerType   SignerType
-	Snapshot     []byte
+	Signer      string
+	Signature   []byte
+	ExtraFields map[string]string
+	Snapshot    []byte
 }
 
 type Card struct {
@@ -25,10 +24,9 @@ type Card struct {
 }
 
 type RawCardSignature struct {
-	SignerCardId string `json:"signer_id"`
-	Signature    []byte `json:"signature"`
-	ExtraFields  []byte `json:"snapshot,omitempty"`
-	SignerType   string `json:"signer_type"`
+	Signer      string `json:"signer"`
+	Signature   []byte `json:"signature"`
+	ExtraFields []byte `json:"snapshot,omitempty"`
 }
 
 type RawCardMeta struct {

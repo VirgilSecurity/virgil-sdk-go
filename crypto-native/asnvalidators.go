@@ -102,7 +102,7 @@ func (info *publicKeyRecipientInfo) Validate() error {
 		return unsupported("key encryption algorithm")
 	}
 
-	if len(info.EncryptedKey) != 226 {
+	if len(info.EncryptedKey) != 242 {
 		return unsupported("encrypted key data length")
 	}
 
@@ -123,17 +123,17 @@ func (key *encryptedKeyWithPublicKey) Validate() error {
 
 	kdf := key.KdfAlgo
 
-	if !kdf.Oid.Equal(oidKdf2) || !kdf.HashAlgo.Algorithm.Equal(oidSha384) {
+	if !kdf.Oid.Equal(oidKdf2) || !kdf.HashAlgo.Algorithm.Equal(OidSha512) {
 		return unsupported("kdf algorithm")
 	}
 
 	tag := key.Hmac
 
-	if !tag.HmacAlgo.Algorithm.Equal(oidSha384) {
+	if !tag.HmacAlgo.Algorithm.Equal(OidSha512) {
 		return unsupported("hmac algorithm")
 	}
 
-	if len(tag.Value) != 48 {
+	if len(tag.Value) != 64 {
 		return unsupported("hmac size")
 	}
 
@@ -191,7 +191,7 @@ func (p *pkdf2Params) Validate() error {
 	if p.IterationsCount < 3072 || p.IterationsCount > 8192 {
 		return unsupported("iterations count")
 	}
-	if !p.Prf.Algorithm.Equal(oidHmacWithSha384) {
+	if !p.Prf.Algorithm.Equal(oidHmacWithSha512) {
 		return unsupported("prf algorithm")
 	}
 	if len(p.Salt) != 16 {

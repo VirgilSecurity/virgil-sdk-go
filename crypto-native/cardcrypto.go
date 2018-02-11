@@ -1,0 +1,68 @@
+/*
+ * // Copyright (C) 2015-2018 Virgil Security Inc.
+ * //
+ * // Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
+ * //
+ * // All rights reserved.
+ * //
+ * // Redistribution and use in source and binary forms, with or without
+ * // modification, are permitted provided that the following conditions
+ * // are met:
+ * //
+ * //   (1) Redistributions of source code must retain the above copyright
+ * //   notice, this list of conditions and the following disclaimer.
+ * //
+ * //   (2) Redistributions in binary form must reproduce the above copyright
+ * //   notice, this list of conditions and the following disclaimer in
+ * //   the documentation and/or other materials provided with the
+ * //   distribution.
+ * //
+ * //   (3) Neither the name of the copyright holder nor the names of its
+ * //   contributors may be used to endorse or promote products derived
+ * //   from this software without specific prior written permission.
+ * //
+ * // THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR
+ * // IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * // DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ * // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * // (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * // IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * // POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package cryptonative
+
+import (
+	"crypto/sha512"
+
+	"gopkg.in/virgil.v5/cryptoapi"
+)
+
+type CardCrypto struct {
+	Crypto *VirgilCrypto
+}
+
+func (c *CardCrypto) GenerateSignature(data []byte, key cryptoapi.PrivateKey) ([]byte, error) {
+	return c.Crypto.Sign(data, key.(PrivateKey))
+}
+
+func (c *CardCrypto) VerifySignature(data []byte, signature []byte, key cryptoapi.PublicKey) error {
+	return c.Crypto.VerifySignature(data, signature, key.(PublicKey))
+}
+
+func (c *CardCrypto) ExportPublicKey(key cryptoapi.PublicKey) ([]byte, error) {
+	return c.Crypto.ExportPublicKey(key.(PublicKey))
+}
+
+func (c *CardCrypto) ImportPublicKey(data []byte) (cryptoapi.PublicKey, error) {
+	return c.Crypto.ImportPublicKey(data)
+}
+
+func (c *CardCrypto) GenerateSHA512(data []byte) []byte {
+	hash := sha512.Sum512(data)
+	return hash[:]
+}

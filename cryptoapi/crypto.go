@@ -36,12 +36,23 @@
 
 package cryptoapi
 
-type Crypto interface {
-	Sign(data []byte, key PrivateKey) ([]byte, error)
-	VerifySignature(data []byte, sign []byte, key PublicKey) error
-	CalculateFingerprint(data []byte) []byte
-	ImportPublicKey(publicKeySrc []byte) (PublicKey, error)
+type CardCrypto interface {
+	GenerateSignature(data []byte, key PrivateKey) ([]byte, error)
+	VerifySignature(data []byte, signature []byte, key PublicKey) error
 	ExportPublicKey(key PublicKey) ([]byte, error)
+	ImportPublicKey(publicKeySrc []byte) (PublicKey, error)
+	GenerateSHA512(data []byte) []byte
+}
+
+type AccessTokenSigner interface {
+	GenerateTokenSignature(data []byte, privateKey PrivateKey) ([]byte, error)
+	VerifyTokenSignature(data []byte, signature []byte, publicKey PublicKey) error
+	GetAlgorithm() string
+}
+
+type PrivateKeyExporter interface {
+	ExportPrivateKey(key PrivateKey) ([]byte, error)
+	ImportPrivateKey(data []byte) (PrivateKey, error)
 }
 
 type PrivateKey interface{}

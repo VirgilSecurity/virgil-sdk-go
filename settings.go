@@ -34,11 +34,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package virgilcards
+package virgil
 
 import (
-	"gopkg.in/virgil.v5/crypto-api"
 	"gopkg.in/virgil.v5/crypto-native"
+	"gopkg.in/virgil.v5/cryptoapi"
 )
 
-var DefaultCrypto cryptoapi.Crypto = cryptonative.DefaultCrypto
+var DefaultCrypto cryptoapi.CardCrypto = &cryptonative.CardCrypto{Crypto: &cryptonative.VirgilCrypto{}}

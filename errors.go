@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package virgilcards
+package virgil
 
 import (
 	"errors"

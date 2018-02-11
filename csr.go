@@ -34,14 +34,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package virgilcards
+package virgil
 
 import (
-	"encoding/hex"
 	"encoding/json"
 
 	"github.com/pkg/errors"
-	cryptoapi "gopkg.in/virgil.v5/crypto-api"
+	"gopkg.in/virgil.v5/cryptoapi"
 )
 
 type CSRParams struct {
@@ -54,8 +53,7 @@ type CSRParams struct {
 	ExtraFields map[string]string
 }
 type CSRSignParams struct {
-	SignerCardId     string
-	SignerType       SignerType
+	Signer           string
 	SignerPrivateKey cryptoapi.PrivateKey
 	ExtraFields      map[string]string
 }
@@ -79,24 +77,9 @@ func sliceIndex(n int, predicate func(i int) bool) int {
 	return -1
 }
 
-func (csr *CSR) Sign(crypto cryptoapi.Crypto, param *CSRSignParams) error {
-	if param.SignerPrivateKey == nil || param.SignerType == "" {
+func (csr *CSR) Sign(crypto cryptoapi.CardCrypto, param *CSRSignParams) error {
+	if param.SignerPrivateKey == nil || param.Signer == "" {
 		return CSRSignParamIncorrectErr
-	}
-	if param.SignerCardId == "" && param.SignerType != SignerTypeSelf {
-		return CSRSignParamIncorrectErr
-	}
-
-	if param.SignerType == SignerTypeSelf || param.SignerType == SignerTypeApplication { // check self and app sign is unique
-		index := sliceIndex(len(csr.Signatures), func(i int) bool {
-			return csr.Signatures[i].SignerType == string(param.SignerType)
-		})
-		if index != -1 {
-			if param.SignerType == SignerTypeSelf {
-				return CSRSelfSignAlreadyExistErr
-			}
-			return CSRAppSignAlreadyExistErr
-		}
 	}
 
 	var extraSnapshot []byte
@@ -110,20 +93,14 @@ func (csr *CSR) Sign(crypto cryptoapi.Crypto, param *CSRSignParams) error {
 		signingSnapshot = append(signingSnapshot, extraSnapshot...)
 	}
 
-	if param.SignerType == SignerTypeSelf {
-		param.SignerCardId = hex.EncodeToString(crypto.CalculateFingerprint(signingSnapshot))
-		csr.ID = param.SignerCardId
-	}
-
-	sign, err := crypto.Sign(signingSnapshot, param.SignerPrivateKey)
+	sign, err := crypto.GenerateSignature(signingSnapshot, param.SignerPrivateKey)
 	if err != nil {
 		return err
 	}
 	csr.Signatures = append(csr.Signatures, &RawCardSignature{
-		ExtraFields:  extraSnapshot,
-		Signature:    sign,
-		SignerCardId: param.SignerCardId,
-		SignerType:   string(param.SignerType),
+		ExtraFields: extraSnapshot,
+		Signature:   sign,
+		Signer:      param.Signer,
 	})
 
 	return nil

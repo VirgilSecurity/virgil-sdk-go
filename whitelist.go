@@ -1,4 +1,4 @@
-package virgilcards
+package virgil
 
 type Whitelist struct {
 	VerifierCredentials []*VerifierCredentials

@@ -46,7 +46,7 @@ import (
 
 func TestPFS(t *testing.T) {
 
-	c := DefaultCrypto
+	c := &VirgilCrypto{}
 
 	//ICa, EKa, ICb, LTCb, OTCb
 	ICa, err := c.GenerateKeypair()
@@ -127,7 +127,7 @@ func TestPFS(t *testing.T) {
 
 func TestPFSNoOTC(t *testing.T) {
 
-	c := DefaultCrypto
+	c := &VirgilCrypto{}
 
 	//ICa, EKa, ICb, LTCb, OTCb
 	ICa, err := c.GenerateKeypair()

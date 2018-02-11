@@ -39,16 +39,20 @@ package cryptonative
 import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
+
+	"gopkg.in/virgil.v5/errors"
 )
 
 var (
 	oidAesGCM         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 46}
 	oidData           = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 1}
 	oidAES256CBC      = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 42}
-	oidSha384         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
+	OidSha384         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
+	OidSha512         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
 	oidKdf2           = asn1.ObjectIdentifier{1, 0, 18033, 2, 5, 2}
 	oidEnvelopedData  = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 3}
 	oidHmacWithSha384 = asn1.ObjectIdentifier{1, 2, 840, 113549, 2, 10}
+	oidHmacWithSha512 = asn1.ObjectIdentifier{1, 2, 840, 113549, 2, 11}
 
 	oidPbkdf2 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 5, 12}
 	oidPbeS2  = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 5, 13}
@@ -192,7 +196,7 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 	}
 	hmac := hmacInfo{
 		HmacAlgo: pkix.AlgorithmIdentifier{
-			Algorithm:  oidSha384,
+			Algorithm:  OidSha512,
 			Parameters: asn1Null,
 		},
 		Value: mac,
@@ -200,7 +204,7 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 	kdf := kdfAlgorithm{
 		Oid: oidKdf2,
 		HashAlgo: pkix.AlgorithmIdentifier{
-			Algorithm:  oidSha384,
+			Algorithm:  OidSha512,
 			Parameters: asn1Null,
 		},
 	}
@@ -266,23 +270,35 @@ func makePasswordRecipient(kdfIv []byte, iterations int, key, keyIv []byte) (*as
 	return res, nil
 }
 func makeSignature(sign []byte) ([]byte, error) {
-	signature := signature{O: pkix.AlgorithmIdentifier{Algorithm: oidSha384, Parameters: asn1Null}, S: sign}
+	signature := signature{O: pkix.AlgorithmIdentifier{Algorithm: OidSha512, Parameters: asn1Null}, S: sign}
 	sBytes, err := asn1.Marshal(signature)
 	if err != nil {
 		return nil, cryptoError(err, "")
 	}
 	return sBytes, nil
 }
-func decodeSignature(signatureBytes []byte) ([]byte, error) {
+func decodeSignature(signatureBytes []byte) ([]byte, *asn1.ObjectIdentifier, error) {
 
 	signature := &signature{}
 
 	_, err := asn1.Unmarshal(signatureBytes, signature)
 	if err != nil {
-		return nil, cryptoError(err, "")
+		return nil, nil, cryptoError(err, "")
 
 	}
-	return signature.S, nil
+
+	parsedAlgo := signature.O.Algorithm
+	var algo *asn1.ObjectIdentifier
+
+	if parsedAlgo.Equal(OidSha384) {
+		algo = &OidSha384
+	} else if parsedAlgo.Equal(OidSha512) {
+		algo = &OidSha512
+	} else {
+		return nil, nil, cryptoError(errors.New("unsupported signature hash"), "")
+	}
+
+	return signature.S, algo, nil
 }
 func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams map[string]interface{}) (resBytes []byte, err error) {
 
@@ -535,7 +551,7 @@ func decodePasswordRecipient(value *asn1.RawValue) (recipient, error) {
 func encodeKeyEncryptionAlgorithm(kdfIv []byte, iterations int, keyIv []byte) (*pkix.AlgorithmIdentifier, error) {
 	keyDerivationParameters := pkdf2Params{Salt: kdfIv,
 		IterationsCount: iterations,
-		Prf:             algorithmIdentifier{Algorithm: oidHmacWithSha384},
+		Prf:             algorithmIdentifier{Algorithm: oidHmacWithSha512},
 	}
 
 	serializedKeyDerivationParameters, err := asn1.Marshal(keyDerivationParameters)

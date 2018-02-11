@@ -1,4 +1,4 @@
-package virgilcards
+package virgil
 
 import (
 	"crypto/rand"
@@ -9,11 +9,11 @@ import (
 	"gopkg.in/virgil.v5/crypto-native"
 )
 
-var crypto = cryptonative.DefaultCrypto
+var crypto = &cryptonative.CardCrypto{Crypto: &cryptonative.VirgilCrypto{}}
 
 type testCredentials struct {
-	PrivateKey  cryptonative.PrivateKey
-	Credentials *VerifierCredentials
+	*VerifierCredentials
+	PrivateKey cryptonative.PrivateKey
 }
 
 func TestWhitelist(t *testing.T) {
@@ -23,7 +23,7 @@ func TestWhitelist(t *testing.T) {
 	var creds []*testCredentials
 	for i := 0; i < 5; i++ {
 		pk, cred := makeRandomCredentials()
-		creds = append(creds, &testCredentials{PrivateKey: pk, Credentials: cred})
+		creds = append(creds, &testCredentials{VerifierCredentials: cred, PrivateKey: pk})
 	}
 
 	var wl []*Whitelist
@@ -36,7 +36,7 @@ func TestWhitelist(t *testing.T) {
 	csr, err := cardsManager.GenerateCSR(&CSRParams{
 		PrivateKey: pk,
 		PublicKey:  cardCreds.PublicKey,
-		Identity:   cardCreds.ID,
+		Identity:   cardCreds.Signer,
 	})
 	assert.NoError(t, err)
 
@@ -52,10 +52,9 @@ func TestWhitelist(t *testing.T) {
 
 	for _, sig := range csr.Signatures {
 		card.Signature = append(card.Signature, &CardSignature{
-			Signature:    sig.Signature,
-			Snapshot:     sig.ExtraFields,
-			SignerType:   SignerTypeExtra,
-			SignerCardId: sig.SignerCardId,
+			Signature: sig.Signature,
+			Snapshot:  sig.ExtraFields,
+			Signer:    sig.Signer,
 		})
 	}
 
@@ -64,7 +63,7 @@ func TestWhitelist(t *testing.T) {
 	assert.NoError(t, err)
 
 	//check that everything is ok if at least one signature in whitelist is valid
-	wl[0].VerifierCredentials[0] = creds[4].Credentials
+	wl[0].VerifierCredentials[0] = creds[4].VerifierCredentials
 
 	err = validator.Validate(crypto, card)
 	assert.NoError(t, err)
@@ -84,14 +83,13 @@ func TestWhitelist(t *testing.T) {
 }
 func addSign(t *testing.T, csr *CSR, credentials *testCredentials) {
 	err := csr.Sign(crypto, &CSRSignParams{
-		SignerType:       SignerTypeExtra,
-		SignerCardId:     credentials.Credentials.ID,
+		Signer:           credentials.Signer,
 		SignerPrivateKey: credentials.PrivateKey,
 		ExtraFields: map[string]string{
 			"a": "b",
 			"b": "c",
 			"x": "y",
-			"z": credentials.Credentials.ID,
+			"z": credentials.Signer,
 		},
 	})
 	assert.NoError(t, err)
@@ -102,7 +100,7 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 	twl := &Whitelist{}
 
 	for _, cred := range creds {
-		twl.VerifierCredentials = append(twl.VerifierCredentials, cred.Credentials)
+		twl.VerifierCredentials = append(twl.VerifierCredentials, cred.VerifierCredentials)
 	}
 
 	wl = append(wl, twl)
@@ -110,7 +108,7 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 }
 
 func makeRandomCredentials() (cryptonative.PrivateKey, *VerifierCredentials) {
-	kp, err := crypto.GenerateKeypair()
+	kp, err := crypto.Crypto.GenerateKeypair()
 	if err != nil {
 		panic(err)
 	}
@@ -119,7 +117,7 @@ func makeRandomCredentials() (cryptonative.PrivateKey, *VerifierCredentials) {
 	rand.Read(id)
 
 	return kp.PrivateKey(), &VerifierCredentials{
-		ID:        hex.EncodeToString(id),
+		Signer:    hex.EncodeToString(id),
 		PublicKey: kp.PublicKey(),
 	}
 }

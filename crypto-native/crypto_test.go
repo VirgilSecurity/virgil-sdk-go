@@ -43,7 +43,7 @@ import (
 )
 
 func TestSignEncrypt(t *testing.T) {
-	crypto := DefaultCrypto
+	crypto := &VirgilCrypto{}
 
 	//make random data
 	data := make([]byte, 257)
