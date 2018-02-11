@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"bytes"
@@ -49,6 +49,7 @@ type PrivateKey interface {
 	ExtractPublicKey() (PublicKey, error)
 	Encode(password []byte) ([]byte, error)
 	Empty() bool
+	IsPrivate() bool
 }
 
 type ed25519PrivateKey struct {
@@ -240,4 +241,8 @@ func (k *ed25519PrivateKey) ExtractPublicKey() (PublicKey, error) {
 	edPub.receiverID = make([]byte, len(k.receiverID))
 	copy(edPub.receiverID, k.receiverID)
 	return edPub, nil
+}
+
+func (k *ed25519PrivateKey) IsPrivate() bool {
+	return true
 }

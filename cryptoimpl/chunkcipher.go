@@ -34,14 +34,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"crypto/aes"
 	"crypto/cipher"
 	"io"
 
-	"gopkg.in/virgil.v5/crypto-native/gcm"
+	"gopkg.in/virgil.v5/cryptoimpl/gcm"
 )
 
 type VirgilChunkCipher interface {

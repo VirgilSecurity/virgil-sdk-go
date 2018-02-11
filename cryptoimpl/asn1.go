@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"crypto/x509/pkix"

@@ -37,8 +37,8 @@
 package virgil
 
 import (
-	"gopkg.in/virgil.v5/crypto-native"
 	"gopkg.in/virgil.v5/cryptoapi"
+	"gopkg.in/virgil.v5/cryptoimpl"
 )
 
-var DefaultCrypto cryptoapi.CardCrypto = &cryptonative.CardCrypto{Crypto: &cryptonative.VirgilCrypto{}}
+var DefaultCrypto cryptoapi.CardCrypto = &cryptoimpl.CardCrypto{Crypto: &cryptoimpl.VirgilCrypto{}}

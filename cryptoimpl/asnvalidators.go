@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 func unsupported(msg string) error {
 	return CryptoError("Unsupported " + msg)

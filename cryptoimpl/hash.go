@@ -34,46 +34,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"crypto/sha512"
+	"hash"
 )
 
-func TestX3DH(t *testing.T) {
+type VirgilHash interface {
+	New() hash.Hash
+	Sum(data []byte) []byte
+}
 
-	ICa, err := NewKeypair()
-	assert.NoError(t, err)
+var Hash VirgilHash
 
-	EKa, err := NewKeypair()
-	assert.NoError(t, err)
+type sha512Hash struct{}
 
-	ICb, err := NewKeypair()
-	assert.NoError(t, err)
+func (v *sha512Hash) Sum(data []byte) []byte {
+	h := v.New()
+	h.Write(data)
+	return h.Sum(nil)
+}
 
-	LTCb, err := NewKeypair()
-	assert.NoError(t, err)
+func (v *sha512Hash) New() hash.Hash {
+	return sha512.New()
+}
 
-	OTCb, err := NewKeypair()
-	assert.NoError(t, err)
-
-	sk1, err := EDHInit(ICa.PrivateKey(), EKa.PrivateKey(), ICb.PublicKey(), LTCb.PublicKey(), OTCb.PublicKey())
-	assert.NoError(t, err)
-
-	sk2, err := EDHRespond(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), OTCb.PrivateKey())
-
-	assert.NoError(t, err)
-	assert.Equal(t, sk1, sk2)
-
-	sk2, err = EDHRespond(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), nil)
-
-	assert.NoError(t, err)
-	assert.NotEqual(t, sk1, sk2)
-
-	sk1, err = EDHInit(ICa.PrivateKey(), EKa.PrivateKey(), ICb.PublicKey(), LTCb.PublicKey(), nil)
-	assert.NoError(t, err)
-	assert.Equal(t, sk1, sk2)
-
+func init() {
+	Hash = &sha512Hash{}
 }

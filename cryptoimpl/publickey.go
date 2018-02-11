@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"encoding/asn1"
@@ -47,6 +47,7 @@ type PublicKey interface {
 	ReceiverID() []byte
 	Encode() ([]byte, error)
 	Empty() bool
+	IsPublic() bool
 }
 
 type ed25519PublicKey struct {
@@ -121,4 +122,8 @@ func (k *ed25519PublicKey) Encode() ([]byte, error) {
 
 func (k *ed25519PublicKey) Empty() bool {
 	return k == nil || len(k.key) == 0
+}
+
+func (k *ed25519PublicKey) IsPublic() bool {
+	return true
 }

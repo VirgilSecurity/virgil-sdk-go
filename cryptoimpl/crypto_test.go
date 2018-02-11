@@ -34,33 +34,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"bytes"
-	"encoding/asn1"
+	"crypto/rand"
+	"testing"
 )
 
-type publicKeyRecipient struct {
-	ID           []byte
-	PublicKey    []byte
-	tag          []byte
-	encryptedKey []byte
-	iv           []byte
-}
+func TestSignEncrypt(t *testing.T) {
+	crypto := &VirgilCrypto{}
 
-func (kr *publicKeyRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, error) {
-	encryptedSymmetricKey, tag, ephPub, iv, err := encryptSymmetricKeyWithECIES(kr.PublicKey, symmetricKey)
+	//make random data
+	data := make([]byte, 257)
+	rand.Read(data)
 
+	keypair, err := crypto.GenerateKeypair()
 	if err != nil {
-		return nil, err
+		t.Fatal(err)
 	}
 
-	return makePublicKeyRecipient(kr.ID, ephPub, tag, encryptedSymmetricKey, iv)
-}
-func (p *publicKeyRecipient) decryptKey(id []byte, privateKey []byte) ([]byte, error) {
-	if len(id) == 0 || !bytes.Equal(id, p.ID) {
-		return nil, CryptoError("Wrong recipient")
+	signerKeypair, err := NewKeypair()
+	if err != nil {
+		t.Fatal(err)
 	}
-	return decryptSymmetricKeyWithECIES(p.encryptedKey, p.tag, p.PublicKey, p.iv, privateKey)
+
+	cipherText, err := crypto.SignThenEncrypt(data, signerKeypair.PrivateKey(), keypair.PublicKey())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if plaintext, err := crypto.DecryptThenVerify(cipherText, keypair.PrivateKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
+		t.Fatal(err)
+	}
+
 }

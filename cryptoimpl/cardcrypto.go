@@ -34,31 +34,35 @@
  * // POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
-import (
-	"crypto/sha512"
-
-	"gopkg.in/virgil.v5/cryptoapi"
-)
+import "crypto/sha512"
 
 type CardCrypto struct {
 	Crypto *VirgilCrypto
 }
 
-func (c *CardCrypto) GenerateSignature(data []byte, key cryptoapi.PrivateKey) ([]byte, error) {
+func (c *CardCrypto) GenerateSignature(data []byte, key interface {
+	IsPrivate() bool
+}) ([]byte, error) {
 	return c.Crypto.Sign(data, key.(PrivateKey))
 }
 
-func (c *CardCrypto) VerifySignature(data []byte, signature []byte, key cryptoapi.PublicKey) error {
+func (c *CardCrypto) VerifySignature(data []byte, signature []byte, key interface {
+	IsPublic() bool
+}) error {
 	return c.Crypto.VerifySignature(data, signature, key.(PublicKey))
 }
 
-func (c *CardCrypto) ExportPublicKey(key cryptoapi.PublicKey) ([]byte, error) {
+func (c *CardCrypto) ExportPublicKey(key interface {
+	IsPublic() bool
+}) ([]byte, error) {
 	return c.Crypto.ExportPublicKey(key.(PublicKey))
 }
 
-func (c *CardCrypto) ImportPublicKey(data []byte) (cryptoapi.PublicKey, error) {
+func (c *CardCrypto) ImportPublicKey(data []byte) (interface {
+	IsPublic() bool
+}, error) {
 	return c.Crypto.ImportPublicKey(data)
 }
 

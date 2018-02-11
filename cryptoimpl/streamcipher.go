@@ -34,38 +34,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
-	"bytes"
-	"crypto/rand"
-	"testing"
+	"crypto/aes"
+	"io"
+
+	"gopkg.in/virgil.v5/cryptoimpl/gcm"
 )
 
-func TestSignEncrypt(t *testing.T) {
-	crypto := &VirgilCrypto{}
+type VirgilStreamCipher interface {
+	Encrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error
+	Decrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error
+}
 
-	//make random data
-	data := make([]byte, 257)
-	rand.Read(data)
+var StreamCipher VirgilStreamCipher
+var ChunkCipher VirgilChunkCipher
 
-	keypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+type aesGCMStreamCipher struct{}
 
-	signerKeypair, err := NewKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+func (c *aesGCMStreamCipher) Encrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error {
+	ciph, _ := aes.NewCipher(key)
+	aesGCM, _ := gcm.NewGCM(ciph)
+	return aesGCM.SealStream(nonce, ad, in, out)
+}
+func (c *aesGCMStreamCipher) Decrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error {
+	ciph, _ := aes.NewCipher(key)
+	aesGCM, _ := gcm.NewGCM(ciph)
+	return aesGCM.OpenStream(nonce, ad, in, out)
+}
 
-	cipherText, err := crypto.SignThenEncrypt(data, signerKeypair.PrivateKey(), keypair.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if plaintext, err := crypto.DecryptThenVerify(cipherText, keypair.PrivateKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
-		t.Fatal(err)
-	}
-
+func init() {
+	StreamCipher = &aesGCMStreamCipher{}
+	ChunkCipher = &aesGCMChunkStreamCipher{}
 }

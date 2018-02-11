@@ -48,15 +48,15 @@ import (
 	"testing"
 
 	"gopkg.in/virgil.v5"
-	"gopkg.in/virgil.v5/crypto-native"
 	"gopkg.in/virgil.v5/cryptoapi"
+	"gopkg.in/virgil.v5/cryptoimpl"
 	"gopkg.in/virgil.v5/virgiljwt"
 )
 
 var cardsManager *virgil.CardsManager
 var appCardID string
 var appSK cryptoapi.PrivateKey
-var crypto = &cryptonative.VirgilCrypto{UseSHA256Fingerprints: false}
+var crypto = &cryptoimpl.VirgilCrypto{UseSHA256Fingerprints: false}
 
 type StaticTokenClient struct {
 	Token  string

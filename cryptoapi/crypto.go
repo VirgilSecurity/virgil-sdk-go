@@ -37,23 +37,43 @@
 package cryptoapi
 
 type CardCrypto interface {
-	GenerateSignature(data []byte, key PrivateKey) ([]byte, error)
-	VerifySignature(data []byte, signature []byte, key PublicKey) error
-	ExportPublicKey(key PublicKey) ([]byte, error)
-	ImportPublicKey(publicKeySrc []byte) (PublicKey, error)
+	GenerateSignature(data []byte, key interface {
+		IsPrivate() bool
+	}) ([]byte, error)
+	VerifySignature(data []byte, signature []byte, key interface {
+		IsPublic() bool
+	}) error
+	ExportPublicKey(key interface {
+		IsPublic() bool
+	}) ([]byte, error)
+	ImportPublicKey(publicKeySrc []byte) (interface {
+		IsPublic() bool
+	}, error)
 	GenerateSHA512(data []byte) []byte
 }
 
 type AccessTokenSigner interface {
-	GenerateTokenSignature(data []byte, privateKey PrivateKey) ([]byte, error)
-	VerifyTokenSignature(data []byte, signature []byte, publicKey PublicKey) error
+	GenerateTokenSignature(data []byte, privateKey interface {
+		IsPrivate() bool
+	}) ([]byte, error)
+	VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
+		IsPublic() bool
+	}) error
 	GetAlgorithm() string
 }
 
 type PrivateKeyExporter interface {
-	ExportPrivateKey(key PrivateKey) ([]byte, error)
-	ImportPrivateKey(data []byte) (PrivateKey, error)
+	ExportPrivateKey(key interface {
+		IsPrivate() bool
+	}) ([]byte, error)
+	ImportPrivateKey(data []byte) (interface {
+		IsPrivate() bool
+	}, error)
 }
 
-type PrivateKey interface{}
-type PublicKey interface{}
+type PrivateKey interface {
+	IsPrivate() bool
+}
+type PublicKey interface {
+	IsPublic() bool
+}

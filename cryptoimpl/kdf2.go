@@ -34,32 +34,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
-	"crypto/sha512"
+	"encoding/binary"
 	"hash"
 )
 
-type VirgilHash interface {
-	New() hash.Hash
-	Sum(data []byte) []byte
-}
+//Kdf2 derives length crypto bytes from key and a hash function
+func kdf2(key []byte, length int, h func() hash.Hash) []byte {
+	kdfHash := h()
+	outLen := kdfHash.Size()
 
-var Hash VirgilHash
+	cThreshold := (length + outLen - 1) / outLen
+	var counter uint32 = 1
+	outOff := 0
+	res := make([]byte, length)
+	b := make([]byte, 4)
+	for i := 0; i < cThreshold; i++ {
+		kdfHash.Write(key)
+		binary.BigEndian.PutUint32(b, counter)
+		kdfHash.Write(b)
+		counter++
+		digest := kdfHash.Sum(nil)
 
-type sha512Hash struct{}
+		if length > outLen {
+			copy(res[outOff:], digest[:])
+			outOff += outLen
+			length -= outLen
+		} else {
+			copy(res[outOff:], digest[:length])
+		}
+		kdfHash.Reset()
+	}
+	return res
 
-func (v *sha512Hash) Sum(data []byte) []byte {
-	h := v.New()
-	h.Write(data)
-	return h.Sum(nil)
-}
-
-func (v *sha512Hash) New() hash.Hash {
-	return sha512.New()
-}
-
-func init() {
-	Hash = &sha512Hash{}
 }

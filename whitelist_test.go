@@ -6,14 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/virgil.v5/crypto-native"
+	"gopkg.in/virgil.v5/cryptoimpl"
 )
 
-var crypto = &cryptonative.CardCrypto{Crypto: &cryptonative.VirgilCrypto{}}
+var crypto = &cryptoimpl.CardCrypto{Crypto: &cryptoimpl.VirgilCrypto{}}
 
 type testCredentials struct {
 	*VerifierCredentials
-	PrivateKey cryptonative.PrivateKey
+	PrivateKey cryptoimpl.PrivateKey
 }
 
 func TestWhitelist(t *testing.T) {
@@ -107,7 +107,7 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 	return wl
 }
 
-func makeRandomCredentials() (cryptonative.PrivateKey, *VerifierCredentials) {
+func makeRandomCredentials() (cryptoimpl.PrivateKey, *VerifierCredentials) {
 	kp, err := crypto.Crypto.GenerateKeypair()
 	if err != nil {
 		panic(err)

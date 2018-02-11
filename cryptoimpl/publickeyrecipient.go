@@ -34,37 +34,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
-	"crypto/aes"
-	"io"
-
-	"gopkg.in/virgil.v5/crypto-native/gcm"
+	"bytes"
+	"encoding/asn1"
 )
 
-type VirgilStreamCipher interface {
-	Encrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error
-	Decrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error
+type publicKeyRecipient struct {
+	ID           []byte
+	PublicKey    []byte
+	tag          []byte
+	encryptedKey []byte
+	iv           []byte
 }
 
-var StreamCipher VirgilStreamCipher
-var ChunkCipher VirgilChunkCipher
+func (kr *publicKeyRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, error) {
+	encryptedSymmetricKey, tag, ephPub, iv, err := encryptSymmetricKeyWithECIES(kr.PublicKey, symmetricKey)
 
-type aesGCMStreamCipher struct{}
+	if err != nil {
+		return nil, err
+	}
 
-func (c *aesGCMStreamCipher) Encrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error {
-	ciph, _ := aes.NewCipher(key)
-	aesGCM, _ := gcm.NewGCM(ciph)
-	return aesGCM.SealStream(nonce, ad, in, out)
+	return makePublicKeyRecipient(kr.ID, ephPub, tag, encryptedSymmetricKey, iv)
 }
-func (c *aesGCMStreamCipher) Decrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error {
-	ciph, _ := aes.NewCipher(key)
-	aesGCM, _ := gcm.NewGCM(ciph)
-	return aesGCM.OpenStream(nonce, ad, in, out)
-}
-
-func init() {
-	StreamCipher = &aesGCMStreamCipher{}
-	ChunkCipher = &aesGCMChunkStreamCipher{}
+func (p *publicKeyRecipient) decryptKey(id []byte, privateKey []byte) ([]byte, error) {
+	if len(id) == 0 || !bytes.Equal(id, p.ID) {
+		return nil, CryptoError("Wrong recipient")
+	}
+	return decryptSymmetricKeyWithECIES(p.encryptedKey, p.tag, p.PublicKey, p.iv, privateKey)
 }

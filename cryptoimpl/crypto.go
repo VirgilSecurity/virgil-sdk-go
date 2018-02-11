@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"io"
@@ -42,7 +42,7 @@ import (
 	"crypto/sha512"
 
 	"github.com/minio/sha256-simd"
-	"gopkg.in/virgil.v5/crypto-native/keytypes"
+	"gopkg.in/virgil.v5/cryptoimpl/keytypes"
 	"gopkg.in/virgil.v5/errors"
 )
 

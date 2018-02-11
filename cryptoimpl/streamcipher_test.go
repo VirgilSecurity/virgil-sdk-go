@@ -34,14 +34,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"bytes"
 	"crypto/rand"
 	"testing"
 
-	"gopkg.in/virgil.v5/crypto-native/gcm"
+	"gopkg.in/virgil.v5/cryptoimpl/gcm"
 )
 
 func TestStream(t *testing.T) {

@@ -34,39 +34,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
-	"encoding/binary"
-	"hash"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-//Kdf2 derives length crypto bytes from key and a hash function
-func kdf2(key []byte, length int, h func() hash.Hash) []byte {
-	kdfHash := h()
-	outLen := kdfHash.Size()
+func TestX3DH(t *testing.T) {
 
-	cThreshold := (length + outLen - 1) / outLen
-	var counter uint32 = 1
-	outOff := 0
-	res := make([]byte, length)
-	b := make([]byte, 4)
-	for i := 0; i < cThreshold; i++ {
-		kdfHash.Write(key)
-		binary.BigEndian.PutUint32(b, counter)
-		kdfHash.Write(b)
-		counter++
-		digest := kdfHash.Sum(nil)
+	ICa, err := NewKeypair()
+	assert.NoError(t, err)
 
-		if length > outLen {
-			copy(res[outOff:], digest[:])
-			outOff += outLen
-			length -= outLen
-		} else {
-			copy(res[outOff:], digest[:length])
-		}
-		kdfHash.Reset()
-	}
-	return res
+	EKa, err := NewKeypair()
+	assert.NoError(t, err)
+
+	ICb, err := NewKeypair()
+	assert.NoError(t, err)
+
+	LTCb, err := NewKeypair()
+	assert.NoError(t, err)
+
+	OTCb, err := NewKeypair()
+	assert.NoError(t, err)
+
+	sk1, err := EDHInit(ICa.PrivateKey(), EKa.PrivateKey(), ICb.PublicKey(), LTCb.PublicKey(), OTCb.PublicKey())
+	assert.NoError(t, err)
+
+	sk2, err := EDHRespond(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), OTCb.PrivateKey())
+
+	assert.NoError(t, err)
+	assert.Equal(t, sk1, sk2)
+
+	sk2, err = EDHRespond(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), nil)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, sk1, sk2)
+
+	sk1, err = EDHInit(ICa.PrivateKey(), EKa.PrivateKey(), ICb.PublicKey(), LTCb.PublicKey(), nil)
+	assert.NoError(t, err)
+	assert.Equal(t, sk1, sk2)
 
 }

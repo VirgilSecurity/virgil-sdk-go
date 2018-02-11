@@ -34,60 +34,63 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptonative
+package cryptoimpl
 
 import (
 	"bytes"
+	"crypto/rand"
+	"fmt"
+	"testing"
 )
 
-var (
-	// ErrInvalidBlockSize indicates hash blocksize <= 0.
-	ErrInvalidBlockSize = CryptoError("invalid blocksize")
-	// ErrInvalidPKCS7Data indicates bad input to PKCS7 pad or unpad.
-	ErrInvalidPKCS7Data = CryptoError("invalid PKCS7 data (empty or not padded)")
-	// ErrInvalidPKCS7Padding indicates PKCS7 unpad fails to bad input.
-	ErrInvalidPKCS7Padding = CryptoError("invalid padding on input")
-)
+func TestKeys(t *testing.T) {
 
-// pkcs7Unpad validates and unpads data from the given bytes slice.
-// The returned value will be 1 to n bytes smaller depending on the
-// amount of padding, where n is the block size.
-func pkcs7Unpad(b []byte, blocksize int) ([]byte, error) {
-	if blocksize <= 0 {
-		return nil, ErrInvalidBlockSize
+	keypair, err := NewKeypair()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if b == nil || len(b) == 0 {
-		return nil, ErrInvalidPKCS7Data
+	pus1, err := keypair.PublicKey().Encode()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if len(b)%blocksize != 0 {
-		return nil, ErrInvalidPKCS7Padding
+	prs1, err := keypair.PrivateKey().Encode(nil)
+	if err != nil {
+		t.Fatal(err)
 	}
-	c := b[len(b)-1]
-	n := int(c)
-	if n == 0 || n > len(b) {
-		return nil, ErrInvalidPKCS7Padding
-	}
-	for i := 0; i < n; i++ {
-		if b[len(b)-n+i] != c {
-			return nil, ErrInvalidPKCS7Padding
-		}
-	}
-	return b[:len(b)-n], nil
-}
 
-// pkcs7Pad right-pads the given byte slice with 1 to n bytes, where
-// n is the block size. The size of the result is x times n, where x
-// is at least 1.
-func pkcs7Pad(b []byte, blocksize int) ([]byte, error) {
-	if blocksize <= 0 {
-		return nil, ErrInvalidBlockSize
+	dPub, err := DecodePublicKey(pus1)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if b == nil || len(b) == 0 {
-		return nil, ErrInvalidPKCS7Data
+	dPriv, err := DecodePrivateKey(prs1, nil)
+	if err != nil {
+		t.Fatal(err)
 	}
-	n := blocksize - (len(b) % blocksize)
-	pb := make([]byte, len(b)+n)
-	copy(pb, b)
-	copy(pb[len(b):], bytes.Repeat([]byte{byte(n)}, n))
-	return pb, nil
+
+	if !bytes.Equal(keypair.PublicKey().(*ed25519PublicKey).contents(), dPub.(*ed25519PublicKey).contents()) {
+		fmt.Println(keypair.PublicKey().(*ed25519PublicKey).contents())
+		fmt.Println(dPub.(*ed25519PublicKey).contents())
+
+		t.Fatal("deserialized & original public keys do not match")
+	}
+
+	if !bytes.Equal(keypair.PrivateKey().(*ed25519PrivateKey).contents(), dPriv.(*ed25519PrivateKey).contents()) {
+		t.Fatal("deserialized & original private keys do not match")
+	}
+
+	//check password
+	passBytes := make([]byte, 12)
+	rand.Read(passBytes)
+	prs1, err = dPriv.Encode(passBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dPriv, err = DecodePrivateKey(prs1, passBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(keypair.PrivateKey().(*ed25519PrivateKey).contents(), dPriv.(*ed25519PrivateKey).contents()) {
+		t.Fatal("keys do not match")
+	}
 }
