@@ -39,6 +39,8 @@ package sdk
 import (
 	"time"
 
+	"encoding/base64"
+
 	"gopkg.in/virgil.v5/cryptoapi"
 	"gopkg.in/virgil.v5/errors"
 )
@@ -76,4 +78,19 @@ func GenerateRawCard(crypto cryptoapi.CardCrypto, cardParams *CardParams, create
 	return &RawSignedModel{
 		ContentSnapshot: snapshot,
 	}, nil
+}
+
+func GenerateRawSignedModelFromString(str string) (*RawSignedModel, error) {
+
+	data, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		return nil, err
+	}
+	return GenerateRawSignedModelFromJson(string(data))
+}
+
+func GenerateRawSignedModelFromJson(json string) (*RawSignedModel, error) {
+	var model *RawSignedModel
+	err := ParseSnapshot([]byte(json), &model)
+	return model, err
 }

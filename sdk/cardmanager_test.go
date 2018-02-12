@@ -99,7 +99,7 @@ func initCardManager() (*CardManager, error) {
 	return NewCardManager(params)
 }
 
-func TestCardManager_PublishCard(t *testing.T) {
+func TestCardManager_Integration(t *testing.T) {
 
 	manager, err := initCardManager()
 	assert.NoError(t, err)
