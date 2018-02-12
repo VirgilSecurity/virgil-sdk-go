@@ -92,6 +92,10 @@ func (v *VirgilCardVerifier) SetWhitelists(whiteLists []*Whitelist) {
 }
 
 func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
+	if card.PublicKey == nil {
+		return errors.New("card public key is not set")
+	}
+
 	if v.VerifySelfSignature {
 		if err := v.ValidateSignerSignature(card, SelfSigner, card.PublicKey); err != nil {
 			return err
@@ -99,7 +103,10 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 	}
 
 	if v.VerifyVirgilSignature {
-		if err := v.ValidateSignerSignature(card, SelfSigner, card.PublicKey); err != nil {
+		if v.virgilPublicKey == nil {
+			return errors.New("Virgil public key is not set")
+		}
+		if err := v.ValidateSignerSignature(card, VirgilSigner, v.virgilPublicKey); err != nil {
 			return err
 		}
 	}
@@ -145,6 +152,7 @@ func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, 
 		return CardValidationExpectedSignerWasNotFoundErr
 	}
 	for _, s := range card.Signatures {
+
 		if s.Signer == signer {
 			snapshot := append(card.ContentSnapshot, s.Snapshot...)
 			err := v.Crypto.VerifySignature(snapshot, s.Signature, publicKey)

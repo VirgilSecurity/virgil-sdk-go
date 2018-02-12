@@ -36,16 +36,22 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/cryptoimpl"
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"testing"
+	"time"
 
-//var crypto = &cryptoimpl.CardCrypto{Crypto: &cryptoimpl.VirgilCrypto{}}
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/virgil.v5/cryptoimpl"
+)
 
 type testCredentials struct {
 	*VerifierCredentials
 	PrivateKey cryptoimpl.PrivateKey
 }
 
-/*func TestWhitelist(t *testing.T) {
+func TestWhitelist(t *testing.T) {
 
 	pk, cardCreds := makeRandomCredentials()
 
@@ -61,66 +67,74 @@ type testCredentials struct {
 
 	wl = addWhitelist(wl, creds[2])
 
-	cardsManager := &CardsManager{}
-	csr, err := cardsManager.GenerateCSR(&CSRParams{
+	model, err := GenerateRawCard(cardCrypto, &CardParams{
+		Identity:   cardCreds.Signer,
 		PrivateKey: pk,
 		PublicKey:  cardCreds.PublicKey,
-		Identity:   cardCreds.Signer,
+	}, time.Now())
+
+	modelSigner := &ModelSigner{Crypto: cardCrypto}
+	modelSigner.SelfSign(model, pk, map[string]string{
+		"a": "b",
+		"b": "c",
+		"x": "y",
+		"z": cardCreds.Signer,
 	})
-	assert.NoError(t, err)
 
-	addSign(t, csr, creds[0])
-	addSign(t, csr, creds[1])
-	addSign(t, csr, creds[2])
+	addSign(t, model, creds[0])
+	addSign(t, model, creds[1])
+	addSign(t, model, creds[2])
 
-	validator := &ExtendedValidator{IgnoreSelfSignature: true, IgnoreVirgilSignature: true, WhiteList: wl}
+	verifier, err := NewVirgilCardVerifier(cardCrypto, true, false)
+	verifier.SetWhitelists(wl)
 
 	card := &Card{
-		Snapshot: csr.Snapshot,
+		ContentSnapshot: model.ContentSnapshot,
+		PublicKey:       cardCreds.PublicKey,
 	}
 
-	for _, sig := range csr.Signatures {
-		card.Signature = append(card.Signature, &CardSignature{
+	for _, sig := range model.Signatures {
+		card.Signatures = append(card.Signatures, &CardSignature{
 			Signature: sig.Signature,
-			Snapshot:  sig.ExtraFields,
+			Snapshot:  sig.Snapshot,
 			Signer:    sig.Signer,
 		})
 	}
 
 	//check default case
-	err = validator.Validate(crypto, card)
+	err = verifier.VerifyCard(card)
 	assert.NoError(t, err)
 
 	//check that everything is ok if at least one signature in whitelist is valid
 	wl[0].VerifierCredentials[0] = creds[4].VerifierCredentials
 
-	err = validator.Validate(crypto, card)
+	err = verifier.VerifyCard(card)
 	assert.NoError(t, err)
 
 	//Check that verification fails if no signature exists for whitelist
 	wl = addWhitelist(wl, creds[3])
-	validator.WhiteList = wl
+	verifier.SetWhitelists(wl)
 
-	err = validator.Validate(crypto, card)
+	err = verifier.VerifyCard(card)
 	assert.Error(t, err)
 
 	//empty whitelist must fail
-	validator.WhiteList = []*Whitelist{{}}
-	err = validator.Validate(crypto, card)
+	verifier.SetWhitelists([]*Whitelist{{}})
+	err = verifier.VerifyCard(card)
 	assert.Error(t, err)
 
 }
-func addSign(t *testing.T, csr *CSR, credentials *testCredentials) {
-	err := csr.Sign(crypto, &CSRSignParams{
-		Signer:           credentials.Signer,
-		SignerPrivateKey: credentials.PrivateKey,
-		ExtraFields: map[string]string{
-			"a": "b",
-			"b": "c",
-			"x": "y",
-			"z": credentials.Signer,
-		},
+func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
+
+	modelSigner := &ModelSigner{Crypto: cardCrypto}
+
+	err := modelSigner.Sign(model, credentials.Signer, credentials.PrivateKey, map[string]string{
+		"a": "b",
+		"b": "c",
+		"x": "y",
+		"z": credentials.Signer,
 	})
+
 	assert.NoError(t, err)
 }
 
@@ -137,7 +151,7 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 }
 
 func makeRandomCredentials() (cryptoimpl.PrivateKey, *VerifierCredentials) {
-	kp, err := crypto.Crypto.GenerateKeypair()
+	kp, err := crypto.GenerateKeypair()
 	if err != nil {
 		panic(err)
 	}
@@ -149,4 +163,4 @@ func makeRandomCredentials() (cryptoimpl.PrivateKey, *VerifierCredentials) {
 		Signer:    hex.EncodeToString(id),
 		PublicKey: kp.PublicKey(),
 	}
-}*/
+}

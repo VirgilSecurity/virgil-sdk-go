@@ -45,6 +45,9 @@ import (
 	"testing"
 	"time"
 
+	"crypto/rand"
+	"encoding/hex"
+
 	"github.com/stretchr/testify/assert"
 	virgil "gopkg.in/virgil.v5"
 	"gopkg.in/virgil.v5/cryptoimpl"
@@ -107,12 +110,21 @@ func TestCardManager_PublishCard(t *testing.T) {
 	cardParams := &CardParams{
 		PublicKey:  kp.PublicKey(),
 		PrivateKey: kp.PrivateKey(),
-		Identity:   "test_identity",
+		Identity:   "Alice-" + randomString(),
 	}
 
 	card, err := manager.PublishCard(cardParams)
 	assert.NoError(t, err)
 	assert.Equal(t, card.Identity, cardParams.Identity)
+
+	card, err = manager.GetCard(card.Identifier)
+	assert.NoError(t, err)
+	assert.NotNil(t, card)
+
+	cards, err := manager.SearchCards(card.Identity)
+
+	assert.NoError(t, err)
+	assert.True(t, len(cards) > 0)
 
 }
 
@@ -166,4 +178,10 @@ func (c *DebugClient) getClient() virgil.HttpClient {
 		return http.DefaultClient
 	}
 	return c.Client
+}
+
+func randomString() string {
+	buf := make([]byte, 10)
+	rand.Read(buf)
+	return hex.EncodeToString(buf)
 }
