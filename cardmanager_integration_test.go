@@ -48,6 +48,7 @@ import (
 	"testing"
 
 	"gopkg.in/virgil.v5"
+	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/cryptoapi"
 	"gopkg.in/virgil.v5/cryptoimpl"
 	"gopkg.in/virgil.v5/virgiljwt"
@@ -60,7 +61,7 @@ var crypto = &cryptoimpl.VirgilCrypto{UseSHA256Fingerprints: false}
 
 type StaticTokenClient struct {
 	Token  string
-	Client virgil.HttpClient
+	Client common.HttpClient
 }
 
 func (c StaticTokenClient) Do(req *http.Request) (resp *http.Response, err error) {

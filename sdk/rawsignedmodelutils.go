@@ -34,24 +34,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
-}
+import (
+	"time"
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
+	"gopkg.in/virgil.v5/cryptoapi"
+	"gopkg.in/virgil.v5/errors"
+)
 
-}
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
+const (
+	CardVersion = "5.0"
+)
 
-}
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
+func GenerateRawCard(crypto cryptoapi.CardCrypto, cardParams *CardParams, createdAt time.Time) (*RawSignedModel, error) {
+
+	if crypto == nil {
+		return nil, errors.New("crypto is mandatory")
+	}
+
+	if err := cardParams.Validate(true); err != nil {
+		return nil, err
+	}
+	publicKey, err := crypto.ExportPublicKey(cardParams.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	details := &RawCardContent{
+		Identity:       cardParams.Identity,
+		PublicKey:      publicKey,
+		CreatedAt:      createdAt,
+		PreviousCardId: cardParams.PreviousCardId,
+		Version:        CardVersion,
+	}
+	snapshot, err := TakeSnapshot(details)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &RawSignedModel{
+		ContentSnapshot: snapshot,
+	}, nil
 }

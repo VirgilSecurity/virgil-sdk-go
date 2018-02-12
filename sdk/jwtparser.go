@@ -34,24 +34,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
+type JwtParser struct {
 }
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
+func (j *JwtParser) ParseJwtBody(body string) (*JwtBodyContent, error) {
 
 }
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
+
+func (j *JwtParser) BuildJwtBody(content *JwtBodyContent) (string, error) {
 
 }
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
+
+func (j *JwtParser) ParseJwtHeader(header string) (*JwtHeaderContent, error) {
+
+}
+
+func (j *JwtParser) BuildJwtHeader(content *JwtHeaderContent) (string, error) {
+
 }

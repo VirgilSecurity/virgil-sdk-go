@@ -34,24 +34,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
+import (
+	"gopkg.in/virgil.v5/cryptoapi"
+	"gopkg.in/virgil.v5/errors"
+)
+
+type CardParams struct {
+	Identity       string
+	PublicKey      cryptoapi.PublicKey
+	PrivateKey     cryptoapi.PrivateKey
+	PreviousCardId string
+	ExtraFields    map[string]string
 }
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
+func (c *CardParams) Validate(validateIdentity bool) error {
+	if c == nil {
+		return errors.New("cardParams is nil")
+	}
+	if validateIdentity && SpaceMap(c.Identity) == "" {
+		return errors.New("identity is mandatory")
+	}
+	if c.PublicKey == nil {
+		return errors.New("PublicKey is mandatory")
+	}
 
-}
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
-
-}
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
+	if c.PrivateKey == nil {
+		return errors.New("PrivateKey is mandatory")
+	}
+	return nil
 }

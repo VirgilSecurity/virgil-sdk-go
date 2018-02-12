@@ -34,24 +34,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
+import (
+	"encoding/json"
+
+	"gopkg.in/virgil.v5/errors"
+)
+
+func TakeSnapshot(obj interface{}) ([]byte, error) {
+	return json.Marshal(obj)
 }
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
-
-}
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
-
-}
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
+func ParseSnapshot(data []byte, obj interface{}) error {
+	if obj != nil {
+		err := json.Unmarshal(data, obj)
+		if err != nil {
+			return errors.Wrap(err, "unmarshal snapshot")
+		}
+	}
 }

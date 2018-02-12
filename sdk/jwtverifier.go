@@ -34,24 +34,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
+import "gopkg.in/virgil.v5/cryptoapi"
+
+type JwtVerifier struct {
+	ApiPublicKey           cryptoapi.PublicKey
+	ApiPublicKeyIdentifier string
+	AccessTokenSigner      cryptoapi.AccessTokenSigner
 }
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
+func (j *JwtVerifier) VerifyToken(jwtToken *Jwt) error {
 
-}
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
-
-}
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
 }

@@ -34,24 +34,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
-}
+import "time"
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
-
-}
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
-
-}
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
+type RawCardContent struct {
+	Identity       string    `json:"identity"`
+	PublicKey      []byte    `json:"public_key"`
+	Version        string    `json:"version"`
+	CreatedAt      time.Time `json:"created_at"`
+	PreviousCardId string    `json:"previous_card_id,omitempty"`
 }

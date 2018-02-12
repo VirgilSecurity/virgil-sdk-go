@@ -34,24 +34,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptoimpl
+package sdk
 
-type TokenSigner struct {
-	Crypto *VirgilCrypto
+type AccessTokenProvider interface {
+	GetToken(context *TokenContext) (AccessToken, error)
 }
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-}) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
-
+type ConstAccessTokenProvider struct {
+	AccessToken AccessToken
 }
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-}) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
 
-}
-func (t *TokenSigner) GetAlgorithm() string {
-	return "VEDS512"
+func (a *ConstAccessTokenProvider) GetToken(context *TokenContext) (AccessToken, error) {
+	return a.AccessToken, nil
 }
