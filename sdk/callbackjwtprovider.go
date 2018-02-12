@@ -36,10 +36,23 @@
 
 package sdk
 
+import "gopkg.in/virgil.v5/errors"
+
 type CallbackJwtProvider struct {
 	GetTokenCallback func(context *TokenContext) (string, error)
 }
 
 func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
+	if c.GetTokenCallback == nil {
+		return nil, errors.New("GetTokenCallback must be set")
+	}
+	if context == nil {
+		return nil, errors.New("context is mandatory")
+	}
 
+	if jwt, err := c.GetTokenCallback(context); err != nil {
+		return nil, err
+	} else {
+		return JwtFromString(jwt)
+	}
 }

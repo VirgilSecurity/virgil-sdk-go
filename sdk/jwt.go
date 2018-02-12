@@ -39,14 +39,101 @@ package sdk
 import (
 	"time"
 
+	"strings"
+
+	"encoding/base64"
+
+	"encoding/json"
+
 	"gopkg.in/virgil.v5/errors"
 )
 
 type Jwt struct {
 	BodyContent      *JwtBodyContent
+	bodyBytes        []byte
 	HeaderContent    *JwtHeaderContent
+	headerBytes      []byte
 	SignatureContent []byte
 	StringContents   string
+	unsigned         []byte
+}
+
+func NewJwt(header *JwtHeaderContent, body *JwtBodyContent, signature []byte) (*Jwt, error) {
+	if header == nil {
+		return nil, errors.New("header is mandatory")
+	}
+	if body == nil {
+		return nil, errors.New("body is mandatory")
+	}
+
+	jwt := &Jwt{
+		HeaderContent:    header,
+		BodyContent:      body,
+		SignatureContent: signature,
+	}
+
+	headerStr, err := jwt.HeaderBase64()
+	if err != nil {
+		return nil, err
+	}
+	bodyStr, err := jwt.BodyBase64()
+	if err != nil {
+		return nil, err
+	}
+	jwt.unsigned = []byte(headerStr + "." + bodyStr)
+	jwt.StringContents = headerStr + "." + bodyStr
+	if signature != nil {
+		jwt.StringContents += "." + jwt.SignatureBase64()
+	}
+	return jwt, nil
+
+}
+
+func JwtFromString(token string) (*Jwt, error) {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return nil, errors.New("JWT parse failed")
+	}
+
+	header, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return nil, errors.Wrap(err, "JWT header parsing")
+	}
+	body, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, errors.Wrap(err, "JWT body parsing")
+	}
+	signature, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return nil, errors.Wrap(err, "JWT signature parsing")
+	}
+
+	var headerContent *JwtHeaderContent
+	if err := json.Unmarshal(header, &headerContent); err != nil {
+		return nil, errors.Wrap(err, "JWT header parsing")
+	}
+
+	var bodyContent *JwtBodyContent
+	if err := json.Unmarshal(body, &bodyContent); err != nil {
+		return nil, errors.Wrap(err, "JWT body parsing")
+	}
+
+	if !strings.Contains(bodyContent.Issuer, IssuerPrefix) || !strings.Contains(bodyContent.Subject, IdentityPrefix) {
+		return nil, errors.New("JWT body does not contain virgil prefix")
+	}
+
+	bodyContent.AppID = strings.TrimPrefix(bodyContent.AppID, IssuerPrefix)
+	bodyContent.Identity = strings.TrimPrefix(bodyContent.Identity, IdentityPrefix)
+
+	return &Jwt{
+		BodyContent:      bodyContent,
+		HeaderContent:    headerContent,
+		SignatureContent: signature,
+		StringContents:   token,
+		bodyBytes:        body,
+		headerBytes:      header,
+		unsigned:         []byte(parts[0] + "." + parts[1]),
+	}, nil
 }
 
 func (j *Jwt) StringRepresentation() string {
@@ -67,8 +154,38 @@ func (j *Jwt) IsExpired() error {
 		return errors.New("header content is empty")
 	}
 
-	if j.BodyContent.ExpiresAt.Before(time.Now()) {
+	if time.Unix(j.BodyContent.ExpiresAt, 0).Before(time.Now()) {
 		return errors.New("JWT token is expired")
 	}
 	return nil
+}
+
+func (j *Jwt) Unsigned() []byte {
+	return j.unsigned
+}
+
+func (j *Jwt) HeaderBase64() (string, error) {
+	if j.headerBytes == nil {
+		if headerBytes, err := json.Marshal(j.HeaderContent); err != nil {
+			return "", err
+		} else {
+			j.headerBytes = headerBytes
+		}
+	}
+	return base64.RawURLEncoding.EncodeToString(j.headerBytes), nil
+}
+
+func (j *Jwt) BodyBase64() (string, error) {
+	if j.bodyBytes == nil {
+		if bodyBytes, err := json.Marshal(j.BodyContent); err != nil {
+			return "", err
+		} else {
+			j.bodyBytes = bodyBytes
+		}
+	}
+	return base64.RawURLEncoding.EncodeToString(j.bodyBytes), nil
+}
+
+func (j *Jwt) SignatureBase64() string {
+	return base64.RawURLEncoding.EncodeToString(j.SignatureContent)
 }

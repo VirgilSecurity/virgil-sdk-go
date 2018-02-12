@@ -38,5 +38,5 @@ package sdk
 
 type AccessToken interface {
 	StringRepresentation() string
-	Identity() string
+	Identity() (string, error)
 }

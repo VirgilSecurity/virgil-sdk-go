@@ -36,9 +36,31 @@
 
 package sdk
 
+import "gopkg.in/virgil.v5/errors"
+
+const (
+	VirgilContentType = "virgil-jwt;v=1"
+	JwtType           = "JWT"
+)
+
 type JwtHeaderContent struct {
-	Algorithm     string
-	Type          string
-	ContentType   string
-	KeyIdentifier string
+	Algorithm   string `json:"alg"`
+	Type        string `json:"typ"`
+	ContentType string `json:"cty"`
+	ApiKeyId    string `json:"kid"`
+}
+
+func NewJwtHeaderContent(algorithm string, apiKeyId string) (*JwtHeaderContent, error) {
+	if SpaceMap(algorithm) == "" {
+		return nil, errors.New("algorithm is empty")
+	}
+	if SpaceMap(apiKeyId) == "" {
+		return nil, errors.New("apiKeyId is empty")
+	}
+	return &JwtHeaderContent{
+		Algorithm:   algorithm,
+		ApiKeyId:    apiKeyId,
+		ContentType: VirgilContentType,
+		Type:        JwtType,
+	}, nil
 }

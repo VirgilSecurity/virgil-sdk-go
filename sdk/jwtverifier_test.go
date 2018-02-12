@@ -36,30 +36,21 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/errors"
+import (
+	"testing"
 
-type GeneratorJwtProvider struct {
-	JwtGenerator    *JwtGenerator
-	AdditionalData  map[string]interface{}
-	DefaultIdentity string
-}
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/virgil.v5/cryptoimpl"
+)
 
-func NewGeneratorJwtProvider(generator *JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
-	return &GeneratorJwtProvider{
-		JwtGenerator:    generator,
-		AdditionalData:  additionalData,
-		DefaultIdentity: defaultIdentity,
-	}
-}
+func TestJwtVerifier_VerifyToken(t *testing.T) {
 
-func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
+	pub, err := crypto.ImportPublicKey([]byte("MCowBQYDK2VwAyEAiWNcK5Ipp27VXciJNsG1ZxESEq5xWniendU/8yo5318="))
+	assert.NoError(t, err)
 
-	if g.JwtGenerator == nil {
-		return nil, errors.New("JwtGenerator is not set")
-	}
+	verifier := NewJwtVerifier(pub, "a2ae26f9ed0453cb49e83e8ed045e801e75c77efb162ca152f62f699cf95ff8b58848da3968a05fa2949e12c225ef6fa0e999b83e6bc15aa8e3a530e44837d7c", cryptoimpl.NewVirgilAccessTokenSigner())
 
-	if context == nil {
-		return nil, errors.New("context is mandatory")
-	}
-	return g.JwtGenerator.GenerateToken(context.Identity, g.AdditionalData)
+	jwt, err := JwtFromString("eyJhbGciOiJWRURTNTEyIiwiY3R5IjoidmlyZ2lsLWp3dDt2PTEiLCJraWQiOiJhMmFlMjZmOWVkMDQ1M2NiNDllODNlOGVkMDQ1ZTgwMWU3NWM3N2VmYjE2MmNhMTUyZjYyZjY5OWNmOTVmZjhiNTg4NDhkYTM5NjhhMDVmYTI5NDllMTJjMjI1ZWY2ZmEwZTk5OWI4M2U2YmMxNWFhOGUzYTUzMGU0NDgzN2Q3YyIsInR5cCI6IkpXVCJ9.eyJhZGEiOnsidXNlcm5hbWUiOiJzb21lX3VzZXJuYW1lIn0sImV4cCI6MTUxODQyNjQzOSwiaWF0IjoxNTE4NDI1ODM5LCJpc3MiOiJ2aXJnaWwtZDI5YWQxZTkwODFmMzQ5Njg3M2QxM2NmZDg2YzViZGYwMTk2MDRhODM5MDkxZmIyZmMyMzUwZDY2N2ViMDI0NSIsInN1YiI6ImlkZW50aXR5LXNvbWVfaWRlbnRpdHkifQ.MFEwDQYJYIZIAWUDBAIDBQAEQFUGKh0Y07eRHWv_ThNJsQ-0mxfVAx86BYdcnr1LBSK9MOxzPZMhdu0kg3RcALnHZWPPIlKHZ8g_AtHXIynM5gg")
+	assert.NoError(t, err)
+	assert.NoError(t, verifier.VerifyToken(jwt))
 }

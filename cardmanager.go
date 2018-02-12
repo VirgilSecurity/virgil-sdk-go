@@ -37,19 +37,12 @@
 package virgil
 
 import (
-	"encoding/hex"
-	"encoding/json"
-	"net/http"
-	"time"
-
-	"github.com/pkg/errors"
-
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/cryptoapi"
 )
 
 type Validator interface {
-	Validate(crypto cryptoapi.CardCrypto, card *Card) error
+	//Validate(crypto cryptoapi.CardCrypto, card *Card) error
 }
 
 type HttpClient common.HttpClient
@@ -68,7 +61,7 @@ type CardsManager struct {
 	HttpClient HttpClient
 }
 
-func (cm *CardsManager) GetCard(id string) (*Card, error) {
+/*func (cm *CardsManager) GetCard(id string) (*Card, error) {
 	var rawCard *RawCard
 	err := cm.send(http.MethodGet, "/card/v5/"+id, nil, &rawCard)
 	if err != nil {
@@ -320,4 +313,4 @@ func (cm *CardsManager) getVirgilClient() common.VirgilHttpClient {
 		Address: cm.getUrl(),
 		Client:  cm.getHttpClient(),
 	}
-}
+}*/

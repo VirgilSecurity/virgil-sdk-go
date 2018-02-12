@@ -36,19 +36,133 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/cryptoapi"
+import (
+	"gopkg.in/virgil.v5/cryptoapi"
+	"gopkg.in/virgil.v5/errors"
+)
 
 type CardVerifier interface {
 	VerifyCard(card *Card) error
 }
 
+const (
+	VirgilPublicKey = "MCowBQYDK2VwAyEAr0rjTWlCLJ8q9em0og33grHEh/3vmqp0IewosUaVnQg="
+)
+
 type VirgilCardVerifier struct {
 	Crypto                cryptoapi.CardCrypto
 	VerifySelfSignature   bool
 	VerifyVirgilSignature bool
-	WhiteLists            []Whitelist
+	WhiteLists            []*Whitelist
+	virgilPublicKey       cryptoapi.PublicKey
+}
+
+func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, verifyVirgilSignature bool) (*VirgilCardVerifier, error) {
+
+	verifier := &VirgilCardVerifier{
+		Crypto:                crypto,
+		VerifySelfSignature:   verifySelfSignature,
+		VerifyVirgilSignature: verifyVirgilSignature,
+	}
+
+	if err := verifier.SelfCheck(); err != nil {
+		return nil, err
+	}
+
+	if verifyVirgilSignature {
+		if pub, err := verifier.GetPublicKeyFromBase64(VirgilPublicKey); err != nil {
+			return nil, err
+		} else {
+			verifier.virgilPublicKey = pub
+		}
+
+	}
+	return verifier, nil
+}
+
+func (v *VirgilCardVerifier) SelfCheck() error {
+	if v.Crypto == nil {
+		return errors.New("Crypto is not set")
+	}
+	return nil
+}
+
+func (v *VirgilCardVerifier) SetWhitelists(whiteLists []*Whitelist) {
+	v.WhiteLists = whiteLists
 }
 
 func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
+	if v.VerifySelfSignature {
+		if err := v.ValidateSignerSignature(card, SelfSigner, card.PublicKey); err != nil {
+			return err
+		}
+	}
 
+	if v.VerifyVirgilSignature {
+		if err := v.ValidateSignerSignature(card, SelfSigner, card.PublicKey); err != nil {
+			return err
+		}
+	}
+
+	if len(v.WhiteLists) == 0 {
+		return nil
+	}
+
+	for _, whiteList := range v.WhiteLists {
+
+		ok := false
+		var lastErr error
+		for _, cred := range whiteList.VerifierCredentials {
+			err := v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey)
+			if err == nil {
+				ok = true
+				break
+			} else {
+				lastErr = err
+			}
+		}
+
+		if !ok {
+			if lastErr == nil {
+				lastErr = CardValidationExpectedSignerWasNotFoundErr
+			}
+
+			return lastErr
+		}
+	}
+	return nil
+}
+
+func (v *VirgilCardVerifier) GetPublicKeyFromBase64(str string) (cryptoapi.PublicKey, error) {
+	return v.Crypto.ImportPublicKey([]byte(str))
+}
+
+func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, publicKey cryptoapi.PublicKey) error {
+	if err := v.SelfCheck(); err != nil {
+		return err
+	}
+	if len(card.Signatures) == 0 {
+		return CardValidationExpectedSignerWasNotFoundErr
+	}
+	for _, s := range card.Signatures {
+		if s.Signer == signer {
+			snapshot := append(card.ContentSnapshot, s.Snapshot...)
+			err := v.Crypto.VerifySignature(snapshot, s.Signature, publicKey)
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		}
+	}
+	return CardValidationExpectedSignerWasNotFoundErr
+}
+
+func (v *VirgilCardVerifier) ReplaceVirgilPublicKey(NewKey string) error {
+	if pub, err := v.GetPublicKeyFromBase64(VirgilPublicKey); err != nil {
+		return err
+	} else {
+		v.virgilPublicKey = pub
+		return nil
+	}
 }

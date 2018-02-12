@@ -37,21 +37,10 @@
 package virgil_test
 
 import (
-	"bytes"
-	"crypto/rand"
-	"encoding/hex"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"testing"
-
 	"gopkg.in/virgil.v5"
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/cryptoapi"
 	"gopkg.in/virgil.v5/cryptoimpl"
-	"gopkg.in/virgil.v5/virgiljwt"
 )
 
 var cardsManager *virgil.CardsManager
@@ -64,7 +53,7 @@ type StaticTokenClient struct {
 	Client common.HttpClient
 }
 
-func (c StaticTokenClient) Do(req *http.Request) (resp *http.Response, err error) {
+/*func (c StaticTokenClient) Do(req *http.Request) (resp *http.Response, err error) {
 	req.Header.Add("Authorization", "Virgil "+c.Token)
 	return c.Client.Do(req)
 }
@@ -98,7 +87,7 @@ func TestMain(m *testing.M) {
 	hash := sha512.Sum512(tt)
 	fmt.Println(hex.EncodeToString(hash[:]))*/
 
-	appCardID = os.Getenv("TEST_APP_ID")
+/*appCardID = os.Getenv("TEST_APP_ID")
 	if appCardID == "" {
 		log.Fatal("TEST_APP_ID is required")
 	}
@@ -333,3 +322,4 @@ func (c *DebugClient) getClient() virgil.HttpClient {
 	}
 	return c.Client
 }
+*/

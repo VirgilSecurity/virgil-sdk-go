@@ -39,6 +39,8 @@ package sdk
 import (
 	"encoding/hex"
 
+	"time"
+
 	"gopkg.in/virgil.v5/cryptoapi"
 	"gopkg.in/virgil.v5/errors"
 )
@@ -53,7 +55,7 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 	}
 
 	var content *RawCardContent
-	err := ParseSnapshot(model.ContentSnapshot, content)
+	err := ParseSnapshot(model.ContentSnapshot, &content)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +94,7 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 		Signatures:      signatures,
 		Version:         content.Version,
 		PreviousCardId:  content.PreviousCardId,
-		CreatedAt:       content.CreatedAt,
+		CreatedAt:       time.Unix(content.CreatedAt, 0),
 		Identity:        content.Identity,
 		IsOutdated:      isOutdated,
 		PublicKey:       publicKey,

@@ -52,6 +52,10 @@ type ModelSigner struct {
 	Crypto cryptoapi.CardCrypto
 }
 
+func NewModelSigner(crypto cryptoapi.CardCrypto) *ModelSigner {
+	return &ModelSigner{Crypto: crypto}
+}
+
 func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryptoapi.PrivateKey, extraFields map[string]string) error {
 
 	return m.signInternal(model, &SignParams{
@@ -72,7 +76,7 @@ func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, ex
 		return errors.New("model is mandatory")
 	}
 	if m.Crypto == nil {
-		return errors.New("model is mandatory")
+		return errors.New("crypto is mandatory")
 	}
 	var err error
 	if err = params.Validate(); err != nil {

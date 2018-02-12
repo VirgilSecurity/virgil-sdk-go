@@ -54,49 +54,49 @@ type VirgilHttpClient struct {
 	Address string
 }
 
-func (vc *VirgilHttpClient) Send(method string, url string, payload interface{}, respObj interface{}) error {
+func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (forbidden bool, err error) {
 	var body []byte
-	var err error
 	if payload != nil {
 		body, err = json.Marshal(payload)
 		if err != nil {
-			return errors.Wrap(err, "VirgilHttpClient.Send: marshal payload")
+			return false, errors.Wrap(err, "VirgilHttpClient.Send: marshal payload")
 		}
 	}
 	req, err := http.NewRequest(method, vc.Address+url, bytes.NewReader(body))
 	if err != nil {
-		return errors.Wrap(err, "VirgilHttpClient.Send: new request")
+		return false, errors.Wrap(err, "VirgilHttpClient.Send: new request")
 	}
+	req.Header.Set("Authorization", "Virgil "+token)
 	client := vc.getHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "VirgilHttpClient.Send: send request")
+		return false, errors.Wrap(err, "VirgilHttpClient.Send: send request")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotFound {
-		return EntityNotFoundErr
+		return false, EntityNotFoundErr
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrap(err, "VirgilHttpClient.Send: read response body")
+		return false, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
 	}
 
-	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusForbidden {
 		if respObj != nil {
 			err = json.Unmarshal(respBody, respObj)
 			if err != nil {
-				return errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+				return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 			}
 		}
-		return nil
+		return resp.StatusCode == http.StatusForbidden, nil
 	}
 	var virgilErr VirgilAPIError
 	err = json.Unmarshal(respBody, &virgilErr)
 	if err != nil {
-		return errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+		return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 	}
-	return virgilErr
+	return false, virgilErr
 }
 
 func (vc *VirgilHttpClient) getHttpClient() HttpClient {

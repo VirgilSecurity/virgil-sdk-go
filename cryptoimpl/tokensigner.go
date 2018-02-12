@@ -36,22 +36,26 @@
 
 package cryptoimpl
 
-type TokenSigner struct {
+type VirgilAccessTokenSigner struct {
 	Crypto *VirgilCrypto
 }
 
-func (t *TokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
+func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
+	return &VirgilAccessTokenSigner{Crypto: &VirgilCrypto{}}
+}
+
+func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
 	IsPrivate() bool
 }) ([]byte, error) {
 	return t.Crypto.Sign(data, privateKey.(PrivateKey))
 
 }
-func (t *TokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
+func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
 	IsPublic() bool
 }) error {
 	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
 
 }
-func (t *TokenSigner) GetAlgorithm() string {
+func (t *VirgilAccessTokenSigner) GetAlgorithm() string {
 	return "VEDS512"
 }

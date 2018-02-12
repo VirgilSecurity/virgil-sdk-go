@@ -36,30 +36,25 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/errors"
+import (
+	"errors"
 
-type GeneratorJwtProvider struct {
-	JwtGenerator    *JwtGenerator
-	AdditionalData  map[string]interface{}
-	DefaultIdentity string
+	"gopkg.in/virgil.v5/common"
+)
+
+type CardsAPIError common.VirgilAPIError
+
+func (err CardsAPIError) Error() string {
+	return common.VirgilAPIError(err).Error()
 }
 
-func NewGeneratorJwtProvider(generator *JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
-	return &GeneratorJwtProvider{
-		JwtGenerator:    generator,
-		AdditionalData:  additionalData,
-		DefaultIdentity: defaultIdentity,
-	}
-}
+var (
+	CSRIdentityEmptyErr        = errors.New("Identity field in CSR is mandatory")
+	CSRSignParamIncorrectErr   = errors.New("CSR signature params incorrect")
+	CSRPublicKeyEmptyErr       = errors.New("Public key field in CSR is mandatory")
+	CSRSelfSignAlreadyExistErr = errors.New("The CSR already has a self signature")
+	CSRAppSignAlreadyExistErr  = errors.New("The CSR already has an application signature")
 
-func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-
-	if g.JwtGenerator == nil {
-		return nil, errors.New("JwtGenerator is not set")
-	}
-
-	if context == nil {
-		return nil, errors.New("context is mandatory")
-	}
-	return g.JwtGenerator.GenerateToken(context.Identity, g.AdditionalData)
-}
+	CardValidationSignerTypeIncorrectErr       = errors.New("Card validation: signer type incorrect")
+	CardValidationExpectedSignerWasNotFoundErr = errors.New("Card validation: expected signer was not found")
+)

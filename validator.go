@@ -48,6 +48,7 @@ const (
 	VirgilCardServicePublicKey = "MCowBQYDK2VwAyEAr0rjTWlCLJ8q9em0og33grHEh/3vmqp0IewosUaVnQg="
 )
 
+/*
 var VirgilSignerInfo = &VerifierCredentials{
 	Signer:    VirgilCardServiceSigner,
 	PublicKey: loadServicePublicKey(),
@@ -126,3 +127,4 @@ func (v *ExtendedValidator) checkSign(crypto cryptoapi.CardCrypto, card *Card, v
 	}
 	return CardValidationExpectedSignerWasNotFoundErr
 }
+*/

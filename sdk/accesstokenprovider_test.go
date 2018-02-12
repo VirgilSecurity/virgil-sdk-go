@@ -36,21 +36,16 @@
 
 package sdk
 
-type JwtParser struct {
-}
+import (
+	"testing"
 
-func (j *JwtParser) ParseJwtBody(body string) (*JwtBodyContent, error) {
+	"github.com/stretchr/testify/assert"
+)
 
-}
+func TestCallbackJwtProvider_GetToken(t *testing.T) {
+	prov := &CallbackJwtProvider{}
+	token, err := prov.GetToken(&TokenContext{Identity: "someIdentity", Operation: "someOperation"})
 
-func (j *JwtParser) BuildJwtBody(content *JwtBodyContent) (string, error) {
-
-}
-
-func (j *JwtParser) ParseJwtHeader(header string) (*JwtHeaderContent, error) {
-
-}
-
-func (j *JwtParser) BuildJwtHeader(content *JwtHeaderContent) (string, error) {
-
+	assert.Nil(t, token)
+	assert.Error(t, err)
 }

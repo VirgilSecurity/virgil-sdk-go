@@ -36,14 +36,48 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/cryptoapi"
+import (
+	"gopkg.in/virgil.v5/cryptoapi"
+	"gopkg.in/virgil.v5/errors"
+)
 
 type JwtVerifier struct {
-	ApiPublicKey           cryptoapi.PublicKey
-	ApiPublicKeyIdentifier string
-	AccessTokenSigner      cryptoapi.AccessTokenSigner
+	ApiPublicKey      cryptoapi.PublicKey
+	ApiPublicKeyId    string
+	AccessTokenSigner cryptoapi.AccessTokenSigner
+}
+
+func NewJwtVerifier(apiPublicKey cryptoapi.PublicKey, apiPublicKeyId string, accessTokenSigner cryptoapi.AccessTokenSigner) *JwtVerifier {
+	return &JwtVerifier{
+		AccessTokenSigner: accessTokenSigner,
+		ApiPublicKeyId:    apiPublicKeyId,
+		ApiPublicKey:      apiPublicKey,
+	}
 }
 
 func (j *JwtVerifier) VerifyToken(jwtToken *Jwt) error {
+	if j.AccessTokenSigner == nil {
+		return errors.New("AccessTokenSigner is not set")
+	}
 
+	if j.ApiPublicKey == nil {
+		return errors.New("ApiPublicKey is not set")
+	}
+
+	if SpaceMap(j.ApiPublicKeyId) == "" {
+		return errors.New("ApiPublicKeyId is not set")
+	}
+
+	if jwtToken == nil {
+		return errors.New("jwtToken is mandatory")
+	}
+
+	if jwtToken.HeaderContent.ApiKeyId != j.ApiPublicKeyId ||
+		jwtToken.HeaderContent.Algorithm != j.AccessTokenSigner.GetAlgorithm() ||
+		jwtToken.HeaderContent.ContentType != VirgilContentType ||
+		jwtToken.HeaderContent.Type != JwtType {
+		return errors.New("JWT is not valid")
+	}
+
+	return j.AccessTokenSigner.VerifyTokenSignature(jwtToken.Unsigned(), jwtToken.SignatureContent, j.ApiPublicKey)
 }

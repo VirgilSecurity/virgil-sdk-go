@@ -56,6 +56,26 @@ type CardManager struct {
 	paramsError                                  error
 }
 
+func NewCardManager(params *CardManagerParams) (*CardManager, error) {
+	client := params.CardClient
+
+	if client == nil {
+		client = NewCardsClient(params.ApiUrl)
+	}
+	mgr := &CardManager{
+		Crypto:              params.Crypto,
+		ModelSigner:         NewModelSigner(params.Crypto),
+		SignCallback:        params.SignCallback,
+		AccessTokenProvider: params.AccessTokenProvider,
+		CardVerifier:        params.CardVerifier,
+		CardClient:          client,
+	}
+	if err := mgr.selfCheck(); err != nil {
+		return nil, err
+	}
+	return mgr, nil
+}
+
 func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, error) {
 	if err := c.selfCheck(); err != nil {
 		return nil, err
@@ -116,7 +136,18 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	rawSignedModel, err := c.GenerateRawCard(cardParams)
+	identity, err := token.Identity()
+
+	if err != nil {
+		return nil, err
+	}
+	rawSignedModel, err := c.GenerateRawCard(&CardParams{
+		Identity:       identity,
+		PrivateKey:     cardParams.PrivateKey,
+		PublicKey:      cardParams.PublicKey,
+		ExtraFields:    cardParams.ExtraFields,
+		PreviousCardId: cardParams.PreviousCardId,
+	})
 	if err != nil {
 		return nil, err
 	}

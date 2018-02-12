@@ -41,6 +41,8 @@ import (
 
 	"sync"
 
+	"encoding/hex"
+
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/errors"
 )
@@ -52,15 +54,19 @@ type CardClient struct {
 	once             sync.Once
 }
 
+func NewCardsClient(serviceURL string) *CardClient {
+	return &CardClient{ServiceURL: serviceURL}
+}
+
 func (c *CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSignedModel, error) {
 	var returnedRawCard *RawSignedModel
-	err := c.send(http.MethodPost, "/card/v5", token, rawCard, &returnedRawCard)
+	_, err := c.send(http.MethodPost, "/card/v5", token, rawCard, &returnedRawCard)
 	return returnedRawCard, err
 }
 
 func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
 	var rawCards []*RawSignedModel
-	err := c.send(http.MethodPost, "/card/v5/actions/search", token, map[string]string{"identity": identity}, &rawCards)
+	_, err := c.send(http.MethodPost, "/card/v5/actions/search", token, map[string]string{"identity": identity}, &rawCards)
 	if err != nil {
 		return nil, err
 	}
@@ -69,21 +75,26 @@ func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedMod
 }
 
 func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool, error) {
+
+	if _, err := hex.DecodeString(cardId); err != nil || len(cardId) != 64 {
+		return nil, false, errors.New("invalid card id")
+	}
+
 	var rawCard *RawSignedModel
-	err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
-	return rawCard, true, err
+	outdated, err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
+	return rawCard, outdated, err
 }
 
-func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) error {
+func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) (outdated bool, err error) {
 	client := c.getVirgilClient()
-	err := client.Send(method, url, payload, respObj)
+	outdated, err = client.Send(method, url, token, payload, respObj)
 	if err != nil {
 		if apiErr, ok := err.(common.VirgilAPIError); ok {
-			return errors.NewServiceError(apiErr.Code, 0, apiErr.Message)
+			return false, errors.NewServiceError(apiErr.Code, 0, apiErr.Message)
 		}
-		return err
+		return false, err
 	}
-	return nil
+	return outdated, nil
 }
 
 func (c *CardClient) getUrl() string {

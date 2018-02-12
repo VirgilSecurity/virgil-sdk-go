@@ -53,4 +53,5 @@ func ParseSnapshot(data []byte, obj interface{}) error {
 			return errors.Wrap(err, "unmarshal snapshot")
 		}
 	}
+	return nil
 }

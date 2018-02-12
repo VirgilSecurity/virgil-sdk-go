@@ -63,7 +63,7 @@ func GenerateRawCard(crypto cryptoapi.CardCrypto, cardParams *CardParams, create
 	details := &RawCardContent{
 		Identity:       cardParams.Identity,
 		PublicKey:      publicKey,
-		CreatedAt:      createdAt,
+		CreatedAt:      createdAt.UTC().Unix(),
 		PreviousCardId: cardParams.PreviousCardId,
 		Version:        CardVersion,
 	}

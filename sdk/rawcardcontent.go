@@ -36,12 +36,10 @@
 
 package sdk
 
-import "time"
-
 type RawCardContent struct {
-	Identity       string    `json:"identity"`
-	PublicKey      []byte    `json:"public_key"`
-	Version        string    `json:"version"`
-	CreatedAt      time.Time `json:"created_at"`
-	PreviousCardId string    `json:"previous_card_id,omitempty"`
+	Identity       string `json:"identity"`
+	PublicKey      []byte `json:"public_key"`
+	Version        string `json:"version"`
+	CreatedAt      int64  `json:"created_at"`
+	PreviousCardId string `json:"previous_card_id,omitempty"`
 }

@@ -36,30 +36,14 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/errors"
+import "gopkg.in/virgil.v5/cryptoapi"
 
-type GeneratorJwtProvider struct {
-	JwtGenerator    *JwtGenerator
-	AdditionalData  map[string]interface{}
-	DefaultIdentity string
-}
-
-func NewGeneratorJwtProvider(generator *JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
-	return &GeneratorJwtProvider{
-		JwtGenerator:    generator,
-		AdditionalData:  additionalData,
-		DefaultIdentity: defaultIdentity,
-	}
-}
-
-func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-
-	if g.JwtGenerator == nil {
-		return nil, errors.New("JwtGenerator is not set")
-	}
-
-	if context == nil {
-		return nil, errors.New("context is mandatory")
-	}
-	return g.JwtGenerator.GenerateToken(context.Identity, g.AdditionalData)
+type CardManagerParams struct {
+	ModelSigner         *ModelSigner
+	Crypto              cryptoapi.CardCrypto
+	AccessTokenProvider AccessTokenProvider
+	CardVerifier        CardVerifier
+	CardClient          *CardClient
+	SignCallback        func(model *RawSignedModel) error
+	ApiUrl              string
 }

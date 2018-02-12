@@ -38,7 +38,7 @@ package sdk
 
 import "gopkg.in/virgil.v5/cryptoimpl"
 
-var crypto = &cryptoimpl.CardCrypto{Crypto: &cryptoimpl.VirgilCrypto{}}
+//var crypto = &cryptoimpl.CardCrypto{Crypto: &cryptoimpl.VirgilCrypto{}}
 
 type testCredentials struct {
 	*VerifierCredentials
