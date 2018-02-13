@@ -123,7 +123,6 @@ func (c *VirgilCrypto) Decrypt(data []byte, key *ed25519PrivateKey) ([]byte, err
 		return nil, errors.New("key is nil")
 	}
 	return c.MakeCipher().DecryptWithPrivateKey(data, key)
-	return nil, UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error {
@@ -131,7 +130,6 @@ func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key *ed25519Pr
 		return errors.New("key is nil")
 	}
 	return c.getCipher().DecryptStream(in, out, key)
-	return UnsupportedKeyErr
 }
 
 func (c *VirgilCrypto) Sign(data []byte, key *ed25519PrivateKey) ([]byte, error) {
