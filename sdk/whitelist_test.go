@@ -43,12 +43,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/virgil.v5/cryptoimpl"
+	"gopkg.in/virgil.v5/cryptoapi"
 )
 
 type testCredentials struct {
 	*VerifierCredentials
-	PrivateKey cryptoimpl.PrivateKey
+	PrivateKey cryptoapi.PrivateKey
 }
 
 func TestWhitelist(t *testing.T) {
@@ -150,7 +150,7 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 	return wl
 }
 
-func makeRandomCredentials() (cryptoimpl.PrivateKey, *VerifierCredentials) {
+func makeRandomCredentials() (cryptoapi.PrivateKey, *VerifierCredentials) {
 	kp, err := crypto.GenerateKeypair()
 	if err != nil {
 		panic(err)

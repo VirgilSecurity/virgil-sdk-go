@@ -43,19 +43,12 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
-type PublicKey interface {
-	ReceiverID() []byte
-	Encode() ([]byte, error)
-	Empty() bool
-	IsPublic() bool
-}
-
 type ed25519PublicKey struct {
 	receiverID []byte
 	key        []byte
 }
 
-func DecodePublicKey(keyBytes []byte) (PublicKey, error) {
+func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
 	unwrappedKey, keyType, err := unwrapKey(keyBytes)
 	if err != nil {
 		return nil, err

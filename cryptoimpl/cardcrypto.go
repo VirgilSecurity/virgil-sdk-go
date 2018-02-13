@@ -45,19 +45,19 @@ type CardCrypto struct {
 func (c *CardCrypto) GenerateSignature(data []byte, key interface {
 	IsPrivate() bool
 }) ([]byte, error) {
-	return c.Crypto.Sign(data, key.(PrivateKey))
+	return c.Crypto.Sign(data, key.(*ed25519PrivateKey))
 }
 
 func (c *CardCrypto) VerifySignature(data []byte, signature []byte, key interface {
 	IsPublic() bool
 }) error {
-	return c.Crypto.VerifySignature(data, signature, key.(PublicKey))
+	return c.Crypto.VerifySignature(data, signature, key.(*ed25519PublicKey))
 }
 
 func (c *CardCrypto) ExportPublicKey(key interface {
 	IsPublic() bool
 }) ([]byte, error) {
-	return c.Crypto.ExportPublicKey(key.(PublicKey))
+	return c.Crypto.ExportPublicKey(key.(*ed25519PublicKey))
 }
 
 func (c *CardCrypto) ImportPublicKey(data []byte) (interface {

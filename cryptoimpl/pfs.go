@@ -52,14 +52,14 @@ type (
 	}
 
 	PFS interface {
-		StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, additionalData []byte) (sess *PFSSession, err error)
-		ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, additionalData []byte) (sess *PFSSession, err error)
+		StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, EKa *ed25519PrivateKey, additionalData []byte) (sess *PFSSession, err error)
+		ReceivePFCSession(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey, additionalData []byte) (sess *PFSSession, err error)
 	}
 )
 
 var virgil = []byte("Virgil")
 
-func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, EKa *ed25519PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
 
 	sk, err := EDHInit(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
@@ -94,7 +94,7 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb PublicKey, ICa, EKa Priva
 
 }
 
-func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
 
 	sk, err := EDHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {

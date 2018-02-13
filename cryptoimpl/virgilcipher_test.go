@@ -42,10 +42,10 @@ import (
 	"testing"
 )
 
-func testEncryptWithKey(data []byte, key PublicKey) {
+func testEncryptWithKey(data []byte, key *ed25519PublicKey) {
 
 	cipher := NewCipher()
-	cipher.AddKeyRecipient(key.(*ed25519PublicKey))
+	cipher.AddKeyRecipient(key)
 	_, err := cipher.Encrypt(data)
 	if err != nil {
 		panic(err)
@@ -66,9 +66,9 @@ func BenchmarkEncrypt(b *testing.B) {
 		testEncryptWithKey(data, kp.PublicKey())
 	}
 }
-func testDecryptWithKey(data []byte, key PrivateKey) {
+func testDecryptWithKey(data []byte, key *ed25519PrivateKey) {
 
-	_, err := NewCipher().DecryptWithPrivateKey(data, key.(*ed25519PrivateKey))
+	_, err := NewCipher().DecryptWithPrivateKey(data, key)
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +84,7 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 
 	cipher := NewCipher()
-	cipher.AddKeyRecipient(keypair.PublicKey().(*ed25519PublicKey))
+	cipher.AddKeyRecipient(keypair.PublicKey())
 	ciphertext, err := cipher.Encrypt(data)
 	if err != nil {
 		panic(err)
@@ -151,7 +151,7 @@ func TestCMS(t *testing.T) {
 
 	cipher := NewCipher()
 	cipher.AddPasswordRecipient(passBytes)
-	cipher.AddKeyRecipient(keypair.PublicKey().(*ed25519PublicKey))
+	cipher.AddKeyRecipient(keypair.PublicKey())
 	cipherText, err := cipher.Encrypt(data)
 	if err != nil {
 		t.Fatal(err)
@@ -159,7 +159,7 @@ func TestCMS(t *testing.T) {
 	if plaintext, err := cipher.DecryptWithPassword(cipherText, passBytes); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
-	if plaintext, err := cipher.DecryptWithPrivateKey(cipherText, keypair.PrivateKey().(*ed25519PrivateKey)); err != nil || !bytes.Equal(plaintext, data) {
+	if plaintext, err := cipher.DecryptWithPrivateKey(cipherText, keypair.PrivateKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
 
@@ -168,12 +168,12 @@ func TestCMS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cipherText, err = cipher.SignThenEncrypt(data, signerKeypair.PrivateKey().(*ed25519PrivateKey))
+	cipherText, err = cipher.SignThenEncrypt(data, signerKeypair.PrivateKey())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if plaintext, err := NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey().(*ed25519PrivateKey), keypair.PublicKey().(*ed25519PublicKey), signerKeypair.PublicKey().(*ed25519PublicKey)); err != nil || !bytes.Equal(plaintext, data) {
+	if plaintext, err := NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey(), keypair.PublicKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
 
@@ -189,7 +189,7 @@ func TestStreamCipher(t *testing.T) {
 	rand.Read(passBytes)
 
 	cipher := NewCipher()
-	cipher.AddKeyRecipient(keypair.PublicKey().(*ed25519PublicKey))
+	cipher.AddKeyRecipient(keypair.PublicKey())
 
 	plainBuf := make([]byte, 1023)
 	rand.Read(plainBuf)
@@ -204,7 +204,7 @@ func TestStreamCipher(t *testing.T) {
 
 	cipheredInputStream := bytes.NewBuffer(cipheredStream.Bytes())
 	plainOutBuffer := &bytes.Buffer{}
-	err = cipher.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey().(*ed25519PrivateKey))
+	err = cipher.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,7 +222,7 @@ func TestStreamCipher(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cipher.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey().(*ed25519PrivateKey))
+	err = cipher.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey())
 	if err == nil {
 		t.Fatal("decrypt must fail but didn't")
 	}
@@ -235,7 +235,7 @@ func TestStreamCipher(t *testing.T) {
 	}
 	cipheredInputStream = bytes.NewBuffer(cipheredStream.Bytes())
 	plainOutBuffer = &bytes.Buffer{}
-	err = cipher.DecryptStream(cipheredInputStream, plainOutBuffer, keypair1.PrivateKey().(*ed25519PrivateKey))
+	err = cipher.DecryptStream(cipheredInputStream, plainOutBuffer, keypair1.PrivateKey())
 	if err == nil {
 		t.Fatal("decrypt must fail but didn't")
 	}

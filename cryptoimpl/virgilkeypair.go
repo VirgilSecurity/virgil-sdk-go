@@ -47,14 +47,7 @@ import (
 // KeyType denotes algorithm used for key generation. See keytypes package
 type KeyType int
 
-type Keypair interface {
-	HasPublic() bool
-	HasPrivate() bool
-	PublicKey() PublicKey
-	PrivateKey() PrivateKey
-}
-
-var NewKeypair func() (Keypair, error)
+var NewKeypair func() (*ed25519Keypair, error)
 
 const EC_PRIVATE_KEY = "PRIVATE KEY"
 const ENCRYPTED_PRIVATE_KEY = "ENCRYPTED PRIVATE KEY"
@@ -67,7 +60,7 @@ type ed25519Keypair struct {
 	privateKey *ed25519PrivateKey
 }
 
-func generateEd25519Keypair() (Keypair, error) {
+func generateEd25519Keypair() (*ed25519Keypair, error) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 
 	if err != nil {
@@ -97,10 +90,10 @@ func (e *ed25519Keypair) HasPublic() bool {
 func (e *ed25519Keypair) HasPrivate() bool {
 	return e.privateKey != nil && !e.privateKey.Empty()
 }
-func (e *ed25519Keypair) PublicKey() PublicKey {
+func (e *ed25519Keypair) PublicKey() *ed25519PublicKey {
 	return e.publicKey
 }
-func (e *ed25519Keypair) PrivateKey() PrivateKey {
+func (e *ed25519Keypair) PrivateKey() *ed25519PrivateKey {
 	return e.privateKey
 }
 

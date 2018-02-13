@@ -44,20 +44,12 @@ import (
 	"github.com/agl/ed25519"
 )
 
-type PrivateKey interface {
-	ReceiverID() []byte
-	ExtractPublicKey() (PublicKey, error)
-	Encode(password []byte) ([]byte, error)
-	Empty() bool
-	IsPrivate() bool
-}
-
 type ed25519PrivateKey struct {
 	receiverID []byte
 	key        []byte
 }
 
-func DecodePrivateKey(keyBytes, password []byte) (key PrivateKey, err error) {
+func DecodePrivateKey(keyBytes, password []byte) (key *ed25519PrivateKey, err error) {
 	unwrappedKey, keyType, err := unwrapKey(keyBytes)
 	if err != nil {
 		return nil, err
@@ -224,7 +216,7 @@ func (k *ed25519PrivateKey) Empty() bool {
 	return k == nil || len(k.key) == 0
 }
 
-func (k *ed25519PrivateKey) ExtractPublicKey() (PublicKey, error) {
+func (k *ed25519PrivateKey) ExtractPublicKey() (*ed25519PublicKey, error) {
 	if k.Empty() {
 		return nil, CryptoError("private key is empty")
 	}

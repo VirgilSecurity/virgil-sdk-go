@@ -47,13 +47,13 @@ import (
 )
 
 type VirgilSigner interface {
-	Sign(data []byte, signer PrivateKey) ([]byte, error)
-	SignStream(data io.Reader, signer PrivateKey) ([]byte, error)
+	Sign(data []byte, signer *ed25519PrivateKey) ([]byte, error)
+	SignStream(data io.Reader, signer *ed25519PrivateKey) ([]byte, error)
 }
 
 type VirgilVerifier interface {
-	Verify(data []byte, key PublicKey, signature []byte) error
-	VerifyStream(data io.Reader, key PublicKey, signature []byte) error
+	Verify(data []byte, key *ed25519PublicKey, signature []byte) error
+	VerifyStream(data io.Reader, key *ed25519PublicKey, signature []byte) error
 }
 
 var Signer VirgilSigner
@@ -62,22 +62,22 @@ var Verifier VirgilVerifier
 type ed25519Signer struct{}
 type ed25519Verifier struct{}
 
-func (s *ed25519Signer) Sign(data []byte, signer PrivateKey) ([]byte, error) {
+func (s *ed25519Signer) Sign(data []byte, signer *ed25519PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {
 		return nil, errors.New("key is nil")
 	}
 	hash := Hash.Sum(data)
-	return signInternal(hash, signer.(*ed25519PrivateKey))
+	return signInternal(hash, signer)
 
 }
-func (s *ed25519Verifier) Verify(data []byte, key PublicKey, signature []byte) error {
+func (s *ed25519Verifier) Verify(data []byte, key *ed25519PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
 		return errors.New("key is nil")
 	}
 
-	return verifyInternal(data, key.(*ed25519PublicKey), signature, false)
+	return verifyInternal(data, key, signature, false)
 }
-func (s *ed25519Signer) SignStream(data io.Reader, signer PrivateKey) ([]byte, error) {
+func (s *ed25519Signer) SignStream(data io.Reader, signer *ed25519PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {
 		return nil, errors.New("key is nil")
 	}
@@ -85,9 +85,9 @@ func (s *ed25519Signer) SignStream(data io.Reader, signer PrivateKey) ([]byte, e
 	if err != nil {
 		return nil, err
 	}
-	return signInternal(h, signer.(*ed25519PrivateKey))
+	return signInternal(h, signer)
 }
-func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature []byte) error {
+func (s *ed25519Verifier) VerifyStream(data io.Reader, key *ed25519PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
 		return errors.New("key is nil")
 	}
@@ -95,7 +95,7 @@ func (s *ed25519Verifier) VerifyStream(data io.Reader, key PublicKey, signature 
 	if err != nil {
 		return err
 	}
-	return verifyInternal(h, key.(*ed25519PublicKey), signature, true)
+	return verifyInternal(h, key, signature, true)
 }
 
 func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {

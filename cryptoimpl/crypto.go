@@ -60,13 +60,13 @@ func (c *VirgilCrypto) SetKeyType(keyType KeyType) error {
 	return nil
 }
 
-func (c *VirgilCrypto) GenerateKeypair() (Keypair, error) {
+func (c *VirgilCrypto) GenerateKeypair() (*ed25519Keypair, error) {
 
 	keypair, err := NewKeypair()
 	return keypair, err
 }
 
-func (c *VirgilCrypto) ImportPrivateKey(data []byte, password string) (PrivateKey, error) {
+func (c *VirgilCrypto) ImportPrivateKey(data []byte, password string) (*ed25519PrivateKey, error) {
 	key, err := DecodePrivateKey(data, []byte(password))
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (c *VirgilCrypto) ImportPrivateKey(data []byte, password string) (PrivateKe
 	return key, nil
 }
 
-func (c *VirgilCrypto) ImportPublicKey(data []byte) (PublicKey, error) {
+func (c *VirgilCrypto) ImportPublicKey(data []byte) (*ed25519PublicKey, error) {
 	key, err := DecodePublicKey(data)
 	if err != nil {
 		return nil, err
@@ -82,142 +82,89 @@ func (c *VirgilCrypto) ImportPublicKey(data []byte) (PublicKey, error) {
 	return key, nil
 }
 
-func (c *VirgilCrypto) ExportPrivateKey(key PrivateKey, password string) ([]byte, error) {
-	if ikey, ok := key.(PrivateKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return nil, errors.New("key is nil")
-		}
-		return ikey.Encode([]byte(password))
+func (c *VirgilCrypto) ExportPrivateKey(key *ed25519PrivateKey, password string) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
 	}
-	return nil, UnsupportedKeyErr
+	return key.Encode([]byte(password))
 }
 
-func (c *VirgilCrypto) ExportPublicKey(key PublicKey) ([]byte, error) {
-	if ikey, ok := key.(PublicKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return nil, errors.New("key is nil")
-		}
-		return ikey.Encode()
+func (c *VirgilCrypto) ExportPublicKey(key *ed25519PublicKey) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
 	}
-	return nil, UnsupportedKeyErr
+	return key.Encode()
 }
 
-func (c *VirgilCrypto) Encrypt(data []byte, recipients ...PublicKey) ([]byte, error) {
-	ikeys := make([]PublicKey, len(recipients))
-	for i := 0; i < len(recipients); i++ {
-		var ikey PublicKey
-		var ok bool
-		if ikey, ok = recipients[i].(PublicKey); !ok {
-			return nil, UnsupportedKeyErr
-		}
-		ikeys[i] = ikey
-	}
+func (c *VirgilCrypto) Encrypt(data []byte, recipients ...*ed25519PublicKey) ([]byte, error) {
 	cipher := c.getCipher()
-	for _, k := range ikeys {
+	for _, k := range recipients {
 		if k == nil || k.Empty() {
 			return nil, errors.New("key is nil")
 		}
-		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
+		cipher.AddKeyRecipient(k)
 	}
 	return cipher.Encrypt(data)
 }
 
-func (c *VirgilCrypto) EncryptStream(in io.Reader, out io.Writer, recipients ...PublicKey) error {
-	ikeys := make([]PublicKey, len(recipients))
-	for i := 0; i < len(recipients); i++ {
-		var ikey PublicKey
-		var ok bool
-		if ikey, ok = recipients[i].(PublicKey); !ok {
-			return UnsupportedKeyErr
-		}
-		ikeys[i] = ikey
-	}
-
+func (c *VirgilCrypto) EncryptStream(in io.Reader, out io.Writer, recipients ...*ed25519PublicKey) error {
 	cipher := c.getCipher()
-	for _, k := range ikeys {
+	for _, k := range recipients {
 		if k == nil || k.Empty() {
 			return errors.New("key is nil")
 		}
-		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
+		cipher.AddKeyRecipient(k)
 	}
 	return cipher.EncryptStream(in, out)
 }
 
-func (c *VirgilCrypto) Decrypt(data []byte, key PrivateKey) ([]byte, error) {
-	if ikey, ok := key.(PrivateKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return nil, errors.New("key is nil")
-		}
-		return c.MakeCipher().DecryptWithPrivateKey(data, ikey.(*ed25519PrivateKey))
+func (c *VirgilCrypto) Decrypt(data []byte, key *ed25519PrivateKey) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
 	}
+	return c.MakeCipher().DecryptWithPrivateKey(data, key)
 	return nil, UnsupportedKeyErr
 }
 
-func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) error {
-	if ikey, ok := key.(PrivateKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return errors.New("key is nil")
-		}
-		return c.getCipher().DecryptStream(in, out, key.(*ed25519PrivateKey))
+func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error {
+	if key == nil || key.Empty() {
+		return errors.New("key is nil")
 	}
+	return c.getCipher().DecryptStream(in, out, key)
 	return UnsupportedKeyErr
 }
 
-func (c *VirgilCrypto) Sign(data []byte, key PrivateKey) ([]byte, error) {
-	if ikey, ok := key.(PrivateKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return nil, errors.New("key is nil")
-		}
-		return Signer.Sign(data, ikey)
+func (c *VirgilCrypto) Sign(data []byte, key *ed25519PrivateKey) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
 	}
-	return nil, UnsupportedKeyErr
+	return Signer.Sign(data, key)
 }
 
-func (c *VirgilCrypto) VerifySignature(data []byte, signature []byte, key PublicKey) error {
-	if ikey, ok := key.(PublicKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return errors.New("key is nil")
-		}
-		return Verifier.Verify(data, ikey, signature)
+func (c *VirgilCrypto) VerifySignature(data []byte, signature []byte, key *ed25519PublicKey) error {
+	if key == nil || key.Empty() {
+		return errors.New("key is nil")
 	}
-	return UnsupportedKeyErr
+	return Verifier.Verify(data, key, signature)
 }
 
-func (c *VirgilCrypto) SignStream(in io.Reader, key PrivateKey) ([]byte, error) {
-	if ikey, ok := key.(PrivateKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return nil, errors.New("key is nil")
-		}
-		res, err := Signer.SignStream(in, ikey)
-		if err != nil {
-			return nil, err
-		}
-		return []byte(res), nil
+func (c *VirgilCrypto) SignStream(in io.Reader, key *ed25519PrivateKey) ([]byte, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
 	}
-	return nil, UnsupportedKeyErr
+	res, err := Signer.SignStream(in, key)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(res), nil
 }
 
-func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) error {
-	if ikey, ok := key.(PublicKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return errors.New("key is nil")
-		}
-		return Verifier.VerifyStream(in, ikey, signature)
+func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key *ed25519PublicKey) error {
+	if key == nil || key.Empty() {
+		return errors.New("key is nil")
 	}
-	return UnsupportedKeyErr
+	return Verifier.VerifyStream(in, key, signature)
 }
-
-/*func (c *VirgilCrypto) GenerateHash(data []byte) []byte {
-	var hash []byte
-	if c.UseSHA256Fingerprints {
-		t := sha256.Sum256(data)
-		hash = t[:]
-	} else {
-		t := sha512.Sum512(data)
-		hash = t[:32]
-	}
-	return hash
-}*/
 
 func (c *VirgilCrypto) CalculateReceiverId(data []byte) []byte {
 	var hash []byte
@@ -231,67 +178,39 @@ func (c *VirgilCrypto) CalculateReceiverId(data []byte) []byte {
 	return hash
 }
 
-func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey PrivateKey, recipients ...PublicKey) ([]byte, error) {
-	ikeys := make([]PublicKey, len(recipients))
-	for i := 0; i < len(recipients); i++ {
-		var ikey PublicKey
-		var ok bool
-		if ikey, ok = recipients[i].(PublicKey); !ok {
-			return nil, UnsupportedKeyErr
-		}
-		ikeys[i] = ikey
-	}
+func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey *ed25519PrivateKey, recipients ...*ed25519PublicKey) ([]byte, error) {
 
-	if iSignerKey, ok := signerKey.(PrivateKey); ok {
-		if iSignerKey == nil || iSignerKey.Empty() {
+	if signerKey == nil || signerKey.Empty() {
+		return nil, errors.New("key is nil")
+	}
+	cipher := c.getCipher()
+	for _, k := range recipients {
+		if k == nil || k.Empty() {
 			return nil, errors.New("key is nil")
 		}
-		cipher := c.getCipher()
-		for _, k := range ikeys {
-			if k == nil || k.Empty() {
-				return nil, errors.New("key is nil")
-			}
-			cipher.AddKeyRecipient(k.(*ed25519PublicKey))
-		}
-		return cipher.SignThenEncrypt(data, iSignerKey.(*ed25519PrivateKey))
+		cipher.AddKeyRecipient(k)
 	}
-	return nil, UnsupportedKeyErr
+	return cipher.SignThenEncrypt(data, signerKey)
 }
 
-func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey PrivateKey, verifierKeys ...PublicKey) ([]byte, error) {
-	ikeys := make([]PublicKey, len(verifierKeys))
-	for i := 0; i < len(verifierKeys); i++ {
-		var ikey PublicKey
-		var ok bool
-		if ikey, ok = verifierKeys[i].(PublicKey); !ok {
-			return nil, UnsupportedKeyErr
-		}
-		ikeys[i] = ikey
+func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierKeys ...*ed25519PublicKey) ([]byte, error) {
+	if decryptionKey == nil || decryptionKey.Empty() || len(verifierKeys) == 0 {
+		return nil, errors.New("key is nil")
 	}
 
-	if iDecryptkey, ok := decryptionKey.(PrivateKey); ok {
-		if iDecryptkey == nil || iDecryptkey.Empty() || len(ikeys) == 0 {
-			return nil, errors.New("key is nil")
-		}
-
-		verifiers := make([]*ed25519PublicKey, 0, len(ikeys))
-		for _, v := range ikeys {
-			verifiers = append(verifiers, v.(*ed25519PublicKey))
-		}
-
-		return c.getCipher().DecryptThenVerify(data, iDecryptkey.(*ed25519PrivateKey), verifiers...)
+	verifiers := make([]*ed25519PublicKey, 0, len(verifierKeys))
+	for _, v := range verifierKeys {
+		verifiers = append(verifiers, v)
 	}
-	return nil, UnsupportedKeyErr
+
+	return c.getCipher().DecryptThenVerify(data, decryptionKey, verifiers...)
 }
 
-func (c *VirgilCrypto) ExtractPublicKey(key PrivateKey) (PublicKey, error) {
-	if ikey, ok := key.(PrivateKey); ok {
-		if ikey == nil || ikey.Empty() {
-			return nil, errors.New("key is nil")
-		}
-		return ikey.ExtractPublicKey()
+func (c *VirgilCrypto) ExtractPublicKey(key *ed25519PrivateKey) (*ed25519PublicKey, error) {
+	if key == nil || key.Empty() {
+		return nil, errors.New("key is nil")
 	}
-	return nil, UnsupportedKeyErr
+	return key.ExtractPublicKey()
 }
 
 func (c *VirgilCrypto) getCipher() Cipher {

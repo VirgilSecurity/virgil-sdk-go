@@ -47,13 +47,13 @@ func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
 func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
 	IsPrivate() bool
 }) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey.(PrivateKey))
+	return t.Crypto.Sign(data, privateKey.(*ed25519PrivateKey))
 
 }
 func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
 	IsPublic() bool
 }) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(PublicKey))
+	return t.Crypto.VerifySignature(data, signature, publicKey.(*ed25519PublicKey))
 
 }
 func (t *VirgilAccessTokenSigner) GetAlgorithm() string {

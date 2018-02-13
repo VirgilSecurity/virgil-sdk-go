@@ -40,44 +40,23 @@ import (
 	"github.com/agl/ed25519"
 	"github.com/agl/ed25519/extra25519"
 	"github.com/minio/sha256-simd"
-	"github.com/pkg/errors"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
 )
 
-func EDHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
+func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]byte, error) {
 
-	edICa, ok := ICa.(*ed25519PrivateKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 private key"), "ICa")
-	}
-
-	edEKa, ok := EKa.(*ed25519PrivateKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 private key"), "EKa")
-	}
-
-	edICb, ok := ICb.(*ed25519PublicKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 public key"), "ICb")
-	}
-
-	edLTCb, ok := LTCb.(*ed25519PublicKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 public key"), "LTCb")
-	}
-
-	dh1, err := dhED25519(edICa, edLTCb)
+	dh1, err := dhED25519(ICa, LTCb)
 	if err != nil {
 		return nil, err
 	}
 
-	dh2, err := dhED25519(edEKa, edICb)
+	dh2, err := dhED25519(EKa, ICb)
 	if err != nil {
 		return nil, err
 	}
 
-	dh3, err := dhED25519(edEKa, edLTCb)
+	dh3, err := dhED25519(EKa, LTCb)
 	if err != nil {
 		return nil, err
 	}
@@ -87,12 +66,7 @@ func EDHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
 
 	if OTCb != nil {
 
-		edOTCb, ok := OTCb.(*ed25519PublicKey)
-		if !ok {
-			return nil, cryptoError(errors.New("non ed25519 public key"), "LTCb")
-		}
-
-		dh4, err := dhED25519(edEKa, edOTCb)
+		dh4, err := dhED25519(EKa, OTCb)
 		if err != nil {
 			return nil, err
 		}
@@ -108,39 +82,19 @@ func EDHInit(ICa, EKa PrivateKey, ICb, LTCb, OTCb PublicKey) ([]byte, error) {
 
 }
 
-func EDHRespond(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey) ([]byte, error) {
+func EDHRespond(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey) ([]byte, error) {
 
-	edICa, ok := ICa.(*ed25519PublicKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 public key"), "ICa")
-	}
-
-	edEKa, ok := EKa.(*ed25519PublicKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 public key"), "EKa")
-	}
-
-	edICb, ok := ICb.(*ed25519PrivateKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 private key"), "ICb")
-	}
-
-	edLTCb, ok := LTCb.(*ed25519PrivateKey)
-	if !ok {
-		return nil, cryptoError(errors.New("non ed25519 private key"), "LTCb")
-	}
-
-	dh1, err := dhED25519(edLTCb, edICa)
+	dh1, err := dhED25519(LTCb, ICa)
 	if err != nil {
 		return nil, err
 	}
 
-	dh2, err := dhED25519(edICb, edEKa)
+	dh2, err := dhED25519(ICb, EKa)
 	if err != nil {
 		return nil, err
 	}
 
-	dh3, err := dhED25519(edLTCb, edEKa)
+	dh3, err := dhED25519(LTCb, EKa)
 	if err != nil {
 		return nil, err
 	}
@@ -150,12 +104,7 @@ func EDHRespond(ICa, EKa PublicKey, ICb, LTCb, OTCb PrivateKey) ([]byte, error) 
 
 	if OTCb != nil {
 
-		edOTCb, ok := OTCb.(*ed25519PrivateKey)
-		if !ok {
-			return nil, cryptoError(errors.New("non ed25519 private key"), "LTCb")
-		}
-
-		dh4, err := dhED25519(edOTCb, edEKa)
+		dh4, err := dhED25519(OTCb, EKa)
 		if err != nil {
 			return nil, err
 		}
