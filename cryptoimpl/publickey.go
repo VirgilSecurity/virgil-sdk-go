@@ -76,7 +76,7 @@ func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
 		return nil, err
 	}
 
-	fp := (&VirgilCrypto{}).CalculateIdentifier(snapshot)
+	fp := calculateNewSHA512Identifier(snapshot)
 	edPublicKey.ID = fp
 	return edPublicKey, nil
 }

@@ -77,7 +77,7 @@ func generateEd25519Keypair() (*ed25519Keypair, error) {
 	if err != nil {
 		return nil, cryptoError(err, "")
 	}
-	fp := (&VirgilCrypto{}).CalculateIdentifier(snapshot)
+	fp := calculateNewSHA512Identifier(snapshot)
 
 	pub.ID = fp
 	priv.ID = make([]byte, len(fp))

@@ -179,7 +179,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 		return nil, cryptoError(err, "")
 	}
 
-	fp := (&VirgilCrypto{}).CalculateIdentifier(snapshot)
+	fp := calculateNewSHA512Identifier(snapshot)
 	edpriv.ID = fp
 
 	return edpriv, nil
