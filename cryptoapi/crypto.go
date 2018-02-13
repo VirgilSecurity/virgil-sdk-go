@@ -39,15 +39,19 @@ package cryptoapi
 type CardCrypto interface {
 	GenerateSignature(data []byte, key interface {
 		IsPrivate() bool
+		Identifier() []byte
 	}) ([]byte, error)
 	VerifySignature(data []byte, signature []byte, key interface {
 		IsPublic() bool
+		Identifier() []byte
 	}) error
 	ExportPublicKey(key interface {
 		IsPublic() bool
+		Identifier() []byte
 	}) ([]byte, error)
 	ImportPublicKey(publicKeySrc []byte) (interface {
 		IsPublic() bool
+		Identifier() []byte
 	}, error)
 	GenerateSHA512(data []byte) []byte
 }
@@ -55,9 +59,11 @@ type CardCrypto interface {
 type AccessTokenSigner interface {
 	GenerateTokenSignature(data []byte, privateKey interface {
 		IsPrivate() bool
+		Identifier() []byte
 	}) ([]byte, error)
 	VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
 		IsPublic() bool
+		Identifier() []byte
 	}) error
 	GetAlgorithm() string
 }
@@ -65,15 +71,19 @@ type AccessTokenSigner interface {
 type PrivateKeyExporter interface {
 	ExportPrivateKey(key interface {
 		IsPrivate() bool
+		Identifier() []byte
 	}) ([]byte, error)
 	ImportPrivateKey(data []byte) (interface {
 		IsPrivate() bool
+		Identifier() []byte
 	}, error)
 }
 
 type PrivateKey interface {
 	IsPrivate() bool
+	Identifier() []byte
 }
 type PublicKey interface {
 	IsPublic() bool
+	Identifier() []byte
 }

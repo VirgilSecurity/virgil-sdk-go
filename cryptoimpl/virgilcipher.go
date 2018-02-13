@@ -87,7 +87,7 @@ func (c *defaultCipher) AddKeyRecipient(key *ed25519PublicKey) error {
 	}
 
 	recipient := &publicKeyRecipient{
-		ID:        key.ReceiverID(),
+		ID:        key.Identifier(),
 		PublicKey: key.contents(),
 	}
 
@@ -137,7 +137,7 @@ func (c *defaultCipher) SignThenEncrypt(data []byte, signer *ed25519PrivateKey) 
 
 	customParams := map[string]interface{}{
 		signatureKey: signature,
-		signerId:     signer.receiverID,
+		signerId:     signer.Identifier(),
 	}
 	var models []*asn1.RawValue
 
@@ -183,7 +183,7 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKe
 		return nil, err
 	}
 	for _, r := range recipients {
-		key, err := r.decryptKey(key.ReceiverID(), key.contents())
+		key, err := r.decryptKey(key.Identifier(), key.contents())
 		if err == nil {
 			return decryptData(ciphertext, key, nonce)
 		}
@@ -227,7 +227,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 		}
 	}
 	for _, r := range recipients {
-		key, err := r.decryptKey(decryptionKey.ReceiverID(), decryptionKey.contents())
+		key, err := r.decryptKey(decryptionKey.Identifier(), decryptionKey.contents())
 		if err == nil {
 			data, err := decryptData(ciphertext, key, nonce)
 			if err != nil {
@@ -237,7 +237,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 			for _, v := range verifierPublicKeys {
 				if len(signerIdValue) > 0 {
 					//found match
-					if subtle.ConstantTimeCompare(signerIdValue, v.receiverID) == 1 {
+					if subtle.ConstantTimeCompare(signerIdValue, v.Identifier()) == 1 {
 						err := Verifier.Verify(data, v, signature)
 						if err != nil {
 							return nil, CryptoError("signature validation failed")
@@ -342,7 +342,7 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519P
 		return CryptoError("Some data is left after header parsing")
 	}
 	for _, r := range recipients {
-		key, err := r.decryptKey(key.ReceiverID(), key.contents())
+		key, err := r.decryptKey(key.Identifier(), key.contents())
 		if err == nil {
 
 			if chunkSize > 0 {

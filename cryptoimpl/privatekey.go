@@ -45,8 +45,8 @@ import (
 )
 
 type ed25519PrivateKey struct {
-	receiverID []byte
-	key        []byte
+	ID  []byte
+	key []byte
 }
 
 func DecodePrivateKey(keyBytes, password []byte) (key *ed25519PrivateKey, err error) {
@@ -69,10 +69,6 @@ func DecodePrivateKey(keyBytes, password []byte) (key *ed25519PrivateKey, err er
 
 func (k *ed25519PrivateKey) contents() []byte {
 	return k.key
-}
-
-func (k *ed25519PrivateKey) ReceiverID() []byte {
-	return k.receiverID
 }
 
 func (k *ed25519PrivateKey) Encode(password []byte) (res []byte, err error) {
@@ -183,8 +179,8 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 		return nil, cryptoError(err, "")
 	}
 
-	fp := (&VirgilCrypto{}).CalculateReceiverId(snapshot)
-	edpriv.receiverID = fp
+	fp := (&VirgilCrypto{}).CalculateIdentifier(snapshot)
+	edpriv.ID = fp
 
 	return edpriv, nil
 }
@@ -230,11 +226,15 @@ func (k *ed25519PrivateKey) ExtractPublicKey() (*ed25519PublicKey, error) {
 
 	edPub := &ed25519PublicKey{key: pub[:]}
 
-	edPub.receiverID = make([]byte, len(k.receiverID))
-	copy(edPub.receiverID, k.receiverID)
+	edPub.ID = make([]byte, len(k.ID))
+	copy(edPub.ID, k.ID)
 	return edPub, nil
 }
 
 func (k *ed25519PrivateKey) IsPrivate() bool {
 	return true
+}
+
+func (k *ed25519PrivateKey) Identifier() []byte {
+	return k.ID
 }

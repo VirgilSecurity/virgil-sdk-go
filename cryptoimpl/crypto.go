@@ -164,7 +164,7 @@ func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key *ed25519
 	return Verifier.VerifyStream(in, key, signature)
 }
 
-func (c *VirgilCrypto) CalculateReceiverId(data []byte) []byte {
+func (c *VirgilCrypto) CalculateIdentifier(data []byte) []byte {
 	var hash []byte
 	if c.UseSHA256Fingerprints {
 		t := sha256.Sum256(data)

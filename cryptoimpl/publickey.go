@@ -44,8 +44,8 @@ import (
 )
 
 type ed25519PublicKey struct {
-	receiverID []byte
-	key        []byte
+	ID  []byte
+	key []byte
 }
 
 func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
@@ -76,8 +76,8 @@ func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
 		return nil, err
 	}
 
-	fp := (&VirgilCrypto{}).CalculateReceiverId(snapshot)
-	edPublicKey.receiverID = fp
+	fp := (&VirgilCrypto{}).CalculateIdentifier(snapshot)
+	edPublicKey.ID = fp
 	return edPublicKey, nil
 }
 
@@ -85,8 +85,8 @@ func (k *ed25519PublicKey) contents() []byte {
 	return k.key
 }
 
-func (k *ed25519PublicKey) ReceiverID() []byte {
-	return k.receiverID
+func (k *ed25519PublicKey) Identifier() []byte {
+	return k.ID
 }
 
 func (k *ed25519PublicKey) Encode() ([]byte, error) {

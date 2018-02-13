@@ -66,7 +66,7 @@ func TestPFS(t *testing.T) {
 
 	pfs := c
 
-	ad := append(ICa.PublicKey().ReceiverID(), ICb.PublicKey().ReceiverID()...)
+	ad := append(ICa.PublicKey().Identifier(), ICb.PublicKey().Identifier()...)
 
 	sessA, err := pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), OTCb.PublicKey(), ICa.PrivateKey(), EKa.PrivateKey(), ad)
 	assert.NoError(t, err)
@@ -144,7 +144,7 @@ func TestPFSNoOTC(t *testing.T) {
 
 	pfs := c
 
-	ad := append(ICa.PublicKey().ReceiverID(), ICb.PublicKey().ReceiverID()...)
+	ad := append(ICa.PublicKey().Identifier(), ICb.PublicKey().Identifier()...)
 
 	sessA, err := pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), nil, ICa.PrivateKey(), EKa.PrivateKey(), ad)
 	assert.NoError(t, err)

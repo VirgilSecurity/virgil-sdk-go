@@ -77,11 +77,11 @@ func generateEd25519Keypair() (*ed25519Keypair, error) {
 	if err != nil {
 		return nil, cryptoError(err, "")
 	}
-	fp := (&VirgilCrypto{}).CalculateReceiverId(snapshot)
+	fp := (&VirgilCrypto{}).CalculateIdentifier(snapshot)
 
-	pub.receiverID = fp
-	priv.receiverID = make([]byte, len(fp))
-	copy(priv.receiverID, fp)
+	pub.ID = fp
+	priv.ID = make([]byte, len(fp))
+	copy(priv.ID, fp)
 	return kp, nil
 }
 func (e *ed25519Keypair) HasPublic() bool {
