@@ -54,7 +54,11 @@ type VirgilHttpClient struct {
 	Address string
 }
 
-func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (forbidden bool, err error) {
+const (
+	SuperseededCardIDHTTPHeader = "X-Virgil-Is-Superseeded"
+)
+
+func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (outdated bool, err error) {
 	var body []byte
 	if payload != nil {
 		body, err = json.Marshal(payload)
@@ -82,14 +86,14 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 		return false, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
 	}
 
-	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusForbidden {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
 			err = json.Unmarshal(respBody, respObj)
 			if err != nil {
 				return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 			}
 		}
-		return resp.StatusCode == http.StatusForbidden, nil
+		return resp.Header.Get(SuperseededCardIDHTTPHeader) == "true", nil
 	}
 	var virgilErr VirgilAPIError
 	err = json.Unmarshal(respBody, &virgilErr)

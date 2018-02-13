@@ -99,7 +99,7 @@ func initCardManager() (*CardManager, error) {
 	return NewCardManager(params)
 }
 
-func TestCardManager_Integration(t *testing.T) {
+func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 
 	manager, err := initCardManager()
 	assert.NoError(t, err)
@@ -125,6 +125,43 @@ func TestCardManager_Integration(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.True(t, len(cards) > 0)
+}
+
+func TestCardManager_Integration_Publish_Replace(t *testing.T) {
+
+	manager, err := initCardManager()
+	assert.NoError(t, err)
+
+	kp, err := crypto.GenerateKeypair()
+	assert.NoError(t, err)
+
+	cardParams := &CardParams{
+		PublicKey:  kp.PublicKey(),
+		PrivateKey: kp.PrivateKey(),
+		Identity:   "Alice-" + randomString(),
+	}
+
+	oldCard, err := manager.PublishCard(cardParams)
+	assert.NoError(t, err)
+
+	kp, err = crypto.GenerateKeypair()
+	assert.NoError(t, err)
+
+	cardParams = &CardParams{
+		PublicKey:      kp.PublicKey(),
+		PrivateKey:     kp.PrivateKey(),
+		Identity:       oldCard.Identity,
+		PreviousCardId: oldCard.Identifier,
+	}
+
+	newCard, err := manager.PublishCard(cardParams)
+	assert.NoError(t, err)
+	assert.NotNil(t, newCard)
+
+	oldCard, err = manager.GetCard(oldCard.Identifier)
+	assert.NoError(t, err)
+	assert.NotNil(t, oldCard)
+	assert.True(t, oldCard.IsOutdated)
 
 }
 
