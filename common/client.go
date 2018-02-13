@@ -55,7 +55,7 @@ type VirgilHttpClient struct {
 }
 
 const (
-	SuperseededCardIDHTTPHeader = "X-Virgil-Is-Superseeded"
+	SupersededCardIDETTPEHeader = "X-Virgil-Is-Superseeded"
 )
 
 func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (outdated bool, err error) {
@@ -93,7 +93,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 				return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 			}
 		}
-		return resp.Header.Get(SuperseededCardIDHTTPHeader) == "true", nil
+		return resp.Header.Get(SupersededCardIDETTPEHeader) == "true", nil
 	}
 	var virgilErr VirgilAPIError
 	err = json.Unmarshal(respBody, &virgilErr)
