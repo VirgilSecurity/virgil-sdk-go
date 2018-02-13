@@ -203,7 +203,7 @@ func (c *CardManager) SearchCards(identity string) ([]*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cards, nil
+	return LinkCards(cards...), nil
 }
 
 func (c *CardManager) verifyCards(cards ...*Card) error {

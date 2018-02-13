@@ -65,7 +65,7 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 
 		var extraFields map[string]string
 		if len(signature.Snapshot) > 0 {
-			err := ParseSnapshot(signature.Snapshot, extraFields)
+			err := ParseSnapshot(signature.Snapshot, &extraFields)
 			if err != nil {
 				return nil, err
 			}
@@ -130,4 +130,28 @@ func ParseRawCards(crypto cryptoapi.CardCrypto, models ...*RawSignedModel) ([]*C
 
 	}
 	return cards, nil
+}
+
+func LinkCards(cards ...*Card) []*Card {
+	unsortedCards := make(map[string]*Card)
+	var result []*Card
+	for _, card := range cards {
+		unsortedCards[card.Identifier] = card
+	}
+
+	for _, card := range cards {
+		if card.PreviousCardId != "" {
+			prev, ok := unsortedCards[card.PreviousCardId]
+			if ok {
+				card.PreviousCard = prev
+				prev.IsOutdated = true
+				delete(unsortedCards, card.PreviousCardId)
+			}
+		}
+	}
+
+	for _, card := range unsortedCards {
+		result = append(result, card)
+	}
+	return result
 }
