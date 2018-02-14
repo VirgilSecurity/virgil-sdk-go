@@ -108,10 +108,10 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 	return nil, CryptoError("Tag does not match")
 }
 
-func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSymmetricKey, tag, ephPub, iv []byte, err error) {
+func encryptSymmetricKeyWithECIES(publicKey, symmetricKey []byte) (encryptedSymmetricKey, tag, ephPub, iv []byte, err error) {
 
-	if len(public_key) != ed25519.PublicKeySize {
-		err = CryptoError(fmt.Sprintf("invalid ed25519 key size %d", len(public_key)))
+	if len(publicKey) != ed25519.PublicKeySize {
+		err = CryptoError(fmt.Sprintf("invalid ed25519 key size %d", len(publicKey)))
 		return
 	}
 
@@ -133,7 +133,7 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 		err = cryptoError(err, "")
 		return
 	}
-	copy(hisPublic[:], public_key)
+	copy(hisPublic[:], publicKey)
 	copy(ephPrivate[:], keypair.PrivateKey().contents())
 
 	extra25519.PrivateKeyToCurve25519(ephCurvePrivate, ephPrivate)
