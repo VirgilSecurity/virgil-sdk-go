@@ -122,7 +122,7 @@ func (c *VirgilCrypto) Decrypt(data []byte, key *ed25519PrivateKey) ([]byte, err
 	if key == nil || key.Empty() {
 		return nil, errors.New("key is nil")
 	}
-	return c.MakeCipher().DecryptWithPrivateKey(data, key)
+	return c.getCipher().DecryptWithPrivateKey(data, key)
 }
 
 func (c *VirgilCrypto) DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error {
