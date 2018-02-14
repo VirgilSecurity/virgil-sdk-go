@@ -78,7 +78,7 @@ func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
 	}
 
 	edPublicKey.ID = calculateNewSHA512Identifier(snapshot)
-	edPublicKey.receiverId = calculateOldSHA256Identifier(snapshot)
+	edPublicKey.receiverId = calculateReceiverId(snapshot)
 	return edPublicKey, nil
 }
 

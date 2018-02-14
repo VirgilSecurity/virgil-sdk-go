@@ -39,6 +39,8 @@ package cryptoimpl
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"testing"
 )
 
@@ -168,8 +170,10 @@ func TestCMS(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	cipher = NewCipher()
+	cipher.AddKeyRecipient(keypair.PublicKey())
 	cipherText, err = cipher.SignThenEncrypt(data, signerKeypair.PrivateKey())
-	//fmt.Println(base64.StdEncoding.EncodeToString(cipherText))
+	fmt.Println(base64.StdEncoding.EncodeToString(cipherText))
 	if err != nil {
 		t.Fatal(err)
 	}

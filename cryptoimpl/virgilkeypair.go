@@ -78,7 +78,7 @@ func generateEd25519Keypair() (*ed25519Keypair, error) {
 		return nil, cryptoError(err, "")
 	}
 	fp := calculateNewSHA512Identifier(snapshot)
-	rid := calculateOldSHA256Identifier(snapshot)
+	rid := calculateReceiverId(snapshot)
 
 	pub.ID = fp
 	priv.ID = make([]byte, len(fp))

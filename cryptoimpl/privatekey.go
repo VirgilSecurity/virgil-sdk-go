@@ -181,7 +181,7 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 	}
 
 	edpriv.ID = calculateNewSHA512Identifier(snapshot)
-	edpriv.receiverId = calculateOldSHA256Identifier(snapshot)
+	edpriv.receiverId = calculateReceiverId(snapshot)
 
 	return edpriv, nil
 }

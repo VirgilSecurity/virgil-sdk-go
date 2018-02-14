@@ -222,7 +222,6 @@ func calculateNewSHA512Identifier(data []byte) []byte {
 	return t[:8]
 }
 
-func calculateOldSHA256Identifier(data []byte) []byte {
-	t := sha256.Sum256(data)
-	return t[:]
+func calculateReceiverId(data []byte) []byte {
+	return calculateNewSHA512Identifier(data)[:8]
 }
