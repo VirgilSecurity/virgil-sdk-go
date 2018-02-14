@@ -102,9 +102,9 @@ func (info *publicKeyRecipientInfo) Validate() error {
 		return unsupported("key encryption algorithm")
 	}
 
-	if len(info.EncryptedKey) != 242 {
+	/*if len(info.EncryptedKey) != 242 {
 		return unsupported("encrypted key data length")
-	}
+	}*/
 
 	return nil
 }

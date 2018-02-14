@@ -69,8 +69,9 @@ type algorithmIdentifierWithOidParameter struct {
 	Parameters asn1.ObjectIdentifier `asn1:"optional"`
 }
 
-var ed25519Algo = algorithmIdentifierWithOidParameter{
-	Algorithm: oidEd25519key,
+var ed25519Algo = pkix.AlgorithmIdentifier{
+	Algorithm:  oidEd25519key,
+	Parameters: asn1Null,
 }
 
 type algorithmIdentifier struct {
@@ -115,7 +116,7 @@ type issuerAndSerial []byte
 type publicKeyRecipientInfo struct {
 	Version                int
 	RecipientID            issuerAndSerial `asn1:"tag:0,explicit"`
-	KeyEncryptionAlgorithm algorithmIdentifierWithOidParameter
+	KeyEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedKey           []byte //serialized EncryptedKeyWithPublicKey
 }
 
@@ -132,7 +133,7 @@ type kdfAlgorithm struct {
 	HashAlgo pkix.AlgorithmIdentifier
 }
 type publicKeyDescription struct {
-	Algorithm algorithmIdentifierWithOidParameter
+	Algorithm pkix.AlgorithmIdentifier
 	PublicKey asn1.BitString
 }
 
@@ -167,7 +168,7 @@ type signature struct {
 
 type privateKeyAsn struct {
 	Version    int
-	OID        algorithmIdentifierWithOidParameter
+	OID        pkix.AlgorithmIdentifier
 	PrivateKey []byte
 }
 
@@ -210,7 +211,7 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 	}
 
 	pk := publicKeyDescription{
-		Algorithm: ed25519Algo,
+		Algorithm: pkix.AlgorithmIdentifier{Algorithm: oidEd25519key},
 		PublicKey: asn1.BitString{Bytes: publicKey},
 	}
 

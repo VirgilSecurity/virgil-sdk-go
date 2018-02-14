@@ -95,9 +95,7 @@ func encodePrivateKey(privateKey *ed25519PrivateKey, encodeToPem bool) ([]byte, 
 	key := privateKeyAsn{
 		Version:    0,
 		PrivateKey: rawKey,
-		OID: algorithmIdentifierWithOidParameter{
-			Algorithm: oidEd25519key,
-		},
+		OID:        ed25519Algo,
 	}
 
 	serializedKey, err := asn1.Marshal(key)

@@ -97,7 +97,7 @@ func (k *ed25519PublicKey) Encode() ([]byte, error) {
 	}
 
 	key := publicKey{}
-	key.Algorithm.Algorithm = oidEd25519key
+	key.Algorithm = algorithmIdentifierWithOidParameter{Algorithm: oidEd25519key}
 	key.Key = asn1.BitString{Bytes: k.key}
 	rawKey, err := asn1.Marshal(key)
 	if err != nil {
