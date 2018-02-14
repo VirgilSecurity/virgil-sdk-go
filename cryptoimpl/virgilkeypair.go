@@ -78,10 +78,16 @@ func generateEd25519Keypair() (*ed25519Keypair, error) {
 		return nil, cryptoError(err, "")
 	}
 	fp := calculateNewSHA512Identifier(snapshot)
+	rid := calculateOldSHA256Identifier(snapshot)
 
 	pub.ID = fp
 	priv.ID = make([]byte, len(fp))
 	copy(priv.ID, fp)
+
+	pub.receiverId = rid
+	priv.receiverId = make([]byte, len(rid))
+	copy(priv.receiverId, rid)
+
 	return kp, nil
 }
 func (e *ed25519Keypair) HasPublic() bool {

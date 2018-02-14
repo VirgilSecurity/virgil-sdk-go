@@ -45,8 +45,9 @@ import (
 )
 
 type ed25519PrivateKey struct {
-	ID  []byte
-	key []byte
+	ID         []byte
+	key        []byte
+	receiverId []byte
 }
 
 func DecodePrivateKey(keyBytes, password []byte) (key *ed25519PrivateKey, err error) {
@@ -179,8 +180,8 @@ func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 		return nil, cryptoError(err, "")
 	}
 
-	fp := calculateNewSHA512Identifier(snapshot)
-	edpriv.ID = fp
+	edpriv.ID = calculateNewSHA512Identifier(snapshot)
+	edpriv.receiverId = calculateOldSHA256Identifier(snapshot)
 
 	return edpriv, nil
 }
@@ -228,6 +229,10 @@ func (k *ed25519PrivateKey) ExtractPublicKey() (*ed25519PublicKey, error) {
 
 	edPub.ID = make([]byte, len(k.ID))
 	copy(edPub.ID, k.ID)
+
+	edPub.receiverId = make([]byte, len(k.receiverId))
+	copy(edPub.receiverId, k.receiverId)
+
 	return edPub, nil
 }
 

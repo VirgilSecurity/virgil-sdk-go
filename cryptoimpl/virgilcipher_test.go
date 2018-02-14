@@ -169,6 +169,7 @@ func TestCMS(t *testing.T) {
 	}
 
 	cipherText, err = cipher.SignThenEncrypt(data, signerKeypair.PrivateKey())
+	//fmt.Println(base64.StdEncoding.EncodeToString(cipherText))
 	if err != nil {
 		t.Fatal(err)
 	}
