@@ -82,7 +82,7 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 		return nil, err
 	}
 	//derive keys
-	keys := kdf2(common[:], 80, Hash.New)
+	keys := kdf2(common[:], 96, Hash.New) // 32 bytes - AES key + 64 bytes HMAC key
 
 	//calculate mac
 	mac := hmac.New(Hash.New, keys[32:])
@@ -147,7 +147,7 @@ func encryptSymmetricKeyWithECIES(public_key, symmetricKey []byte) (encryptedSym
 		return
 	}
 	//derive keys
-	keys := kdf2(sharedSecret[:], 80, Hash.New) // 32 bytes - AES key + 48 bytes HMAC key
+	keys := kdf2(sharedSecret[:], 96, Hash.New) // 32 bytes - AES key + 64 bytes HMAC key
 
 	//encrypt symmetric key
 	ciph, err := aes.NewCipher(keys[:32])
