@@ -44,9 +44,8 @@ import (
 )
 
 type ed25519PublicKey struct {
-	ID         []byte
-	key        []byte
-	receiverId []byte
+	ID  []byte
+	key []byte
 }
 
 func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
@@ -77,8 +76,7 @@ func DecodePublicKey(keyBytes []byte) (*ed25519PublicKey, error) {
 		return nil, err
 	}
 
-	edPublicKey.ID = calculateNewSHA512Identifier(snapshot)
-	edPublicKey.receiverId = calculateReceiverId(snapshot)
+	edPublicKey.ID = calculateSHA512BasedIdentifier(snapshot)
 	return edPublicKey, nil
 }
 

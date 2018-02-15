@@ -170,7 +170,7 @@ func (c *VirgilCrypto) CalculateIdentifier(data []byte) []byte {
 		t := sha256.Sum256(data)
 		hash = t[:]
 	} else {
-		hash = calculateNewSHA512Identifier(data)
+		hash = calculateSHA512BasedIdentifier(data)
 	}
 	return hash
 }
@@ -217,11 +217,7 @@ func (c *VirgilCrypto) getCipher() Cipher {
 	return NewCipher()
 }
 
-func calculateNewSHA512Identifier(data []byte) []byte {
+func calculateSHA512BasedIdentifier(data []byte) []byte {
 	t := sha512.Sum512(data)
 	return t[:8]
-}
-
-func calculateReceiverId(data []byte) []byte {
-	return calculateNewSHA512Identifier(data)[:8]
 }
