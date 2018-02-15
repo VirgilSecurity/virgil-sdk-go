@@ -63,7 +63,7 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 		return nil, CryptoError("invalid ed25519 private key size")
 	}
 
-	common := new([Curve25519SharedKeySize]byte)
+	sharedSecret := new([Curve25519SharedKeySize]byte)
 	mySecret := new([ed25519.PrivateKeySize]byte)
 	hisPublic := new([ed25519.PublicKeySize]byte)
 	myCurveSecret := new([Curve25519PrivateKeySize]byte)
@@ -73,16 +73,20 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 
 	extra25519.PrivateKeyToCurve25519(myCurveSecret, mySecret)
 	extra25519.PublicKeyToCurve25519(hisCurvePublic, hisPublic)
+	defer ZeroData(mySecret[:])
+	defer ZeroData(myCurveSecret[:])
 
 	//compute shared secret
-	curve25519.ScalarMult(common, myCurveSecret, hisCurvePublic)
-	err := checkSharedSecret(common[:])
+	curve25519.ScalarMult(sharedSecret, myCurveSecret, hisCurvePublic)
+	err := checkSharedSecret(sharedSecret[:])
 	if err != nil {
 		err = cryptoError(err, "")
 		return nil, err
 	}
+	defer ZeroData(sharedSecret[:])
 	//derive keys
-	keys := kdf2(common[:], 96, Hash.New) // 32 bytes - AES key + 64 bytes HMAC key
+	keys := kdf2(sharedSecret[:], 96, Hash.New) // 32 bytes - AES key + 64 bytes HMAC key
+	defer ZeroData(keys)
 
 	//calculate mac
 	mac := hmac.New(Hash.New, keys[32:])
@@ -139,6 +143,9 @@ func encryptSymmetricKeyWithECIES(publicKey, symmetricKey []byte) (encryptedSymm
 	extra25519.PrivateKeyToCurve25519(ephCurvePrivate, ephPrivate)
 	extra25519.PublicKeyToCurve25519(hisCurvePublic, hisPublic)
 
+	defer ZeroData(ephPrivate[:])
+	defer ZeroData(ephCurvePrivate[:])
+
 	//calculate DH between his public and ephemeral private keys. Ephemeral public key will be bundled inside the message
 	curve25519.ScalarMult(sharedSecret, ephCurvePrivate, hisCurvePublic)
 	err = checkSharedSecret(sharedSecret[:])
@@ -146,8 +153,10 @@ func encryptSymmetricKeyWithECIES(publicKey, symmetricKey []byte) (encryptedSymm
 		err = cryptoError(err, "")
 		return
 	}
+	defer ZeroData(sharedSecret[:])
 	//derive keys
 	keys := kdf2(sharedSecret[:], 96, Hash.New) // 32 bytes - AES key + 64 bytes HMAC key
+	defer ZeroData(keys)
 
 	//encrypt symmetric key
 	ciph, err := aes.NewCipher(keys[:32])
