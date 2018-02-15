@@ -53,6 +53,10 @@ type (
 	}
 )
 
+func NewVirgilCrypto() *VirgilCrypto {
+	return &VirgilCrypto{}
+}
+
 func (c *VirgilCrypto) SetKeyType(keyType KeyType) error {
 	if keyType != keytypes.Default && keyType != keytypes.FAST_EC_ED25519 {
 		return errors.New("Only ED25519 keys are supported")
