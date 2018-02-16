@@ -39,6 +39,8 @@ package sdk
 import (
 	"encoding/json"
 
+	"bytes"
+
 	"gopkg.in/virgil.v5/errors"
 )
 
@@ -48,7 +50,9 @@ func TakeSnapshot(obj interface{}) ([]byte, error) {
 
 func ParseSnapshot(data []byte, obj interface{}) error {
 	if obj != nil {
-		err := json.Unmarshal(data, obj)
+		decoder := json.NewDecoder(bytes.NewBuffer(data))
+		decoder.DisallowUnknownFields()
+		err := decoder.Decode(obj)
 		if err != nil {
 			return errors.Wrap(err, "unmarshal snapshot")
 		}

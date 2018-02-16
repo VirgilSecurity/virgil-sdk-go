@@ -81,20 +81,24 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 		return false, EntityNotFoundErr
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return false, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
-	}
-
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
-			err = json.Unmarshal(respBody, respObj)
+
+			decoder := json.NewDecoder(resp.Body)
+			decoder.DisallowUnknownFields()
+			err = decoder.Decode(respObj)
 			if err != nil {
 				return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 			}
 		}
 		return resp.Header.Get(SupersededCardIDETTPEHeader) == "true", nil
 	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
+	}
+
 	var virgilErr VirgilAPIError
 	err = json.Unmarshal(respBody, &virgilErr)
 	if err != nil {
