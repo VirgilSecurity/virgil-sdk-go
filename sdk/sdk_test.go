@@ -36,9 +36,12 @@
 
 package sdk
 
-import "gopkg.in/virgil.v5/cryptoimpl"
+import (
+	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
+)
 
 var (
-	crypto     = &cryptoimpl.VirgilCrypto{}
-	cardCrypto = &cryptoimpl.CardCrypto{Crypto: crypto}
+	crypto     = virgil_crypto_go.NewCrypto()
+	cardCrypto = virgil_crypto_go.NewCardCrypto()
+	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
 )

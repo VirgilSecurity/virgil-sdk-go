@@ -1,6 +1,23 @@
-language: go
-go: 
- - "1.10"
+matrix:
+  include:
+# DOCKER && LINUX
+    - os: linux
+      language: go
+      go: "1.10.x"
+      dist: trusty
+      sudo: required
+      env:
+        global:
+          - GIT_COMMIT=$TRAVIS_COMMIT
+          - GIT_BRANCH=$TRAVIS_BRANCH
+          - TARGET_OS=linux
+          - SWIG_VERSION=3.0.12
+          - CRYPTO_LIB=virgil-crypto-2.2.5-go-linux-x86_64.tgz
+
+ before_install:
+   - go get -d gopkg.in/virgilsecurity/virgil-crypto-go.v5
+   - wget https://cdn.virgilsecurity.com/crypto-go/$CRYPTO_LIB
+   - tar -xvf $CRYPTO_LIB --strip-components=1 -C $GOPATH/src/gopkg.in/virgilsecurity/virgil-crypto-go.v5/
 
 script:
  - go test -v ./... -tags=integration

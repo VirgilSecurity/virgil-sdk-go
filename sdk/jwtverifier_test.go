@@ -45,7 +45,7 @@ import (
 
 func TestJwtVerifier_VerifyToken(t *testing.T) {
 
-	pub, err := crypto.ImportPublicKey([]byte("MCowBQYDK2VwAyEAiWNcK5Ipp27VXciJNsG1ZxESEq5xWniendU/8yo5318="))
+	pub, err := cryptoimpl.NewVirgilCrypto().ImportPublicKey([]byte("MCowBQYDK2VwAyEAiWNcK5Ipp27VXciJNsG1ZxESEq5xWniendU/8yo5318="))
 	assert.NoError(t, err)
 
 	verifier := NewJwtVerifier(pub, "a2ae26f9ed0453cb49e83e8ed045e801e75c77efb162ca152f62f699cf95ff8b58848da3968a05fa2949e12c225ef6fa0e999b83e6bc15aa8e3a530e44837d7c", cryptoimpl.NewVirgilAccessTokenSigner())
