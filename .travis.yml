@@ -1,8 +1,6 @@
 language: go
 go: 
- - 1.10
- - release
- - tip
+ - "1.10"
 
 script:
- - go test -v ./...
+ - go test -v ./... -tags=integration
