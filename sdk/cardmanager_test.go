@@ -46,9 +46,9 @@ func initCardManager() (*CardManager, error) {
 		panic(err)
 	}
 
-	generator := NewJwtGenerator(apiKey, accID, cryptoimpl.NewVirgilAccessTokenSigner(), appID, time.Minute*10)
+	generator := NewJwtGenerator(apiKey, accID, cryptoimpl.NewVirgilAccessTokenSigner(), appID, time.Minute*1)
 	cardsClient := NewCardsClient(apiUrl)
-	cardsClient.HttpClient = &DebugClient{}
+	//cardsClient.HttpClient = &DebugClient{}
 	params := &CardManagerParams{
 		Crypto:              cardCrypto,
 		ApiUrl:              apiUrl,
