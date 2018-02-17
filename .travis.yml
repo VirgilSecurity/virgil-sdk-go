@@ -1,7 +1,4 @@
-matrix:
-  include:
-# DOCKER && LINUX
-    - os: linux
+os: linux
       language: go
       go: 1.10.x
       dist: trusty
@@ -13,7 +10,6 @@ matrix:
           - TARGET_OS=linux
           - SWIG_VERSION=3.0.12
           - CRYPTO_LIB=virgil-crypto-2.2.5-go-linux-x86_64.tgz
-
  before_install:
    - go get -d gopkg.in/virgilsecurity/virgil-crypto-go.v5
    - wget https://cdn.virgilsecurity.com/crypto-go/$CRYPTO_LIB
