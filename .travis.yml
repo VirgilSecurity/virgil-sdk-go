@@ -3,7 +3,7 @@ matrix:
 # DOCKER && LINUX
     - os: linux
       language: go
-      go: "1.10.x"
+      go: 1.10.x
       dist: trusty
       sudo: required
       env:
