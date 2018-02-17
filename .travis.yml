@@ -1,11 +1,9 @@
 language: go
 go:
- - "1.10"
+ - tip
 
 env:
   global:
-    - GIT_COMMIT=$TRAVIS_COMMIT
-    - GIT_BRANCH=$TRAVIS_BRANCH
     - CRYPTO_LIB=virgil-crypto-2.2.5-go-linux-x86_64.tgz
 
 before_install:
