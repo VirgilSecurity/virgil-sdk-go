@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/errors"
-	"gopkg.in/virgilsecurity/virgil-crypto-go.v4"
 )
 
 func initCardManager() (*CardManager, error) {
