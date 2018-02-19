@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/errors"
+	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 )
 
 func initCardManager() (*CardManager, error) {
@@ -39,7 +40,7 @@ func initCardManager() (*CardManager, error) {
 		return nil, errors.New("TEST_APP_ID is required")
 	}
 
-	verifier, err := NewVirgilCardVerifier(cardCrypto, nil, true, true)
+	verifier, err := NewVirgilCardVerifier(cardCrypto, true, true)
 
 	if err != nil {
 		panic(err)
