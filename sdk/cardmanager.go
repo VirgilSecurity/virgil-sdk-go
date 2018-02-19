@@ -183,7 +183,7 @@ func (c *CardManager) GetCard(cardId string) (*Card, error) {
 	return card, nil
 }
 
-func (c *CardManager) SearchCards(identity string) ([]*Card, error) {
+func (c *CardManager) SearchCards(identity string) (Cards, error) {
 	if err := c.selfCheck(); err != nil {
 		return nil, err
 	}

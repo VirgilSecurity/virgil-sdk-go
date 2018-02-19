@@ -56,3 +56,21 @@ type Card struct {
 	Signatures      []*CardSignature
 	ContentSnapshot []byte
 }
+
+type Cards []*Card
+
+func (c Cards) ExtractPublicKeys() []interface {
+	IsPublic() bool
+	Identifier() []byte
+} {
+	var publicKeys []interface {
+		IsPublic() bool
+		Identifier() []byte
+	}
+	for _, card := range c {
+		if !card.IsOutdated {
+			publicKeys = append(publicKeys, card.PublicKey)
+		}
+	}
+	return publicKeys
+}

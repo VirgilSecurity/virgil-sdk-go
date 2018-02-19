@@ -180,29 +180,45 @@ func (c *VirgilCrypto) CalculateIdentifier(data []byte) []byte {
 	return hash
 }
 
-func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey *ed25519PrivateKey, recipients ...*ed25519PublicKey) ([]byte, error) {
+func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey *ed25519PrivateKey, recipients ...interface {
+	IsPublic() bool
+	Identifier() []byte
+}) ([]byte, error) {
 
 	if signerKey == nil || signerKey.Empty() {
 		return nil, errors.New("key is nil")
 	}
 	cipher := c.getCipher()
 	for _, k := range recipients {
-		if k == nil || k.Empty() {
+		if k == nil {
 			return nil, errors.New("key is nil")
 		}
-		cipher.AddKeyRecipient(k)
+		if key, ok := k.(*ed25519PublicKey); ok {
+			cipher.AddKeyRecipient(key)
+		} else {
+			return nil, errors.New("key type is not supported")
+		}
+
 	}
 	return cipher.SignThenEncrypt(data, signerKey)
 }
 
-func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierKeys ...*ed25519PublicKey) ([]byte, error) {
+func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierKeys ...interface {
+	IsPublic() bool
+	Identifier() []byte
+}) ([]byte, error) {
 	if decryptionKey == nil || decryptionKey.Empty() || len(verifierKeys) == 0 {
 		return nil, errors.New("key is nil")
 	}
 
 	verifiers := make([]*ed25519PublicKey, 0, len(verifierKeys))
 	for _, v := range verifierKeys {
-		verifiers = append(verifiers, v)
+		if key, ok := v.(*ed25519PublicKey); ok {
+			verifiers = append(verifiers, key)
+		} else {
+			return nil, errors.New("key type is not supported")
+		}
+
 	}
 
 	return c.getCipher().DecryptThenVerify(data, decryptionKey, verifiers...)
