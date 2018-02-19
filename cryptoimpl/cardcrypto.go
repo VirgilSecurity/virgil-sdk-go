@@ -53,21 +53,21 @@ func (c *VirgilCardCrypto) GenerateSignature(data []byte, key interface {
 	IsPrivate() bool
 	Identifier() []byte
 }) ([]byte, error) {
-	return c.Crypto.Sign(data, key.(*ed25519PrivateKey))
+	return c.Crypto.Sign(data, key)
 }
 
 func (c *VirgilCardCrypto) VerifySignature(data []byte, signature []byte, key interface {
 	IsPublic() bool
 	Identifier() []byte
 }) error {
-	return c.Crypto.VerifySignature(data, signature, key.(*ed25519PublicKey))
+	return c.Crypto.VerifySignature(data, signature, key)
 }
 
 func (c *VirgilCardCrypto) ExportPublicKey(key interface {
 	IsPublic() bool
 	Identifier() []byte
 }) ([]byte, error) {
-	return c.Crypto.ExportPublicKey(key.(*ed25519PublicKey))
+	return c.Crypto.ExportPublicKey(key)
 }
 
 func (c *VirgilCardCrypto) ImportPublicKey(data []byte) (interface {
