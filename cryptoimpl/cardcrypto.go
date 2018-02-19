@@ -32,45 +32,52 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package cryptoimpl
 
 import "crypto/sha512"
 
-type CardCrypto struct {
+type VirgilCardCrypto struct {
 	Crypto *VirgilCrypto
 }
 
-func (c *CardCrypto) GenerateSignature(data []byte, key interface {
+func NewVirgilCardCrypto() *VirgilCardCrypto {
+	return &VirgilCardCrypto{
+		Crypto: NewVirgilCrypto(),
+	}
+}
+
+func (c *VirgilCardCrypto) GenerateSignature(data []byte, key interface {
 	IsPrivate() bool
 	Identifier() []byte
 }) ([]byte, error) {
 	return c.Crypto.Sign(data, key.(*ed25519PrivateKey))
 }
 
-func (c *CardCrypto) VerifySignature(data []byte, signature []byte, key interface {
+func (c *VirgilCardCrypto) VerifySignature(data []byte, signature []byte, key interface {
 	IsPublic() bool
 	Identifier() []byte
 }) error {
 	return c.Crypto.VerifySignature(data, signature, key.(*ed25519PublicKey))
 }
 
-func (c *CardCrypto) ExportPublicKey(key interface {
+func (c *VirgilCardCrypto) ExportPublicKey(key interface {
 	IsPublic() bool
 	Identifier() []byte
 }) ([]byte, error) {
 	return c.Crypto.ExportPublicKey(key.(*ed25519PublicKey))
 }
 
-func (c *CardCrypto) ImportPublicKey(data []byte) (interface {
+func (c *VirgilCardCrypto) ImportPublicKey(data []byte) (interface {
 	IsPublic() bool
 	Identifier() []byte
 }, error) {
 	return c.Crypto.ImportPublicKey(data)
 }
 
-func (c *CardCrypto) GenerateSHA512(data []byte) []byte {
+func (c *VirgilCardCrypto) GenerateSHA512(data []byte) []byte {
 	hash := sha512.Sum512(data)
 	return hash[:]
 }

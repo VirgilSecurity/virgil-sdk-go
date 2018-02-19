@@ -38,57 +38,11 @@
 package sdk
 
 import (
-	"time"
-
-	"gopkg.in/virgil.v5/errors"
+	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 )
 
-const (
-	IdentityPrefix = "identity-"
-	IssuerPrefix   = "virgil-"
+var (
+	crypto      = virgil_crypto_go.NewCrypto()
+	cardCrypto  = virgil_crypto_go.NewCardCrypto()
+	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
 )
-
-type JwtBodyContent struct {
-	AppID          string                 `json:"-"`
-	Identity       string                 `json:"-"`
-	Issuer         string                 `json:"iss"`
-	Subject        string                 `json:"sub"`
-	IssuedAt       int64                  `json:"iat"`
-	ExpiresAt      int64                  `json:"exp"`
-	AdditionalData map[string]interface{} `json:"ada,omitempty"`
-}
-
-func NewJwtBodyContent(appId string, identity string, issuedAt time.Time, expiresAt time.Time, data map[string]interface{}) (*JwtBodyContent, error) {
-	if err := ValidateJwtBodyParams(appId, identity, issuedAt, expiresAt); err != nil {
-		return nil, err
-	}
-
-	return &JwtBodyContent{
-		AppID:          appId,
-		Identity:       identity,
-		IssuedAt:       issuedAt.UTC().Unix(),
-		ExpiresAt:      expiresAt.UTC().Unix(),
-		AdditionalData: data,
-		Issuer:         IssuerPrefix + appId,
-		Subject:        IdentityPrefix + identity,
-	}, nil
-}
-
-func ValidateJwtBodyParams(appId string, identity string, issuedAt time.Time, expiresAt time.Time) error {
-	if SpaceMap(appId) == "" {
-		return errors.New("appID is empty")
-	}
-
-	if SpaceMap(identity) == "" {
-		return errors.New("identity is empty")
-	}
-
-	if issuedAt.IsZero() {
-		return errors.New("issuedAt is not set")
-	}
-
-	if expiresAt.IsZero() {
-		return errors.New("expiresAt is not set")
-	}
-	return nil
-}

@@ -32,6 +32,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package sdk
@@ -40,6 +41,12 @@ import "gopkg.in/virgil.v5/errors"
 
 type CallbackJwtProvider struct {
 	GetTokenCallback func(context *TokenContext) (string, error)
+}
+
+func NewCallbackJwtProvider(callback func(context *TokenContext) (string, error)) AccessTokenProvider {
+	return &CallbackJwtProvider{
+		GetTokenCallback: callback,
+	}
 }
 
 func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {

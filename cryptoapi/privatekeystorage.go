@@ -32,16 +32,21 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-package sdk
+package cryptoapi
 
-import (
-	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
-)
+type PrivateKeyStorage interface {
+	Store(key interface {
+		IsPrivate() bool
+		Identifier() []byte
+	}, name string, meta map[string]string) error
 
-var (
-	crypto     = virgil_crypto_go.NewCrypto()
-	cardCrypto = virgil_crypto_go.NewCardCrypto()
-	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
-)
+	Load(name string) (key interface {
+		IsPrivate() bool
+		Identifier() []byte
+	}, meta map[string]string, err error)
+
+	Delete(name string) error
+}

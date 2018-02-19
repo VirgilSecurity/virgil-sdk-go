@@ -32,6 +32,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package common
@@ -54,31 +55,27 @@ type VirgilHttpClient struct {
 	Address string
 }
 
-const (
-	SupersededCardIDETTPEHeader = "X-Virgil-Is-Superseeded"
-)
-
-func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (outdated bool, err error) {
+func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, err error) {
 	var body []byte
 	if payload != nil {
 		body, err = json.Marshal(payload)
 		if err != nil {
-			return false, errors.Wrap(err, "VirgilHttpClient.Send: marshal payload")
+			return nil, errors.Wrap(err, "VirgilHttpClient.Send: marshal payload")
 		}
 	}
 	req, err := http.NewRequest(method, vc.Address+url, bytes.NewReader(body))
 	if err != nil {
-		return false, errors.Wrap(err, "VirgilHttpClient.Send: new request")
+		return nil, errors.Wrap(err, "VirgilHttpClient.Send: new request")
 	}
 	req.Header.Set("Authorization", "Virgil "+token)
 	client := vc.getHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, errors.Wrap(err, "VirgilHttpClient.Send: send request")
+		return nil, errors.Wrap(err, "VirgilHttpClient.Send: send request")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotFound {
-		return false, EntityNotFoundErr
+		return nil, EntityNotFoundErr
 	}
 
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
@@ -88,23 +85,23 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 			decoder.DisallowUnknownFields()
 			err = decoder.Decode(respObj)
 			if err != nil {
-				return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+				return nil, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 			}
 		}
-		return resp.Header.Get(SupersededCardIDETTPEHeader) == "true", nil
+		return resp.Header, nil
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return false, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
+		return nil, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
 	}
 
 	var virgilErr VirgilAPIError
 	err = json.Unmarshal(respBody, &virgilErr)
 	if err != nil {
-		return false, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+		return nil, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 	}
-	return false, virgilErr
+	return nil, virgilErr
 }
 
 func (vc *VirgilHttpClient) getHttpClient() HttpClient {

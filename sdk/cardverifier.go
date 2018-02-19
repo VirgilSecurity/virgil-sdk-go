@@ -32,6 +32,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package sdk
@@ -57,10 +58,11 @@ type VirgilCardVerifier struct {
 	virgilPublicKey       cryptoapi.PublicKey
 }
 
-func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, verifyVirgilSignature bool) (*VirgilCardVerifier, error) {
+func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, verifyVirgilSignature bool, whitelists ...*Whitelist) (*VirgilCardVerifier, error) {
 
 	verifier := &VirgilCardVerifier{
 		Crypto:                crypto,
+		WhiteLists:            whitelists,
 		VerifySelfSignature:   verifySelfSignature,
 		VerifyVirgilSignature: verifyVirgilSignature,
 	}

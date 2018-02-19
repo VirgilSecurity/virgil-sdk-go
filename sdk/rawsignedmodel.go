@@ -32,11 +32,39 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package sdk
 
+import (
+	"encoding/base64"
+	"encoding/json"
+)
+
 type RawSignedModel struct {
 	ContentSnapshot []byte              `json:"content_snapshot"`
 	Signatures      []*RawCardSignature `json:"signatures,omitempty"`
+}
+
+func (r *RawSignedModel) ExportAsBase64EncodedString() (string, error) {
+	raw, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(raw), nil
+}
+
+func ImportRawSignedModel(modelStr string) (*RawSignedModel, error) {
+
+	raw, err := base64.StdEncoding.DecodeString(modelStr)
+	if err != nil {
+		return nil, err
+	}
+
+	var model *RawSignedModel
+
+	err = json.Unmarshal(raw, &model)
+	return model, err
 }

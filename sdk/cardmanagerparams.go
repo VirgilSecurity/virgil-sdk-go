@@ -32,6 +32,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package sdk
@@ -44,6 +45,6 @@ type CardManagerParams struct {
 	AccessTokenProvider AccessTokenProvider
 	CardVerifier        CardVerifier
 	CardClient          *CardClient
-	SignCallback        func(model *RawSignedModel) error
+	SignCallback        func(model *RawSignedModel) (signedCard *RawSignedModel, err error)
 	ApiUrl              string
 }

@@ -32,6 +32,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package sdk
@@ -76,25 +77,36 @@ func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedMod
 
 func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool, error) {
 
+	const (
+		SupersededCardIDHTTPHeader      = "X-Virgil-Is-Superseeded"
+		SupersededCardIDHTTPHeaderValue = "true"
+	)
+
 	if _, err := hex.DecodeString(cardId); err != nil || len(cardId) != 64 {
 		return nil, false, errors.New("invalid card id")
 	}
 
 	var rawCard *RawSignedModel
-	outdated, err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
+	headers, err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
+
+	var outdated bool
+	if headers != nil {
+		outdated = headers.Get(SupersededCardIDHTTPHeader) == SupersededCardIDHTTPHeaderValue
+	}
+
 	return rawCard, outdated, err
 }
 
-func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) (outdated bool, err error) {
+func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, err error) {
 	client := c.getVirgilClient()
-	outdated, err = client.Send(method, url, token, payload, respObj)
+	headers, err = client.Send(method, url, token, payload, respObj)
 	if err != nil {
 		if apiErr, ok := err.(common.VirgilAPIError); ok {
-			return false, errors.NewServiceError(apiErr.Code, 0, apiErr.Message)
+			return headers, errors.NewServiceError(apiErr.Code, 0, apiErr.Message)
 		}
-		return false, err
+		return headers, err
 	}
-	return outdated, nil
+	return headers, nil
 }
 
 func (c *CardClient) getUrl() string {

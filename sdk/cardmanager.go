@@ -32,6 +32,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 package sdk
@@ -51,7 +52,7 @@ type CardManager struct {
 	AccessTokenProvider                          AccessTokenProvider
 	CardVerifier                                 CardVerifier
 	CardClient                                   *CardClient
-	SignCallback                                 func(model *RawSignedModel) error
+	SignCallback                                 func(model *RawSignedModel) (signedCard *RawSignedModel, err error)
 	onceClient, onceModelSigner, onceCheckParams sync.Once
 	paramsError                                  error
 }
@@ -98,21 +99,23 @@ func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, 
 	return model, nil
 }
 
-func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel, tokenContext *TokenContext, token AccessToken) (*Card, error) {
-	if err := c.selfCheck(); err != nil {
+func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel, tokenContext *TokenContext, token AccessToken) (card *Card, err error) {
+	if err = c.selfCheck(); err != nil {
 		return nil, err
 	}
 
+	model := rawSignedModel
+
 	if c.SignCallback != nil {
-		if err := c.SignCallback(rawSignedModel); err != nil {
+		if model, err = c.SignCallback(rawSignedModel); err != nil {
 			return nil, err
 		}
 	}
-	rawCard, err := c.getClient().PublishCard(rawSignedModel, token.StringRepresentation())
+	rawCard, err := c.getClient().PublishCard(model, token.String())
 	if err != nil {
 		return nil, err
 	}
-	card, err := ParseRawCard(c.Crypto, rawCard, false)
+	card, err = ParseRawCard(c.Crypto, rawCard, false)
 
 	if err != nil {
 		return nil, err
@@ -164,7 +167,7 @@ func (c *CardManager) GetCard(cardId string) (*Card, error) {
 		return nil, err
 	}
 
-	rawCard, outdated, err := c.getClient().GetCard(cardId, token.StringRepresentation())
+	rawCard, outdated, err := c.getClient().GetCard(cardId, token.String())
 
 	if err != nil {
 		return nil, err
@@ -190,7 +193,7 @@ func (c *CardManager) SearchCards(identity string) ([]*Card, error) {
 		return nil, err
 	}
 
-	rawCards, err := c.getClient().SearchCards(identity, token.StringRepresentation())
+	rawCards, err := c.getClient().SearchCards(identity, token.String())
 	if err != nil {
 		return nil, err
 	}

@@ -85,8 +85,7 @@ func TestWhitelist(t *testing.T) {
 	addSign(t, model, creds[1])
 	addSign(t, model, creds[2])
 
-	verifier, err := NewVirgilCardVerifier(cardCrypto, true, false)
-	verifier.SetWhitelists(wl)
+	verifier, err := NewVirgilCardVerifier(cardCrypto, true, false, wl...)
 
 	card := &Card{
 		ContentSnapshot: model.ContentSnapshot,

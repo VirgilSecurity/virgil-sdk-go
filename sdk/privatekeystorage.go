@@ -38,57 +38,84 @@
 package sdk
 
 import (
-	"time"
-
+	"gopkg.in/virgil.v5/cryptoapi"
 	"gopkg.in/virgil.v5/errors"
 )
 
-const (
-	IdentityPrefix = "identity-"
-	IssuerPrefix   = "virgil-"
-)
-
-type JwtBodyContent struct {
-	AppID          string                 `json:"-"`
-	Identity       string                 `json:"-"`
-	Issuer         string                 `json:"iss"`
-	Subject        string                 `json:"sub"`
-	IssuedAt       int64                  `json:"iat"`
-	ExpiresAt      int64                  `json:"exp"`
-	AdditionalData map[string]interface{} `json:"ada,omitempty"`
+type VirgilPrivateKeyStorage struct {
+	PrivateKeyExporter cryptoapi.PrivateKeyExporter
+	KeyStorage         KeyStorage
 }
 
-func NewJwtBodyContent(appId string, identity string, issuedAt time.Time, expiresAt time.Time, data map[string]interface{}) (*JwtBodyContent, error) {
-	if err := ValidateJwtBodyParams(appId, identity, issuedAt, expiresAt); err != nil {
-		return nil, err
-	}
+func NewVirgilPrivateKeyStorage(privateKeyExporter cryptoapi.PrivateKeyExporter, path string) cryptoapi.PrivateKeyStorage {
 
-	return &JwtBodyContent{
-		AppID:          appId,
-		Identity:       identity,
-		IssuedAt:       issuedAt.UTC().Unix(),
-		ExpiresAt:      expiresAt.UTC().Unix(),
-		AdditionalData: data,
-		Issuer:         IssuerPrefix + appId,
-		Subject:        IdentityPrefix + identity,
-	}, nil
+	return &VirgilPrivateKeyStorage{
+		PrivateKeyExporter: privateKeyExporter,
+		KeyStorage: &FileKeyStorage{
+			RootDir: path,
+		},
+	}
 }
 
-func ValidateJwtBodyParams(appId string, identity string, issuedAt time.Time, expiresAt time.Time) error {
-	if SpaceMap(appId) == "" {
-		return errors.New("appID is empty")
+func (v *VirgilPrivateKeyStorage) Store(key interface {
+	IsPrivate() bool
+	Identifier() []byte
+}, name string, meta map[string]string) error {
+
+	if v.PrivateKeyExporter == nil {
+		return errors.New("PrivateKeyExporter is not set")
 	}
 
-	if SpaceMap(identity) == "" {
-		return errors.New("identity is empty")
+	if v.KeyStorage == nil {
+		return errors.New("KeyStorage is not set")
 	}
 
-	if issuedAt.IsZero() {
-		return errors.New("issuedAt is not set")
+	exported, err := v.PrivateKeyExporter.ExportPrivateKey(key)
+
+	if err != nil {
+		return err
 	}
 
-	if expiresAt.IsZero() {
-		return errors.New("expiresAt is not set")
+	return v.KeyStorage.Store(&StorageItem{
+		Name: name,
+		Data: exported,
+		Meta: meta,
+	})
+
+}
+
+func (v *VirgilPrivateKeyStorage) Load(name string) (key interface {
+	IsPrivate() bool
+	Identifier() []byte
+}, meta map[string]string, err error) {
+	if v.PrivateKeyExporter == nil {
+		err = errors.New("PrivateKeyExporter is not set")
+		return
 	}
-	return nil
+
+	if v.KeyStorage == nil {
+		err = errors.New("KeyStorage is not set")
+		return
+	}
+
+	item, err := v.KeyStorage.Load(name)
+
+	if err != nil {
+		return
+	}
+
+	key, err = v.PrivateKeyExporter.ImportPrivateKey(item.Data)
+	if err != nil {
+		return
+	}
+
+	return key, item.Meta, nil
+}
+
+func (v *VirgilPrivateKeyStorage) Delete(name string) error {
+	if v.KeyStorage == nil {
+		return errors.New("KeyStorage is not set")
+	}
+
+	return v.KeyStorage.Delete(name)
 }
