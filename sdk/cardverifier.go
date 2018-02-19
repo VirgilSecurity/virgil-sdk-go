@@ -47,7 +47,7 @@ type CardVerifier interface {
 }
 
 const (
-	VirgilPublicKey = "MCowBQYDK2VwAyEAr0rjTWlCLJ8q9em0og33grHEh/3vmqp0IewosUaVnQg="
+	VirgilPublicKey = "MCowBQYDK2VwAyEAljOYGANYiVq1WbvVvoYIKtvZi2ji9bAhxyu6iV/LF8M="
 )
 
 type VirgilCardVerifier struct {
