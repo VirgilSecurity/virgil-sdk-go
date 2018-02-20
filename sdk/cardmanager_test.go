@@ -48,7 +48,10 @@ func initCardManager() (*CardManager, error) {
 
 	serviceKey := os.Getenv("TEST_SERVICE_KEY")
 	if serviceKey != "" {
-		verifier.ReplaceVirgilPublicKey(serviceKey)
+		err = verifier.ReplaceVirgilPublicKey(serviceKey)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	generator := NewJwtGenerator(apiKey, accID, virgil_crypto_go.NewVirgilAccessTokenSigner(), appID, time.Minute*1)
