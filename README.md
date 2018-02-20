@@ -1,4 +1,4 @@
-# Virgil Security Go SDK v5 (preview)
+# Virgil Security Go SDK v5
 
 
 [![Build Status](https://travis-ci.org/go-virgil/virgil.png?branch=v5)](https://travis-ci.org/go-virgil/virgil)
