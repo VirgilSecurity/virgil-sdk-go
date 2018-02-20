@@ -4,7 +4,7 @@ go:
 
 env:
   global:
-    - CRYPTO_LIB=virgil-crypto-2.2.5-go-linux-x86_64.tgz
+    - CRYPTO_LIB=virgil-crypto-2.3.0-go-linux-x86_64.tgz
 
 before_install:
    - go get -d gopkg.in/virgilsecurity/virgil-crypto-go.v5

@@ -168,8 +168,8 @@ func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, 
 	return CardValidationExpectedSignerWasNotFoundErr
 }
 
-func (v *VirgilCardVerifier) ReplaceVirgilPublicKey(NewKey string) error {
-	if pub, err := v.GetPublicKeyFromBase64(VirgilPublicKey); err != nil {
+func (v *VirgilCardVerifier) ReplaceVirgilPublicKey(newKey string) error {
+	if pub, err := v.GetPublicKeyFromBase64(newKey); err != nil {
 		return err
 	} else {
 		v.virgilPublicKey = pub
