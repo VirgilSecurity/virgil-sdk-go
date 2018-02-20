@@ -56,7 +56,9 @@ func initCardManager() (*CardManager, error) {
 
 	generator := NewJwtGenerator(apiKey, accID, virgil_crypto_go.NewVirgilAccessTokenSigner(), appID, time.Minute*1)
 	cardsClient := NewCardsClient(apiUrl)
-	cardsClient.HttpClient = &DebugClient{}
+	if os.Getenv("TEST_DEBUG_OUTPUT")== "true"{
+		cardsClient.HttpClient = &DebugClient{}
+	}
 	params := &CardManagerParams{
 		Crypto:              cardCrypto,
 		ApiUrl:              apiUrl,
