@@ -54,7 +54,7 @@ type VirgilCardVerifier struct {
 	Crypto                cryptoapi.CardCrypto
 	VerifySelfSignature   bool
 	VerifyVirgilSignature bool
-	WhiteLists            []*Whitelist
+	Whitelists            []*Whitelist
 	virgilPublicKey       cryptoapi.PublicKey
 }
 
@@ -62,7 +62,7 @@ func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, ver
 
 	verifier := &VirgilCardVerifier{
 		Crypto:                crypto,
-		WhiteLists:            whitelists,
+		Whitelists:            whitelists,
 		VerifySelfSignature:   verifySelfSignature,
 		VerifyVirgilSignature: verifyVirgilSignature,
 	}
@@ -89,8 +89,8 @@ func (v *VirgilCardVerifier) SelfCheck() error {
 	return nil
 }
 
-func (v *VirgilCardVerifier) SetWhitelists(whiteLists []*Whitelist) {
-	v.WhiteLists = whiteLists
+func (v *VirgilCardVerifier) SetWhitelists(whitelists []*Whitelist) {
+	v.Whitelists = whitelists
 }
 
 func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
@@ -113,15 +113,15 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 		}
 	}
 
-	if len(v.WhiteLists) == 0 {
+	if len(v.Whitelists) == 0 {
 		return nil
 	}
 
-	for _, whiteList := range v.WhiteLists {
+	for _, whitelist := range v.Whitelists {
 
 		ok := false
 		var lastErr error
-		for _, cred := range whiteList.VerifierCredentials {
+		for _, cred := range whitelist.VerifierCredentials {
 			err := v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey)
 			if err == nil {
 				ok = true
