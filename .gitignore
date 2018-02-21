@@ -72,3 +72,4 @@ Sample*
 *.vscode*
 /http2*
 /udp*
+/.sample/*
