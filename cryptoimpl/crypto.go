@@ -122,7 +122,10 @@ func (c *VirgilCrypto) Encrypt(data []byte, recipients ...interface {
 		if k == nil {
 			return nil, errors.New("key is nil")
 		}
-		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
+		if err := cipher.AddKeyRecipient(k.(*ed25519PublicKey)); err != nil {
+			return nil, err
+		}
+
 	}
 	return cipher.Encrypt(data)
 }
@@ -136,7 +139,9 @@ func (c *VirgilCrypto) EncryptStream(in io.Reader, out io.Writer, recipients ...
 		if k == nil {
 			return errors.New("key is nil")
 		}
-		cipher.AddKeyRecipient(k.(*ed25519PublicKey))
+		if err := cipher.AddKeyRecipient(k.(*ed25519PublicKey)); err != nil {
+			return err
+		}
 	}
 	return cipher.EncryptStream(in, out)
 }
@@ -229,18 +234,9 @@ func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey interface {
 	}
 	cipher := c.getCipher()
 	for _, k := range recipients {
-		if k == nil {
-			return nil, errors.New("key is nil")
+		if err := cipher.AddKeyRecipient(k.(*ed25519PublicKey)); err != nil {
+			return nil, err
 		}
-		if key, ok := k.(interface {
-			IsPublic() bool
-			Identifier() []byte
-		}); ok {
-			cipher.AddKeyRecipient(key.(*ed25519PublicKey))
-		} else {
-			return nil, errors.New("key type is not supported")
-		}
-
 	}
 	return cipher.SignThenEncrypt(data, signerKey.(*ed25519PrivateKey))
 }
