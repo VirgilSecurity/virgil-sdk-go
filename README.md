@@ -30,7 +30,7 @@ The package is available for Go 1.10 or newer.
 
 Installing the package:
 
-- go get -u gopkg.in/virgil.v5
+- go get -u -d gopkg.in/virgil.v5
 
 
 ### Crypto library notice
@@ -48,7 +48,7 @@ On linux and macOS consider using external crypto library written in c++
 ### Using external crypto library (c++)
 
 ```bash
-go get -u gopkg.in/virgilsecurity/virgil-crypto-go.v5
+go get -u -d gopkg.in/virgilsecurity/virgil-crypto-go.v5
 cd $GOPATH/src/gopkg.in/virgilsecurity/virgil-crypto-go.v5
 make
 ```
