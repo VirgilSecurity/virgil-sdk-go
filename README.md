@@ -30,7 +30,7 @@ The package is available for Go 1.10 or newer.
 
 Installing the package:
 
-- go get -u -d gopkg.in/virgil.v5
+- go get -u gopkg.in/virgil.v5/sdk
 
 
 ### Crypto library notice
