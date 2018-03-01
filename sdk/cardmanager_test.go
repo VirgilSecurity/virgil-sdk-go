@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/errors"
-	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 )
 
 func initCardManager() (*CardManager, error) {
@@ -54,9 +53,9 @@ func initCardManager() (*CardManager, error) {
 		}
 	}
 
-	generator := NewJwtGenerator(apiKey, accID, virgil_crypto_go.NewVirgilAccessTokenSigner(), appID, time.Minute*1)
+	generator := NewJwtGenerator(apiKey, accID, tokenSigner, appID, time.Minute*1)
 	cardsClient := NewCardsClient(apiUrl)
-	if os.Getenv("TEST_DEBUG_OUTPUT")== "true"{
+	if os.Getenv("TEST_DEBUG_OUTPUT") == "true" {
 		cardsClient.HttpClient = &DebugClient{}
 	}
 	params := &CardManagerParams{
