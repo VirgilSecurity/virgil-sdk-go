@@ -123,8 +123,8 @@ func JwtFromString(token string) (*Jwt, error) {
 		return nil, errors.New("JWT body does not contain virgil prefix")
 	}
 
-	bodyContent.AppID = strings.TrimPrefix(bodyContent.AppID, IssuerPrefix)
-	bodyContent.Identity = strings.TrimPrefix(bodyContent.Identity, IdentityPrefix)
+	bodyContent.AppID = strings.TrimPrefix(bodyContent.Issuer, IssuerPrefix)
+	bodyContent.Identity = strings.TrimPrefix(bodyContent.Subject, IdentityPrefix)
 
 	return &Jwt{
 		BodyContent:      bodyContent,
