@@ -56,15 +56,11 @@ func (r *RawSignedModel) ExportAsBase64EncodedString() (string, error) {
 	return base64.StdEncoding.EncodeToString(raw), nil
 }
 
-func ImportRawSignedModel(modelStr string) (*RawSignedModel, error) {
-
-	raw, err := base64.StdEncoding.DecodeString(modelStr)
+func (r *RawSignedModel) ExportAsJson() (string, error) {
+	raw, err := json.Marshal(r)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var model *RawSignedModel
-
-	err = json.Unmarshal(raw, &model)
-	return model, err
+	return string(raw), nil
 }

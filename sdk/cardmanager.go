@@ -209,6 +209,57 @@ func (c *CardManager) SearchCards(identity string) (Cards, error) {
 	return LinkCards(cards...), nil
 }
 
+func (c *CardManager) ExportCardAsRawCard(card *Card) (*RawSignedModel, error) {
+	return ParseCard(c.Crypto, card)
+}
+
+func (c *CardManager) ExportCardAsString(card *Card) (string, error) {
+	model, err := ParseCard(c.Crypto, card)
+	if err != nil {
+		return "", err
+	}
+	return model.ExportAsBase64EncodedString()
+}
+
+func (c *CardManager) ExportCardAsJson(card *Card) (string, error) {
+	model, err := ParseCard(c.Crypto, card)
+	if err != nil {
+		return "", err
+	}
+	return model.ExportAsJson()
+}
+
+func (c *CardManager) ImportCardFromString(str string) (*Card, error) {
+
+	model, err := GenerateRawSignedModelFromString(str)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.ImportCard(model)
+}
+
+func (c *CardManager) ImportCardFromJson(json string) (*Card, error) {
+
+	model, err := GenerateRawSignedModelFromJson(json)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.ImportCard(model)
+}
+
+func (c *CardManager) ImportCard(model *RawSignedModel) (*Card, error) {
+	cards, err := ParseRawCards(c.Crypto, model)
+	if err != nil {
+		return nil, err
+	}
+	if len(cards) != 1 {
+		return nil, errors.New("there should be only one card after parsing")
+	}
+	return cards[0], nil
+}
+
 func (c *CardManager) verifyCards(cards ...*Card) error {
 	if c.CardVerifier == nil {
 		return nil

@@ -95,3 +95,27 @@ func GenerateRawSignedModelFromJson(json string) (*RawSignedModel, error) {
 	err := ParseSnapshot([]byte(json), &model)
 	return model, err
 }
+
+func ParseCard(crypto cryptoapi.CardCrypto, card *Card) (*RawSignedModel, error) {
+	if crypto == nil {
+		return nil, errors.New("crypto is mandatory")
+	}
+	if card == nil {
+		return nil, errors.New("card is mandatory")
+	}
+
+	var signatures []*RawCardSignature
+
+	for _, s := range card.Signatures {
+		signatures = append(signatures, &RawCardSignature{
+			Signer:    s.Signer,
+			Signature: s.Signature,
+			Snapshot:  s.Snapshot,
+		})
+	}
+
+	return &RawSignedModel{
+		ContentSnapshot: card.ContentSnapshot,
+		Signatures:      signatures,
+	}, nil
+}
