@@ -45,6 +45,7 @@ import (
 	"path/filepath"
 
 	"gopkg.in/virgil.v5/errors"
+	"os/user"
 )
 
 type KeyStorage interface {
@@ -90,8 +91,7 @@ func (s *FileKeyStorage) Store(key *StorageItem) error {
 		return errors.Wrap(err, "FileKeyStorage cannot marshal data")
 	}
 
-	ioutil.WriteFile(path.Join(dir, key.Name), data, 400)
-	return nil
+	return ioutil.WriteFile(path.Join(dir, key.Name), data, 0600)
 }
 
 func (s *FileKeyStorage) Load(name string) (*StorageItem, error) {
@@ -140,8 +140,33 @@ func (s *FileKeyStorage) getRootDir() (string, error) {
 		var err error
 		s.RootDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
 		if err != nil {
-			return "", errors.Wrap(err, "FileKeyStorage cannot get exutable path")
+			return "", errors.Wrap(err, "FileKeyStorage cannot get executable path")
+		}
+	} else{
+		var err error
+		s.RootDir, err = expand(s.RootDir)
+		if err != nil{
+			return "", err
+		}
+		if _, err := os.Stat(s.RootDir); os.IsNotExist(err) {
+			err = os.Mkdir(s.RootDir, 0700)
+			if err != nil{
+				return "", err
+			}
 		}
 	}
 	return s.RootDir, nil
+}
+
+
+func expand(path string) (string, error) {
+	if len(path) == 0 || path[0] != '~' {
+		return path, nil
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(usr.HomeDir, path[1:]), nil
 }
