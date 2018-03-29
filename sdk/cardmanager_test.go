@@ -76,7 +76,7 @@ func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 
 	card, err := PublishCard(t, manager, "Alice-"+randomString(), "")
 	assert.NoError(t, err)
-	card, err = manager.GetCard(card.Identifier)
+	card, err = manager.GetCard(card.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, card)
 
@@ -98,11 +98,11 @@ func TestCardManager_Integration_Publish_Replace(t *testing.T) {
 	oldCard, err := PublishCard(t, manager, "Alice-"+randomString(), "")
 	assert.NoError(t, err)
 
-	newCard, err := PublishCard(t, manager, oldCard.Identity, oldCard.Identifier)
+	newCard, err := PublishCard(t, manager, oldCard.Identity, oldCard.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, newCard)
 
-	oldCard, err = manager.GetCard(oldCard.Identifier)
+	oldCard, err = manager.GetCard(oldCard.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, oldCard)
 	assert.True(t, oldCard.IsOutdated)
@@ -121,7 +121,7 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 		for j := 0; j < 3; j++ {
 			card, err := PublishCard(t, manager, identity, prev)
 			assert.NoError(t, err)
-			prev = card.Identifier
+			prev = card.Id
 		}
 	}
 
@@ -134,7 +134,7 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 		current := card
 		for i := 0; i < 2; i++ {
 			assert.True(t, current.PreviousCard != nil)
-			assert.True(t, current.PreviousCard.Identifier == current.PreviousCardId)
+			assert.True(t, current.PreviousCard.Id == current.PreviousCardId)
 			current = current.PreviousCard
 		}
 	}

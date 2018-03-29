@@ -44,7 +44,7 @@ import (
 )
 
 type Card struct {
-	Identifier     string
+	Id             string
 	Identity       string
 	PublicKey      cryptoapi.PublicKey
 	Version        string

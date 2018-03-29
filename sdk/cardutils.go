@@ -90,7 +90,7 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 	}
 
 	return &Card{
-		Identifier:      id,
+		Id:              id,
 		ContentSnapshot: model.ContentSnapshot,
 		Signatures:      signatures,
 		Version:         content.Version,
@@ -137,7 +137,7 @@ func LinkCards(cards ...*Card) []*Card {
 	unsortedCards := make(map[string]*Card)
 	var result []*Card
 	for _, card := range cards {
-		unsortedCards[card.Identifier] = card
+		unsortedCards[card.Id] = card
 	}
 
 	for _, card := range cards {
