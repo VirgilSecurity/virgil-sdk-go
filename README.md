@@ -74,27 +74,37 @@ Use the following lines of code to create and publish a user's Card with Public 
 
 ```go
 import (
-	"gopkg.in/virgil.v5/cryptoimpl"
 	"gopkg.in/virgil.v5/sdk"
+	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 )
-// generate a new Key
-crypto := cryptoimpl.NewVirgilCrypto()
-keypair, err := crypto.GenerateKeypair()
 
-// save the Key into the storage
-err = privateKeyStorage.Store(keypair.PrivateKey(), "Alice", nil)
-if err != nil{
+var (
+	crypto      = virgil_crypto_go.NewVirgilCrypto()
+	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
+	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
+)
+
+func main() {
+
+	// generate a key pair
+	keypair, err := crypto.GenerateKeypair()
+
+	// save a private key into key storage
+	err = privateKeyStorage.Store(keypair.PrivateKey(), "Alice", nil)
+	if err != nil{
 		//handle error
-}
-// create a Card
-card, err := cardManager.PublishCard(&sdk.CardParams{
-	PublicKey:  keypair.PublicKey(),
-	PrivateKey: keypair.PrivateKey(),
-	Identity:   "Alice",
-}
+	}
+	// publish user's on the Cards Service
+	card, err := cardManager.PublishCard(&sdk.CardParams{
+		PublicKey:  keypair.PublicKey(),
+		PrivateKey: keypair.PrivateKey(),
+		Identity:   "Alice",
+	})
 
-if err != nil{
-	//handle error
+	if err != nil{
+		//handle error
+	}
+
 }
 ```
 
@@ -106,32 +116,37 @@ In the following example, we load a Private Key from a customized Key Storage an
 
 ```go
 
-import (
-	"gopkg.in/virgil.v5/cryptoimpl"
-	"gopkg.in/virgil.v5/sdk"
+import "gopkg.in/virgilsecurity/virgil-crypto-go.v5"
+
+var (
+	crypto      = virgil_crypto_go.NewVirgilCrypto()
+	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
+	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
 )
 
+func main() {
+	messageToEncrypt := []byte("Hello, Bob!")
 
-messageToEncrypt := []byte("Hello, Bob!")
+	// prepare a user's private key from a device storage
+	alicePrivateKey, err := privateKeyStorage.Load("Alice")
+	if err != nil{
+		//handle error
+	}
 
-// load a Key from a device storage
-alicePrivateKey, err := privateKeyStorage.Load("Alice")
-if err != nil{
-	//handle error
-}
 
-// using cardManager search for user's cards on Cards Service
-cards, err := cardManager.SearchCards("Bob")
+	// using cardManager search for Bob's cards on Cards Service
+	cards, err := cardManager.SearchCards("Bob")
 
-if err != nil{
-	//handle error
-}
+	if err != nil{
+		//handle error
+	}
 
-//encrypt message for all valid Bob cards
-encryptedMessage, err := crypto.SignThenEncrypt(messageToEncrypt, alicePrivateKey, cards.ExtractPublicKeys()...)
+	// sign a message with a private key then encrypt using Bob's public keys
+	encryptedMessage, err := crypto.SignThenEncrypt(messageToEncrypt, alicePrivateKey, cards.ExtractPublicKeys()...)
 
-if err != nil{
-	//handle error
+	if err != nil{
+		//handle error
+	}
 }
 
 ```
@@ -140,29 +155,34 @@ if err != nil{
 Once the Users receive the signed and encrypted message, they can decrypt it with their own Private Key and verify signature with a Sender's Card:
 
 ```go
-import (
-	"gopkg.in/virgil.v5/cryptoimpl"
-	"gopkg.in/virgil.v5/sdk"
+import "gopkg.in/virgilsecurity/virgil-crypto-go.v5"
+
+var (
+	crypto      = virgil_crypto_go.NewVirgilCrypto()
+	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
+	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
 )
 
-// load a Key from a device storage
-bobPrivateKey, err := privateKeyStorage.Load("Bob")
-if err != nil{
-	//handle error
-}
+func main() {
+	// prepare a user's private key
+	bobPrivateKey, err := privateKeyStorage.Load("Bob")
+	if err != nil{
+		//handle error
+	}
 
-// using cardManager search for user's cards on Cards Service
-aliceCards, err := cardManager.SearchCards("Alice")
+	// using cardManager search for Alice's cards on Cards Service
+	aliceCards, err := cardManager.SearchCards("Alice")
 
-if err != nil{
-	//handle error
-}
+	if err != nil{
+		//handle error
+	}
 
-//decrypt message and verify with one of Alice's valid
-decryptedMessage, err := crypto.DecryptThenVerify(encryptedMessage, bobPrivateKey, cards.ExtractPublicKeys()...)
+	// decrypt with a private key and verify using one of Alice's public keys
+	decryptedMessage, err := crypto.DecryptThenVerify(encryptedMessage, bobPrivateKey, cards.ExtractPublicKeys()...)
 
-if err != nil{
-	//handle error
+	if err != nil{
+		//handle error
+	}
 }
 
 ```
