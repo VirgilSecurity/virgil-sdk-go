@@ -40,5 +40,6 @@ package sdk
 type TokenContext struct {
 	Identity    string
 	Operation   string
+	Service		string
 	ForceReload bool
 }
