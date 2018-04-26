@@ -40,12 +40,24 @@ package sdk
 import "gopkg.in/virgil.v5/errors"
 
 type CallbackJwtProvider struct {
-	GetTokenCallback func(context *TokenContext) (string, error)
+	GetTokenCallback func(context *TokenContext) (*Jwt, error)
 }
 
-func NewCallbackJwtProvider(callback func(context *TokenContext) (string, error)) AccessTokenProvider {
+func NewCallbackJwtProvider(callback func(context *TokenContext) (*Jwt, error)) AccessTokenProvider {
 	return &CallbackJwtProvider{
 		GetTokenCallback: callback,
+	}
+}
+
+func NewCallbackStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CallbackJwtProvider {
+	return &CallbackJwtProvider{
+		GetTokenCallback:    func(context *TokenContext) (*Jwt, error){
+			token, err := renewTokenCallback(context)
+			if err != nil{
+				return nil, err
+			}
+			return JwtFromString(token)
+		},
 	}
 }
 
@@ -60,6 +72,6 @@ func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, erro
 	if jwt, err := c.GetTokenCallback(context); err != nil {
 		return nil, err
 	} else {
-		return JwtFromString(jwt)
+		return jwt, nil
 	}
 }

@@ -55,6 +55,18 @@ func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (*Jwt,
 	}
 }
 
+func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
+	return &CachingJwtProvider{
+		RenewTokenCallback:    func(context *TokenContext) (*Jwt, error){
+			token, err := renewTokenCallback(context)
+			if err != nil{
+				return nil, err
+			}
+			return JwtFromString(token)
+		},
+	}
+}
+
 func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
 
 	if context == nil {
