@@ -44,45 +44,41 @@ import (
 )
 
 type CachingJwtProvider struct {
-	RenewTokenCallback func(context *TokenContext) (string, error)
+	RenewTokenCallback func(context *TokenContext) (*Jwt, error)
 	Jwt *Jwt
-	lock sync.RWMutex
+	lock sync.Mutex
 }
 
-func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
+func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (*Jwt, error)) *CachingJwtProvider {
 	return &CachingJwtProvider{
 		RenewTokenCallback:    renewTokenCallback,
 	}
 }
 
-func (g *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
+func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
 
 	if context == nil {
 		return nil, errors.New("context is mandatory")
 	}
 
-	if g.RenewTokenCallback == nil {
+	if c.RenewTokenCallback == nil {
 		return nil, errors.New("callback is mandatory")
 	}
-	g.lock.RLock()
-	if g.Jwt == nil || g.Jwt.IsExpiredDelta(5*time.Second) != nil {
-		g.lock.RUnlock()
-		g.lock.Lock()
-		defer g.lock.Unlock()
-		token, err := g.RenewTokenCallback(context)
-		if err != nil{
-			return nil, err
 
-		}
-		jwt, err := JwtFromString(token)
-		if err != nil{
-			return nil, err
+	if c.Jwt == nil || c.Jwt.IsExpiredDelta(5*time.Second) != nil {
 
+		c.lock.Lock()
+		defer c.lock.Unlock()
+
+		if c.Jwt == nil || c.Jwt.IsExpiredDelta(5*time.Second) != nil {
+			token, err := c.RenewTokenCallback(context)
+			if err != nil {
+				return nil, err
+
+			}
+			c.Jwt = token
 		}
-		g.Jwt = jwt
-	} else {
-		defer g.lock.RUnlock()
 	}
 
-	return g.Jwt, nil
+	return c.Jwt, nil
 }
