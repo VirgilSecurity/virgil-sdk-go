@@ -60,7 +60,6 @@ func initCardManager() (*CardManager, error) {
 	}
 	params := &CardManagerParams{
 		Crypto:              cardCrypto,
-		ApiUrl:              apiUrl,
 		CardVerifier:        verifier,
 		ModelSigner:         NewModelSigner(cardCrypto),
 		AccessTokenProvider: NewGeneratorJwtProvider(generator, nil, ""),

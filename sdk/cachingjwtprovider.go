@@ -46,7 +46,7 @@ import (
 type CachingJwtProvider struct {
 	RenewTokenCallback func(context *TokenContext) (string, error)
 	Jwt *Jwt
-	lock sync.Mutex
+	lock sync.RWMutex
 }
 
 func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
@@ -64,10 +64,11 @@ func (g *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error
 	if g.RenewTokenCallback == nil {
 		return nil, errors.New("callback is mandatory")
 	}
-	g.lock.Lock()
-	defer g.lock.Unlock()
+	g.lock.RLock()
 	if g.Jwt == nil || g.Jwt.IsExpiredDelta(5*time.Second) != nil {
-
+		g.lock.RUnlock()
+		g.lock.Lock()
+		defer g.lock.Unlock()
 		token, err := g.RenewTokenCallback(context)
 		if err != nil{
 			return nil, err
@@ -79,6 +80,8 @@ func (g *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error
 
 		}
 		g.Jwt = jwt
+	} else {
+		defer g.lock.RUnlock()
 	}
 
 	return g.Jwt, nil
