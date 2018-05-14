@@ -43,6 +43,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"time"
+
 	"github.com/pkg/errors"
 )
 
@@ -108,5 +110,7 @@ func (vc *VirgilHttpClient) getHttpClient() HttpClient {
 	if vc.Client != nil {
 		return vc.Client
 	}
-	return http.DefaultClient
+	return &http.Client{
+		Timeout: time.Second * 10,
+	}
 }
