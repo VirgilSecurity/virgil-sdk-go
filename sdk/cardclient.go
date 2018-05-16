@@ -99,18 +99,12 @@ func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool
 
 func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, err error) {
 	client := c.getVirgilClient()
-	headers, err = client.Send(method, url, token, payload, respObj)
+	headers, httpCode, err := client.Send(method, url, token, payload, respObj)
 	if err != nil {
 		if apiErr, ok := err.(common.VirgilAPIError); ok {
-
-			httpCode := 0
-			if err == common.EntityNotFoundErr {
-				httpCode = 404
-			}
-
 			return headers, errors.NewServiceError(apiErr.Code, httpCode, apiErr.Message)
 		}
-		return headers, err
+		return headers, errors.NewServiceError(0, httpCode, err.Error())
 	}
 	return headers, nil
 }
