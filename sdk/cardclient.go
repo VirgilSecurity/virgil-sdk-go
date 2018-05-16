@@ -102,7 +102,13 @@ func (c *CardClient) send(method string, url string, token string, payload inter
 	headers, err = client.Send(method, url, token, payload, respObj)
 	if err != nil {
 		if apiErr, ok := err.(common.VirgilAPIError); ok {
-			return headers, errors.NewServiceError(apiErr.Code, 0, apiErr.Message)
+
+			httpCode := 0
+			if err == common.EntityNotFoundErr {
+				httpCode = 404
+			}
+
+			return headers, errors.NewServiceError(apiErr.Code, httpCode, apiErr.Message)
 		}
 		return headers, err
 	}

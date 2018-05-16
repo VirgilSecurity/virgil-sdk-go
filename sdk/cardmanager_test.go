@@ -73,7 +73,12 @@ func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 	manager, err := initCardManager()
 	assert.NoError(t, err)
 
-	card, err := PublishCard(t, manager, "Alice-"+randomString(), "")
+	card, err := manager.GetCard(randomString())
+	assert.Nil(t, card)
+	assert.Error(t, err)
+	assert.Equal(t, 404, err.(errors.SDKError).HTTPErrorCode())
+
+	card, err = PublishCard(t, manager, "Alice-"+randomString(), "")
 	assert.NoError(t, err)
 	card, err = manager.GetCard(card.Id)
 	assert.NoError(t, err)
@@ -211,7 +216,7 @@ func (c *DebugClient) getClient() common.HttpClient {
 }
 
 func randomString() string {
-	buf := make([]byte, 10)
+	buf := make([]byte, 32)
 	rand.Read(buf)
 	return hex.EncodeToString(buf)
 }
