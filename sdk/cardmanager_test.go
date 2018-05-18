@@ -1,3 +1,5 @@
+// +build integration
+
 /*
  * Copyright (C) 2015-2018 Virgil Security Inc.
  *
@@ -34,9 +36,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-// +build integration
-
 package sdk
 
 import (

@@ -44,6 +44,8 @@ import (
 
 	"sync"
 
+	"fmt"
+
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/virgil.v5/cryptoimpl"
 )
@@ -98,6 +100,8 @@ func TestCachingJwtProvider(t *testing.T) {
 	wg.Add(routines)
 
 	start := time.Now()
+
+	total := 0
 	for i := 0; i < routines; i++ {
 
 		go func() {
@@ -106,6 +110,7 @@ func TestCachingJwtProvider(t *testing.T) {
 				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
 				assert.NotNil(t, token)
 				assert.NoError(t, err)
+				total++
 			}
 
 			wg.Done()
@@ -114,5 +119,6 @@ func TestCachingJwtProvider(t *testing.T) {
 	}
 	wg.Wait()
 	assert.Equal(t, 6, genCount)
+	fmt.Println("total", total)
 
 }
