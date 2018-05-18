@@ -46,6 +46,21 @@ type CardVerifier interface {
 	VerifyCard(card *Card) error
 }
 
+type CardVerifierError struct {
+	errors.SDKError
+}
+
+func NewCardVerifierError(msg string) error {
+	return CardVerifierError{SDKError: errors.SDKError{
+		Message: msg,
+	}}
+}
+
+func ToCardVerifierError(err error) (CardVerifierError, bool) {
+	e, ok := errors.Cause(err).(CardVerifierError)
+	return e, ok
+}
+
 const (
 	VirgilPublicKey = "MCowBQYDK2VwAyEAljOYGANYiVq1WbvVvoYIKtvZi2ji9bAhxyu6iV/LF8M="
 )
@@ -84,7 +99,7 @@ func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, ver
 
 func (v *VirgilCardVerifier) SelfCheck() error {
 	if v.Crypto == nil {
-		return errors.New("Crypto is not set")
+		return NewCardVerifierError("Crypto is not set")
 	}
 	return nil
 }
@@ -95,21 +110,21 @@ func (v *VirgilCardVerifier) SetWhitelists(whitelists []*Whitelist) {
 
 func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 	if card.PublicKey == nil {
-		return errors.New("card public key is not set")
+		return NewCardVerifierError("card public key is not set")
 	}
 
 	if v.VerifySelfSignature {
 		if err := v.ValidateSignerSignature(card, SelfSigner, card.PublicKey); err != nil {
-			return err
+			return errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
 		}
 	}
 
 	if v.VerifyVirgilSignature {
 		if v.virgilPublicKey == nil {
-			return errors.New("Virgil public key is not set")
+			return NewCardVerifierError("Virgil public key is not set")
 		}
 		if err := v.ValidateSignerSignature(card, VirgilSigner, v.virgilPublicKey); err != nil {
-			return err
+			return errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
 		}
 	}
 
@@ -127,7 +142,7 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 				ok = true
 				break
 			} else {
-				lastErr = err
+				lastErr = errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
 			}
 		}
 

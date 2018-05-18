@@ -56,6 +56,7 @@ var (
 	CSRSelfSignAlreadyExistErr = errors.New("The CSR already has a self signature")
 	CSRAppSignAlreadyExistErr  = errors.New("The CSR already has an application signature")
 
-	CardValidationSignerTypeIncorrectErr       = errors.New("Card validation: signer type incorrect")
-	CardValidationExpectedSignerWasNotFoundErr = errors.New("Card validation: expected signer was not found")
+	CardValidationSignerTypeIncorrectErr       = NewCardVerifierError("Card validation: signer type incorrect")
+	CardValidationExpectedSignerWasNotFoundErr = NewCardVerifierError("Card validation: expected signer was not found")
+	CardValidationSignatureValidationFailedErr = NewCardVerifierError("Card validation: signature validation failed")
 )

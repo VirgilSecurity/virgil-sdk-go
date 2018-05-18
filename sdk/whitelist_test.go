@@ -117,10 +117,18 @@ func TestWhitelist(t *testing.T) {
 	err = verifier.VerifyCard(card)
 	assert.Error(t, err)
 
+	err, ok := ToCardVerifierError(err)
+	assert.Error(t, err)
+	assert.True(t, ok)
+
 	//empty whitelist must fail
 	verifier.SetWhitelists([]*Whitelist{{}})
 	err = verifier.VerifyCard(card)
 	assert.Error(t, err)
+
+	err, ok = ToCardVerifierError(err)
+	assert.Error(t, err)
+	assert.True(t, ok)
 
 }
 func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
