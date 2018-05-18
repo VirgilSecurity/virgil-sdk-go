@@ -44,8 +44,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"gopkg.in/virgil.v5/errors"
 	"os/user"
+
+	"gopkg.in/virgil.v5/errors"
 )
 
 type KeyStorage interface {
@@ -142,22 +143,21 @@ func (s *FileKeyStorage) getRootDir() (string, error) {
 		if err != nil {
 			return "", errors.Wrap(err, "FileKeyStorage cannot get executable path")
 		}
-	} else{
+	} else {
 		var err error
 		s.RootDir, err = expand(s.RootDir)
-		if err != nil{
+		if err != nil {
 			return "", err
 		}
 		if _, err := os.Stat(s.RootDir); os.IsNotExist(err) {
 			err = os.Mkdir(s.RootDir, 0700)
-			if err != nil{
+			if err != nil {
 				return "", err
 			}
 		}
 	}
 	return s.RootDir, nil
 }
-
 
 func expand(path string) (string, error) {
 	if len(path) == 0 || path[0] != '~' {

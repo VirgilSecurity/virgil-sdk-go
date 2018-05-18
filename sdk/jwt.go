@@ -155,12 +155,16 @@ func (j *Jwt) IsExpired() error {
 	return j.IsExpiredDelta(0)
 }
 
+//IsExpiredDelta returns error if token expires delta time before it's expiry date
 func (j *Jwt) IsExpiredDelta(delta time.Duration) error {
 	if j.BodyContent == nil {
 		return errors.New("header content is empty")
 	}
 
-	if time.Unix(j.BodyContent.ExpiresAt, 0).Before(time.Now().Add(-delta)) {
+	exp := time.Unix(j.BodyContent.ExpiresAt, 0).Add(-delta)
+	now := time.Now()
+
+	if exp.Before(now) {
 		return errors.New("JWT token is expired")
 	}
 	return nil

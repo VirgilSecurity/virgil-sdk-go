@@ -38,28 +38,29 @@
 package sdk
 
 import (
-	"gopkg.in/virgil.v5/errors"
-	"time"
 	"sync"
+	"time"
+
+	"gopkg.in/virgil.v5/errors"
 )
 
 type CachingJwtProvider struct {
 	RenewTokenCallback func(context *TokenContext) (*Jwt, error)
-	Jwt *Jwt
-	lock sync.Mutex
+	Jwt                *Jwt
+	lock               sync.Mutex
 }
 
 func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (*Jwt, error)) *CachingJwtProvider {
 	return &CachingJwtProvider{
-		RenewTokenCallback:    renewTokenCallback,
+		RenewTokenCallback: renewTokenCallback,
 	}
 }
 
 func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
 	return &CachingJwtProvider{
-		RenewTokenCallback:    func(context *TokenContext) (*Jwt, error){
+		RenewTokenCallback: func(context *TokenContext) (*Jwt, error) {
 			token, err := renewTokenCallback(context)
-			if err != nil{
+			if err != nil {
 				return nil, err
 			}
 			return JwtFromString(token)

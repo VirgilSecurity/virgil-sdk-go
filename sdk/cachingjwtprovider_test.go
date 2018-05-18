@@ -37,9 +37,82 @@
 
 package sdk
 
-type TokenContext struct {
-	Identity    string
-	Operation   string
-	Service     string
-	ForceReload bool
+import (
+	"encoding/hex"
+	"testing"
+	"time"
+
+	"sync"
+
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/virgil.v5/cryptoimpl"
+)
+
+func TestCachingJwtProvider(t *testing.T) {
+
+	crypto := cryptoimpl.NewVirgilCrypto()
+
+	pk, err := crypto.GenerateKeypair()
+	if err != nil {
+		panic(err)
+	}
+
+	signer := cryptoimpl.NewVirgilAccessTokenSigner()
+
+	genCount := 0
+
+	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
+
+		genCount++
+
+		issuedAt := time.Now().UTC().Truncate(time.Second)
+		expiresAt := issuedAt.Add(time.Second * 6)
+
+		jwtBody, err := NewJwtBodyContent("app_id", "identity", issuedAt, expiresAt, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		jwtHeader, err := NewJwtHeaderContent(signer.GetAlgorithm(), hex.EncodeToString(pk.PrivateKey().Identifier()))
+
+		if err != nil {
+			return nil, err
+		}
+
+		unsignedJwt, err := NewJwt(jwtHeader, jwtBody, nil)
+		if err != nil {
+			return nil, err
+		}
+		jwtSignature, err := signer.GenerateTokenSignature(unsignedJwt.Unsigned(), pk.PrivateKey())
+		if err != nil {
+			return nil, err
+		}
+
+		return NewJwt(jwtHeader, jwtBody, jwtSignature)
+
+	})
+
+	routines := 100
+
+	wg := &sync.WaitGroup{}
+	wg.Add(routines)
+
+	start := time.Now()
+	for i := 0; i < routines; i++ {
+
+		go func() {
+
+			for time.Now().Sub(start) < (time.Second * 5) {
+				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
+				assert.NotNil(t, token)
+				assert.NoError(t, err)
+			}
+
+			wg.Done()
+		}()
+
+	}
+	wg.Wait()
+	assert.Equal(t, 6, genCount)
+
 }

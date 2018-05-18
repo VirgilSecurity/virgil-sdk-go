@@ -51,9 +51,9 @@ func NewCallbackJwtProvider(callback func(context *TokenContext) (*Jwt, error)) 
 
 func NewCallbackStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CallbackJwtProvider {
 	return &CallbackJwtProvider{
-		GetTokenCallback:    func(context *TokenContext) (*Jwt, error){
+		GetTokenCallback: func(context *TokenContext) (*Jwt, error) {
 			token, err := renewTokenCallback(context)
-			if err != nil{
+			if err != nil {
 				return nil, err
 			}
 			return JwtFromString(token)
