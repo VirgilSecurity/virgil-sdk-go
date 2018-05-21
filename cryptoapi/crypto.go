@@ -88,3 +88,15 @@ type PublicKey interface {
 	IsPublic() bool
 	Identifier() []byte
 }
+
+type Keypair interface {
+	PublicKey() interface {
+		IsPublic() bool
+		Identifier() []byte
+	}
+
+	PrivateKey() interface {
+		IsPrivate() bool
+		Identifier() []byte
+	}
+}
