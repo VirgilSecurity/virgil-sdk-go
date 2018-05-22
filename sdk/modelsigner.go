@@ -91,7 +91,7 @@ func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, ex
 
 	var extraFieldsSnapshot []byte
 	if extraFields != nil {
-		extraFieldsSnapshot, err = TakeSnapshot(extraFieldsSnapshot)
+		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
 		if err != nil {
 			return err
 		}
