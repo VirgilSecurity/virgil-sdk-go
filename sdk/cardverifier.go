@@ -132,7 +132,17 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 		return nil
 	}
 
+	hasNil := false
+	hasNonNil := false
+
 	for _, whitelist := range v.Whitelists {
+
+		if whitelist == nil {
+			hasNil = true
+			continue
+		} else {
+			hasNonNil = true
+		}
 
 		ok := false
 		var lastErr error
@@ -154,6 +164,11 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 			return lastErr
 		}
 	}
+
+	if hasNil && hasNonNil {
+		return errors.New("can't mix nil and non nil whitelists")
+	}
+
 	return nil
 }
 
