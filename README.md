@@ -58,7 +58,7 @@ in your source code use crypto objects from this library as follows:
 ```go
 
 var (
-	crypto      = virgil_crypto_go.NewCrypto()
+	crypto      = virgil_crypto_go.NewVirgilCrypto()
 	cardCrypto  = virgil_crypto_go.NewCardCrypto()
 	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
 )
