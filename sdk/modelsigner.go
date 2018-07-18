@@ -57,22 +57,52 @@ func NewModelSigner(crypto cryptoapi.CardCrypto) *ModelSigner {
 	return &ModelSigner{Crypto: crypto}
 }
 
-func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryptoapi.PrivateKey, extraFields map[string]string) error {
+func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryptoapi.PrivateKey, extraFields map[string]string) (err error) {
+	var extraFieldsSnapshot []byte
+	if extraFields != nil {
+		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
+		if err != nil {
+			return err
+		}
+	}
 
 	return m.signInternal(model, &SignParams{
 		SignerPrivateKey: privateKey,
 		Signer:           signer,
-	}, extraFields)
+	}, extraFieldsSnapshot)
 }
 
-func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey cryptoapi.PrivateKey, extraFields map[string]string) error {
+func (m *ModelSigner) SignRaw(model *RawSignedModel, signer string, privateKey cryptoapi.PrivateKey, extraFieldsSnapshot []byte) (err error) {
+
+	return m.signInternal(model, &SignParams{
+		SignerPrivateKey: privateKey,
+		Signer:           signer,
+	}, extraFieldsSnapshot)
+}
+
+func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey cryptoapi.PrivateKey, extraFields map[string]string) (err error) {
+	var extraFieldsSnapshot []byte
+	if extraFields != nil {
+		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
+		if err != nil {
+			return err
+		}
+	}
+
 	return m.signInternal(model, &SignParams{
 		SignerPrivateKey: privateKey,
 		Signer:           SelfSigner,
-	}, extraFields)
+	}, extraFieldsSnapshot)
 }
 
-func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, extraFields map[string]string) error {
+func (m *ModelSigner) SelfSignRaw(model *RawSignedModel, privateKey cryptoapi.PrivateKey, extraFieldsSnapshot []byte) (err error) {
+	return m.signInternal(model, &SignParams{
+		SignerPrivateKey: privateKey,
+		Signer:           SelfSigner,
+	}, extraFieldsSnapshot)
+}
+
+func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, extraFieldsSnapshot []byte) error {
 	if model == nil {
 		return errors.New("model is mandatory")
 	}
@@ -87,14 +117,6 @@ func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, ex
 	err = m.CheckSignatureExists(model, params)
 	if err != nil {
 		return err
-	}
-
-	var extraFieldsSnapshot []byte
-	if extraFields != nil {
-		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
-		if err != nil {
-			return err
-		}
 	}
 
 	resultSnapshot := append(model.ContentSnapshot, extraFieldsSnapshot...)

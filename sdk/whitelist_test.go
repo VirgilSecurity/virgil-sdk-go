@@ -74,7 +74,7 @@ func TestWhitelist(t *testing.T) {
 		PublicKey:  cardCreds.PublicKey,
 	}, time.Now())
 
-	modelSigner := &ModelSigner{Crypto: cardCrypto}
+	modelSigner := NewModelSigner(cardCrypto)
 	modelSigner.SelfSign(model, pk, map[string]string{
 		"a": "b",
 		"b": "c",
@@ -83,23 +83,14 @@ func TestWhitelist(t *testing.T) {
 	})
 
 	addSign(t, model, creds[0])
-	addSign(t, model, creds[1])
-	addSign(t, model, creds[2])
+	addRawSign(t, model, creds[1])
+	addRawSign(t, model, creds[2])
 
 	verifier, err := NewVirgilCardVerifier(cardCrypto, true, false, wl...)
 
-	card := &Card{
-		ContentSnapshot: model.ContentSnapshot,
-		PublicKey:       cardCreds.PublicKey,
-	}
+	card, err := ParseRawCard(cardCrypto, model, false)
 
-	for _, sig := range model.Signatures {
-		card.Signatures = append(card.Signatures, &CardSignature{
-			Signature: sig.Signature,
-			Snapshot:  sig.Snapshot,
-			Signer:    sig.Signer,
-		})
-	}
+	assert.NoError(t, err)
 
 	//check default case
 	err = verifier.VerifyCard(card)
@@ -132,6 +123,19 @@ func TestWhitelist(t *testing.T) {
 	assert.True(t, ok)
 
 }
+
+func addRawSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
+
+	modelSigner := &ModelSigner{Crypto: cardCrypto}
+
+	snapshot := make([]byte, 129)
+	rand.Read(snapshot)
+
+	err := modelSigner.SignRaw(model, credentials.Signer, credentials.PrivateKey, snapshot)
+
+	assert.NoError(t, err)
+}
+
 func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
 
 	modelSigner := &ModelSigner{Crypto: cardCrypto}
