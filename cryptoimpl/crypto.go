@@ -186,6 +186,16 @@ func (c *VirgilCrypto) VerifySignature(data []byte, signature []byte, key interf
 	return Verifier.Verify(data, key.(*ed25519PublicKey), signature)
 }
 
+func (c *VirgilCrypto) VerifyHashSignature(hash []byte, signature []byte, key interface {
+	IsPublic() bool
+	Identifier() []byte
+}) error {
+	if key == nil {
+		return errors.New("key is nil")
+	}
+	return Verifier.VerifyHash(hash, key.(*ed25519PublicKey), signature)
+}
+
 func (c *VirgilCrypto) SignStream(in io.Reader, key interface {
 	IsPrivate() bool
 	Identifier() []byte

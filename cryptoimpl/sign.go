@@ -54,6 +54,7 @@ type VirgilSigner interface {
 
 type VirgilVerifier interface {
 	Verify(data []byte, key *ed25519PublicKey, signature []byte) error
+	VerifyHash(hash []byte, key *ed25519PublicKey, signature []byte) error
 	VerifyStream(data io.Reader, key *ed25519PublicKey, signature []byte) error
 }
 
@@ -78,6 +79,15 @@ func (s *ed25519Verifier) Verify(data []byte, key *ed25519PublicKey, signature [
 
 	return verifyInternal(data, key, signature, false)
 }
+
+func (s *ed25519Verifier) VerifyHash(hash []byte, key *ed25519PublicKey, signature []byte) error {
+	if key == nil || key.Empty() {
+		return errors.New("key is nil")
+	}
+
+	return verifyInternal(hash, key, signature, true)
+}
+
 func (s *ed25519Signer) SignStream(data io.Reader, signer *ed25519PrivateKey) ([]byte, error) {
 	if signer == nil || signer.Empty() {
 		return nil, errors.New("key is nil")

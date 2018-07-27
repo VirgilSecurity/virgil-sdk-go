@@ -37,6 +37,8 @@
 
 package cryptoimpl
 
+import "crypto/sha512"
+
 type VirgilAccessTokenSigner struct {
 	Crypto *VirgilCrypto
 }
@@ -56,7 +58,9 @@ func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []
 	IsPublic() bool
 	Identifier() []byte
 }) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey.(*ed25519PublicKey))
+
+	hash := sha512.Sum512(data)
+	return t.Crypto.VerifyHashSignature(hash[:], signature, publicKey.(*ed25519PublicKey))
 
 }
 func (t *VirgilAccessTokenSigner) GetAlgorithm() string {
