@@ -55,7 +55,10 @@ type passwordRecipient struct {
 }
 
 func (p *passwordRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, error) {
-	kdfIv, iterations, keyIv, encryptedKey := encryptKeyWithPassword(symmetricKey, []byte(p.Password))
+	kdfIv, iterations, keyIv, encryptedKey, err := encryptKeyWithPassword(symmetricKey, []byte(p.Password))
+	if err != nil {
+		return nil, CryptoError(err.Error())
+	}
 	return makePasswordRecipient(kdfIv, iterations, encryptedKey, keyIv)
 }
 func (p *passwordRecipient) decryptKey(id []byte, password []byte) ([]byte, error) {
@@ -64,13 +67,19 @@ func (p *passwordRecipient) decryptKey(id []byte, password []byte) ([]byte, erro
 	}
 	return decryptKeyWithPassword(p.encryptedKey, p.keyIv, p.kdfIv, p.iterations, password)
 }
-func encryptKeyWithPassword(randomKey, password []byte) (kdfIv []byte, iterations int, keyIv, encryptedKey []byte) {
+func encryptKeyWithPassword(randomKey, password []byte) (kdfIv []byte, iterations int, keyIv, encryptedKey []byte, err error) {
 
 	kdfIv = make([]byte, 16)
 	keyIv = make([]byte, 16)
 
-	rand.Read(kdfIv)
-	rand.Read(keyIv)
+	_, err = rand.Read(kdfIv)
+	if err != nil {
+		return
+	}
+	_, err = rand.Read(keyIv)
+	if err != nil {
+		return
+	}
 
 	randomIterationsPart, _ := rand.Int(rand.Reader, big.NewInt(5121))
 	iterations = 3072 + int(randomIterationsPart.Int64())
