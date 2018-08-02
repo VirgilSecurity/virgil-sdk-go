@@ -122,7 +122,10 @@ func encodePrivateKeyEncrypted(privateKey *ed25519PrivateKey, password []byte, e
 		return nil, err
 	}
 
-	kdfIv, iterations, keyIv, encryptedKey := encryptKeyWithPassword(serializedKey, password)
+	kdfIv, iterations, keyIv, encryptedKey, err := encryptKeyWithPassword(serializedKey, password)
+	if err != nil {
+		return nil, err
+	}
 
 	alg, err := encodeKeyEncryptionAlgorithm(kdfIv, iterations, keyIv)
 	if err != nil {
