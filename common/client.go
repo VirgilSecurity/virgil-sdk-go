@@ -80,27 +80,28 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 		return nil, resp.StatusCode, EntityNotFoundErr
 	}
 
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
+	}
+	if !json.Valid(respBody) {
+		return nil, resp.StatusCode, errors.New("VirgilHttpClient.Send: invalid response JSON")
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(respBody))
+	decoder.DisallowUnknownFields()
+
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
-
-			decoder := json.NewDecoder(resp.Body)
-			decoder.DisallowUnknownFields()
-			err = decoder.Decode(respObj)
-			if err != nil {
+			if err = decoder.Decode(respObj); err != nil {
 				return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 			}
 		}
 		return resp.Header, resp.StatusCode, nil
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
-	}
-
 	var virgilErr VirgilAPIError
-	err = json.Unmarshal(respBody, &virgilErr)
-	if err != nil {
+	if err = decoder.Decode(&virgilErr); err != nil {
 		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
 	}
 	return nil, resp.StatusCode, virgilErr
