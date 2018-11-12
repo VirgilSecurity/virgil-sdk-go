@@ -40,6 +40,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -85,7 +86,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
 	}
 	if !json.Valid(respBody) {
-		return nil, resp.StatusCode, errors.New("VirgilHttpClient.Send: invalid response JSON")
+		return nil, resp.StatusCode, errors.New(fmt.Sprintf("VirgilHttpClient.Send: invalid response JSON (status code: %d body: %s)", resp.StatusCode, respBody))
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(respBody))
@@ -94,7 +95,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
 			if err = decoder.Decode(respObj); err != nil {
-				return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+				return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
 			}
 		}
 		return resp.Header, resp.StatusCode, nil
@@ -102,7 +103,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 
 	var virgilErr VirgilAPIError
 	if err = decoder.Decode(&virgilErr); err != nil {
-		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+		return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
 	}
 	return nil, resp.StatusCode, virgilErr
 }
