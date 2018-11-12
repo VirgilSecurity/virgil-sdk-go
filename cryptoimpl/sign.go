@@ -44,11 +44,13 @@ import (
 	"crypto/sha512"
 
 	"github.com/agl/ed25519"
+	"github.com/minio/sha256-simd"
 	"gopkg.in/virgil.v5/errors"
 )
 
 type VirgilSigner interface {
 	Sign(data []byte, signer *ed25519PrivateKey) ([]byte, error)
+	SignHash(hash []byte, signer *ed25519PrivateKey) ([]byte, error)
 	SignStream(data io.Reader, signer *ed25519PrivateKey) ([]byte, error)
 }
 
@@ -72,6 +74,15 @@ func (s *ed25519Signer) Sign(data []byte, signer *ed25519PrivateKey) ([]byte, er
 	return signInternal(hash, signer)
 
 }
+
+func (s *ed25519Signer) SignHash(hash []byte, signer *ed25519PrivateKey) ([]byte, error) {
+	if signer == nil || signer.Empty() {
+		return nil, errors.New("key is nil")
+	}
+	return signInternal(hash, signer)
+
+}
+
 func (s *ed25519Verifier) Verify(data []byte, key *ed25519PublicKey, signature []byte) error {
 	if key == nil || key.Empty() {
 		return errors.New("key is nil")
@@ -118,7 +129,7 @@ func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
 
 	sign := ed25519.Sign(private, hash[:])
 
-	sBytes, err := makeSignature(sign[:])
+	sBytes, err := makeSignature(sign[:], len(hash))
 
 	if err != nil {
 		return nil, err
@@ -144,7 +155,10 @@ func verifyInternal(data []byte, key *ed25519PublicKey, signature []byte, doNotH
 	if doNotHash {
 		hash = data
 	} else {
-		if algo.Equal(OidSha384) {
+		if algo.Equal(OidSha256) {
+			tmp := sha256.Sum256(data)
+			hash = tmp[:]
+		} else if algo.Equal(OidSha384) {
 			tmp := sha512.Sum384(data)
 			hash = tmp[:]
 		} else if algo.Equal(OidSha512) {

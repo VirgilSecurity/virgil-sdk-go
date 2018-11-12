@@ -173,7 +173,18 @@ func (c *VirgilCrypto) Sign(data []byte, key interface {
 	if key == nil {
 		return nil, errors.New("key is nil")
 	}
-	return Signer.Sign(data, key.(*ed25519PrivateKey))
+
+	var hash []byte
+
+	if c.UseSHA256Fingerprints {
+		tmp := sha256.Sum256(data)
+		hash = tmp[:]
+	} else {
+		tmp := sha512.Sum512(data)
+		hash = tmp[:]
+	}
+
+	return Signer.SignHash(hash, key.(*ed25519PrivateKey))
 }
 
 func (c *VirgilCrypto) VerifySignature(data []byte, signature []byte, key interface {

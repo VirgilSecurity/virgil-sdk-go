@@ -92,7 +92,7 @@ func TestSignatures(t *testing.T) {
 		t.Fatal("must fail with bad signature")
 	}
 
-	badSignature, err := makeSignature(make([]byte, 1))
+	badSignature, err := makeSignature(make([]byte, 1), 32)
 
 	err = Verifier.Verify(data, keypair.PublicKey(), badSignature)
 	if err == nil {

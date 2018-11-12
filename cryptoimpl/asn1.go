@@ -49,6 +49,7 @@ var (
 	oidAesGCM         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 46}
 	oidData           = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 1}
 	oidAES256CBC      = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 42}
+	OidSha256         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 1}
 	OidSha384         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
 	OidSha512         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
 	oidKdf2           = asn1.ObjectIdentifier{1, 0, 18033, 2, 5, 2}
@@ -272,8 +273,25 @@ func makePasswordRecipient(kdfIv []byte, iterations int, key, keyIv []byte) (*as
 
 	return res, nil
 }
-func makeSignature(sign []byte) ([]byte, error) {
-	signature := signature{O: pkix.AlgorithmIdentifier{Algorithm: OidSha512, Parameters: asn1Null}, S: sign}
+func makeSignature(sign []byte, hashSize int) ([]byte, error) {
+
+	var algo asn1.ObjectIdentifier
+
+	switch hashSize {
+	case 32:
+		algo = OidSha256
+		break
+	case 48:
+		algo = OidSha384
+		break
+	case 64:
+		algo = OidSha512
+		break
+	default:
+		return nil, CryptoError("unsupported hash")
+	}
+
+	signature := signature{O: pkix.AlgorithmIdentifier{Algorithm: algo, Parameters: asn1Null}, S: sign}
 	sBytes, err := asn1.Marshal(signature)
 	if err != nil {
 		return nil, cryptoError(err, "")
