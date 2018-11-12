@@ -40,6 +40,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -80,28 +81,29 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 		return nil, resp.StatusCode, EntityNotFoundErr
 	}
 
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
+	}
+	if !json.Valid(respBody) {
+		return nil, resp.StatusCode, errors.New(fmt.Sprintf("VirgilHttpClient.Send: invalid response JSON (status code: %d body: %s)", resp.StatusCode, respBody))
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(respBody))
+	decoder.DisallowUnknownFields()
+
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
-
-			decoder := json.NewDecoder(resp.Body)
-			decoder.DisallowUnknownFields()
-			err = decoder.Decode(respObj)
-			if err != nil {
-				return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+			if err = decoder.Decode(respObj); err != nil {
+				return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
 			}
 		}
 		return resp.Header, resp.StatusCode, nil
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
-	}
-
 	var virgilErr VirgilAPIError
-	err = json.Unmarshal(respBody, &virgilErr)
-	if err != nil {
-		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: unmarshal response object")
+	if err = decoder.Decode(&virgilErr); err != nil {
+		return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
 	}
 	return nil, resp.StatusCode, virgilErr
 }
