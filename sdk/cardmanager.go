@@ -99,7 +99,12 @@ func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, 
 	return model, nil
 }
 
-func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel) (card *Card, err error) {
+//PublishRawSignedModel left for backwards compatibility
+func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel, tokenContext *TokenContext, token AccessToken) (card *Card, err error) {
+	return c.PublishRawCard(rawSignedModel)
+}
+
+func (c *CardManager) PublishRawCard(rawSignedModel *RawSignedModel) (card *Card, err error) {
 	if err = c.selfCheck(); err != nil {
 		return nil, err
 	}
@@ -158,7 +163,7 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c.PublishRawSignedModel(rawSignedModel)
+	return c.PublishRawCard(rawSignedModel)
 }
 
 func (c *CardManager) GetCard(cardId string) (*Card, error) {
