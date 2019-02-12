@@ -99,19 +99,32 @@ func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, 
 	return model, nil
 }
 
-func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel, tokenContext *TokenContext, token AccessToken) (card *Card, err error) {
+func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel) (card *Card, err error) {
 	if err = c.selfCheck(); err != nil {
 		return nil, err
 	}
 
-	model := rawSignedModel
+	model := &RawCardContent{}
+	if err = ParseSnapshot(rawSignedModel.ContentSnapshot, &model); err != nil {
+		return nil, err
+	}
+
+	tokenContext := &TokenContext{Service: "cards", Operation: "publish", Identity: model.Identity}
+	token, err := c.AccessTokenProvider.GetToken(tokenContext)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
 
 	if c.SignCallback != nil {
-		if model, err = c.SignCallback(rawSignedModel); err != nil {
+		if rawSignedModel, err = c.SignCallback(rawSignedModel); err != nil {
 			return nil, err
 		}
 	}
-	rawCard, err := c.getClient().PublishCard(model, token.String())
+	rawCard, err := c.getClient().PublishCard(rawSignedModel, token.String())
 	if err != nil {
 		return nil, err
 	}
@@ -134,18 +147,9 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 	if err := cardParams.Validate(false); err != nil {
 		return nil, err
 	}
-	tokenContext := &TokenContext{Identity: cardParams.Identity, Operation: "publish"}
-	token, err := c.AccessTokenProvider.GetToken(tokenContext)
-	if err != nil {
-		return nil, err
-	}
-	identity, err := token.Identity()
 
-	if err != nil {
-		return nil, err
-	}
 	rawSignedModel, err := c.GenerateRawCard(&CardParams{
-		Identity:       identity,
+		Identity:       cardParams.Identity,
 		PrivateKey:     cardParams.PrivateKey,
 		PublicKey:      cardParams.PublicKey,
 		ExtraFields:    cardParams.ExtraFields,
@@ -154,7 +158,7 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c.PublishRawSignedModel(rawSignedModel, tokenContext, token)
+	return c.PublishRawSignedModel(rawSignedModel)
 }
 
 func (c *CardManager) GetCard(cardId string) (*Card, error) {
