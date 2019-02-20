@@ -44,6 +44,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"gopkg.in/virgil.v5"
+
 	"time"
 
 	"github.com/pkg/errors"
@@ -70,6 +72,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "VirgilHttpClient.Send: new request")
 	}
+	req.Header.Set("Virgil-Agent", virgil.GetAgentHeader())
 	req.Header.Set("Authorization", "Virgil "+token)
 	client := vc.getHttpClient()
 	resp, err := client.Do(req)
