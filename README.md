@@ -1,6 +1,6 @@
 # Virgil Security Go SDK
 
-[![Build Status](https://travis-ci.org/go-virgil/virgil.png?branch=v5)](https://travis-ci.org/go-virgil/virgil)
+[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-sdk-go.png?branch=v5)](https://travis-ci.com/VirgilSecurity/virgil-sdk-go)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 
 
