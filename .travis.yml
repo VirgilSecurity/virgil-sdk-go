@@ -4,4 +4,5 @@ go:
  - tip
 
 script:
- - go test -v ./... -tags=integration
+ - go get gopkg.in/virgil.v5/sdk
+ - cd $GOPATH/src/gopkg.in/virgil.v5 && go test -v ./... -tags=integration
