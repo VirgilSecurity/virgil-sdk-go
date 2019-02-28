@@ -145,13 +145,11 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 
 		if sdkErr.HTTPErrorCode() >= 400 && sdkErr.HTTPErrorCode() < 500 {
 			if sdkErr.HTTPErrorCode() == 401 {
-				if sdkErr, res := errors.ToSdkError(err); res {
-					if sdkErr.ServiceErrorCode() != 20304 {
-						return
-					} else {
-						forceReload = true
-						continue
-					}
+				if sdkErr.ServiceErrorCode() != 20304 {
+					return
+				} else {
+					forceReload = true
+					continue
 				}
 			}
 			return
