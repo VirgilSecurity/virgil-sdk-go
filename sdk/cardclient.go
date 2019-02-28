@@ -150,6 +150,7 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 						return
 					} else {
 						forceReload = true
+						continue
 					}
 				}
 			}
