@@ -38,36 +38,39 @@
 package sdk
 
 import (
+	"context"
 	"net/http"
 
 	"sync"
 
 	"encoding/hex"
 
+	"github.com/lestrrat-go/backoff"
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/errors"
 )
 
 type CardClient struct {
-	ServiceURL       string
-	VirgilHttpClient *common.VirgilHttpClient
-	HttpClient       common.HttpClient
-	once             sync.Once
+	ServiceURL          string
+	VirgilHttpClient    *common.VirgilHttpClient
+	HttpClient          common.HttpClient
+	AccessTokenProvider AccessTokenProvider
+	once                sync.Once
 }
 
-func NewCardsClient(serviceURL string) *CardClient {
-	return &CardClient{ServiceURL: serviceURL}
+func NewCardsClient(serviceURL string, provider AccessTokenProvider) *CardClient {
+	return &CardClient{ServiceURL: serviceURL, AccessTokenProvider: provider}
 }
 
-func (c *CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSignedModel, error) {
+func (c *CardClient) PublishCard(rawCard *RawSignedModel, tokenContext *TokenContext) (*RawSignedModel, error) {
 	var returnedRawCard *RawSignedModel
-	_, err := c.send(http.MethodPost, "/card/v5", token, rawCard, &returnedRawCard)
+	_, err := c.sendWithRetry(http.MethodPost, "/card/v5", tokenContext, rawCard, &returnedRawCard)
 	return returnedRawCard, err
 }
 
-func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
+func (c *CardClient) SearchCards(identity string, tokenContext *TokenContext) ([]*RawSignedModel, error) {
 	var rawCards []*RawSignedModel
-	_, err := c.send(http.MethodPost, "/card/v5/actions/search", token, map[string]string{"identity": identity}, &rawCards)
+	_, err := c.sendWithRetry(http.MethodPost, "/card/v5/actions/search", tokenContext, map[string]string{"identity": identity}, &rawCards)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +78,7 @@ func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedMod
 	return rawCards, err
 }
 
-func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool, error) {
+func (c *CardClient) GetCard(cardId string) (*RawSignedModel, bool, error) {
 
 	const (
 		SupersededCardIDHTTPHeader      = "X-Virgil-Is-Superseeded"
@@ -87,7 +90,7 @@ func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool
 	}
 
 	var rawCard *RawSignedModel
-	headers, err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
+	headers, err := c.sendWithRetry(http.MethodGet, "/card/v5/"+cardId, &TokenContext{Identity: "my_default_identity", Operation: "get"}, nil, &rawCard)
 
 	var outdated bool
 	if headers != nil {
@@ -107,6 +110,54 @@ func (c *CardClient) send(method string, url string, token string, payload inter
 		return headers, errors.NewServiceError(0, httpCode, err.Error())
 	}
 	return headers, nil
+}
+
+func (c *CardClient) sendWithRetry(method string, url string, tokenContext *TokenContext, payload interface{}, respObj interface{}) (headers http.Header, err error) {
+	b, done := policy.Start(context.Background())
+	defer done()
+
+	forceReload := false
+	var token AccessToken
+	for backoff.Continue(b) {
+
+		tokenContext.ForceReload = forceReload
+		token, err = c.AccessTokenProvider.GetToken(tokenContext)
+
+		if err != nil {
+			return nil, err
+		}
+
+		headers, err = c.send(method, url, token.String(), payload, respObj)
+		if err == nil {
+			return
+		}
+		forceReload = false
+
+		var sdkErr errors.SDKError
+		var res bool
+		if sdkErr, res = errors.ToSdkError(err); !res {
+			return nil, errors.New("unknown error type")
+		}
+
+		if sdkErr.HTTPErrorCode() >= 200 && sdkErr.HTTPErrorCode() < 400 {
+			return
+		}
+
+		if sdkErr.HTTPErrorCode() >= 400 && sdkErr.HTTPErrorCode() < 500 {
+			if sdkErr.HTTPErrorCode() == 401 {
+				if sdkErr, res := errors.ToSdkError(err); res {
+					if sdkErr.ServiceErrorCode() != 20304 {
+						return
+					} else {
+						forceReload = true
+					}
+				}
+
+			}
+		}
+
+	}
+	return
 }
 
 func (c *CardClient) getUrl() string {

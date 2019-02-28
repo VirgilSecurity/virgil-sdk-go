@@ -90,16 +90,15 @@ func initCardManager() (*CardManager, error) {
 	}
 
 	generator := NewJwtGenerator(apiKey, accID, tokenSigner, appID, time.Minute*1)
-	cardsClient := NewCardsClient(apiUrl)
+	cardsClient := NewCardsClient(apiUrl, NewGeneratorJwtProvider(generator, nil, ""))
 	if os.Getenv("TEST_DEBUG_OUTPUT") == "true" {
 		cardsClient.HttpClient = &DebugClient{}
 	}
 	params := &CardManagerParams{
-		Crypto:              cardCrypto,
-		CardVerifier:        verifier,
-		ModelSigner:         NewModelSigner(cardCrypto),
-		AccessTokenProvider: NewGeneratorJwtProvider(generator, nil, ""),
-		CardClient:          cardsClient,
+		Crypto:       cardCrypto,
+		CardVerifier: verifier,
+		ModelSigner:  NewModelSigner(cardCrypto),
+		CardClient:   cardsClient,
 	}
 	return NewCardManager(params)
 }

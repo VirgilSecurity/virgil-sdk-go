@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  *
@@ -38,62 +38,14 @@
 package sdk
 
 import (
-	"sync"
 	"time"
 
-	"gopkg.in/virgil.v5/errors"
+	"github.com/lestrrat-go/backoff"
 )
 
-type CachingJwtProvider struct {
-	RenewTokenCallback func(context *TokenContext) (*Jwt, error)
-	Jwt                *Jwt
-	lock               sync.RWMutex
-}
-
-func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (*Jwt, error)) *CachingJwtProvider {
-	return &CachingJwtProvider{
-		RenewTokenCallback: renewTokenCallback,
-	}
-}
-
-func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
-	return &CachingJwtProvider{
-		RenewTokenCallback: func(context *TokenContext) (*Jwt, error) {
-			token, err := renewTokenCallback(context)
-			if err != nil {
-				return nil, err
-			}
-			return JwtFromString(token)
-		},
-	}
-}
-
-func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-
-	if context == nil {
-		return nil, errors.New("context is mandatory")
-	}
-
-	if c.RenewTokenCallback == nil {
-		return nil, errors.New("callback is mandatory")
-	}
-
-	c.lock.RLock()
-	if c.Jwt == nil || c.Jwt.IsExpiredDelta(5*time.Second) != nil || context.ForceReload {
-		c.lock.RUnlock()
-		c.lock.Lock()
-		defer c.lock.Unlock()
-		if c.Jwt == nil || c.Jwt.IsExpiredDelta(5*time.Second) != nil || context.ForceReload {
-			token, err := c.RenewTokenCallback(context)
-			if err != nil {
-				return nil, err
-
-			}
-			c.Jwt = token
-		}
-	} else {
-		c.lock.RUnlock()
-	}
-
-	return c.Jwt, nil
-}
+var policy = backoff.NewExponential(
+	backoff.WithInterval(200*time.Millisecond), // base interval
+	backoff.WithJitterFactor(0.05),             // 5% jitter
+	backoff.WithMaxRetries(10),
+	backoff.WithMaxElapsedTime(time.Second*2),
+)
