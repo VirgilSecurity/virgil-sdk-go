@@ -41,7 +41,7 @@ import (
 
 	"crypto/rand"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPFS(t *testing.T) {
@@ -50,29 +50,29 @@ func TestPFS(t *testing.T) {
 
 	//ICa, EKa, ICb, LTCb, OTCb
 	ICa, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	EKa, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	ICb, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	LTCb, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	OTCb, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	pfs := c
 
 	ad := append(ICa.PublicKey().Identifier(), ICb.PublicKey().Identifier()...)
 
 	sessA, err := pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), OTCb.PublicKey(), ICa.PrivateKey(), EKa.PrivateKey(), ad)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	sessB, err := pfs.ReceivePFCSession(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), OTCb.PrivateKey(), ad)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	msg := make([]byte, 1025)
 	rand.Read(msg)
@@ -81,9 +81,9 @@ func TestPFS(t *testing.T) {
 
 	plaintext, err := sessB.Decrypt(salt, ciphertext)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Equal(t, plaintext, msg)
+	require.Equal(t, plaintext, msg)
 
 	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
 	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
@@ -114,15 +114,15 @@ func TestPFS(t *testing.T) {
 
 	plaintext, err = sessA.Decrypt(salt, ciphertext)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Equal(t, plaintext, msg)
+	require.Equal(t, plaintext, msg)
 
 	plaintext, err = sessB.Decrypt(salt, ciphertext)
 
-	assert.Error(t, err)
+	require.Error(t, err)
 
-	assert.NotEqual(t, plaintext, msg)
+	require.NotEqual(t, plaintext, msg)
 }
 
 func TestPFSNoOTC(t *testing.T) {
@@ -131,26 +131,26 @@ func TestPFSNoOTC(t *testing.T) {
 
 	//ICa, EKa, ICb, LTCb, OTCb
 	ICa, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	EKa, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	ICb, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	LTCb, err := c.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	pfs := c
 
 	ad := append(ICa.PublicKey().Identifier(), ICb.PublicKey().Identifier()...)
 
 	sessA, err := pfs.StartPFSSession(ICb.PublicKey(), LTCb.PublicKey(), nil, ICa.PrivateKey(), EKa.PrivateKey(), ad)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	sessB, err := pfs.ReceivePFCSession(ICa.PublicKey(), EKa.PublicKey(), ICb.PrivateKey(), LTCb.PrivateKey(), nil, ad)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	msg := make([]byte, 1025)
 	rand.Read(msg)
@@ -159,9 +159,9 @@ func TestPFSNoOTC(t *testing.T) {
 
 	plaintext, err := sessB.Decrypt(salt, ciphertext)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Equal(t, plaintext, msg)
+	require.Equal(t, plaintext, msg)
 
 	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
 	EKab, _ := c.ExportPrivateKey(EKa.PrivateKey(), "")
@@ -190,8 +190,8 @@ func TestPFSNoOTC(t *testing.T) {
 
 	plaintext, err = sessB.Decrypt(salt, ciphertext)
 
-	assert.Error(t, err)
+	require.Error(t, err)
 
-	assert.NotEqual(t, plaintext, msg)
+	require.NotEqual(t, plaintext, msg)
 
 }

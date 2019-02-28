@@ -40,13 +40,13 @@ package sdk
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCallbackJwtProvider_GetToken(t *testing.T) {
 	prov := &CallbackJwtProvider{}
 	token, err := prov.GetToken(&TokenContext{Identity: "someIdentity", Operation: "someOperation"})
 
-	assert.Nil(t, token)
-	assert.Error(t, err)
+	require.Nil(t, token)
+	require.Error(t, err)
 }

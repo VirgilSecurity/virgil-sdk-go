@@ -50,7 +50,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/virgil.v5/common"
 	"gopkg.in/virgil.v5/errors"
 )
@@ -106,52 +106,52 @@ func initCardManager() (*CardManager, error) {
 func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	card, err := manager.GetCard(randomString())
-	assert.Nil(t, card)
-	assert.Error(t, err)
-	assert.Equal(t, 404, err.(errors.SDKError).HTTPErrorCode())
+	require.Nil(t, card)
+	require.Error(t, err)
+	require.Equal(t, 404, err.(errors.SDKError).HTTPErrorCode())
 
 	card, err = PublishCard(t, manager, "Alice-"+randomString(), "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	card, err = manager.GetCard(card.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, card)
+	require.NoError(t, err)
+	require.NotNil(t, card)
 
 	cards, err := manager.SearchCards(card.Identity)
 
-	assert.NoError(t, err)
-	assert.True(t, len(cards) > 0)
+	require.NoError(t, err)
+	require.True(t, len(cards) > 0)
 
 	cards, err = manager.SearchCards(randomString())
-	assert.True(t, len(cards) == 0)
-	assert.NoError(t, err)
+	require.True(t, len(cards) == 0)
+	require.NoError(t, err)
 }
 
 func TestCardManager_Integration_Publish_Replace(t *testing.T) {
 
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	oldCard, err := PublishCard(t, manager, "Alice-"+randomString(), "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	newCard, err := PublishCard(t, manager, oldCard.Identity, oldCard.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, newCard)
+	require.NoError(t, err)
+	require.NotNil(t, newCard)
 
 	oldCard, err = manager.GetCard(oldCard.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, oldCard)
-	assert.True(t, oldCard.IsOutdated)
+	require.NoError(t, err)
+	require.NotNil(t, oldCard)
+	require.True(t, oldCard.IsOutdated)
 
 }
 
 func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	identity := "Alice-" + randomString()
 
@@ -159,21 +159,21 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 		prev := ""
 		for j := 0; j < 3; j++ {
 			card, err := PublishCard(t, manager, identity, prev)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			prev = card.Id
 		}
 	}
 
 	cards, err := manager.SearchCards(identity)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.True(t, len(cards) == 3)
+	require.True(t, len(cards) == 3)
 
 	for _, card := range cards {
 		current := card
 		for i := 0; i < 2; i++ {
-			assert.True(t, current.PreviousCard != nil)
-			assert.True(t, current.PreviousCard.Id == current.PreviousCardId)
+			require.True(t, current.PreviousCard != nil)
+			require.True(t, current.PreviousCard.Id == current.PreviousCardId)
 			current = current.PreviousCard
 		}
 	}
@@ -182,7 +182,7 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 
 func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardId string) (*Card, error) {
 	kp, err := crypto.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cardParams := &CardParams{
 		PublicKey:      kp.PublicKey(),
@@ -193,8 +193,8 @@ func PublishCard(t *testing.T, manager *CardManager, identity string, previousCa
 	}
 
 	card, err := manager.PublishCard(cardParams)
-	assert.NoError(t, err)
-	assert.Equal(t, card.Identity, cardParams.Identity)
+	require.NoError(t, err)
+	require.Equal(t, card.Identity, cardParams.Identity)
 	return card, err
 }
 

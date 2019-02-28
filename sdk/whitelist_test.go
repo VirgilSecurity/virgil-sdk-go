@@ -43,7 +43,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/virgil.v5/cryptoapi"
 )
 
@@ -90,37 +90,37 @@ func TestWhitelist(t *testing.T) {
 
 	card, err := ParseRawCard(cardCrypto, model, false)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//check default case
 	err = verifier.VerifyCard(card)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//check that everything is ok if at least one signature in whitelist is valid
 	wl[0].VerifierCredentials[0] = creds[4].VerifierCredentials
 
 	err = verifier.VerifyCard(card)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//Check that verification fails if no signature exists for whitelist
 	wl = addWhitelist(wl, creds[3])
 	verifier.SetWhitelists(wl)
 
 	err = verifier.VerifyCard(card)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err, ok := ToCardVerifierError(err)
-	assert.Error(t, err)
-	assert.True(t, ok)
+	require.Error(t, err)
+	require.True(t, ok)
 
 	//empty whitelist must fail
 	verifier.SetWhitelists([]*Whitelist{{}})
 	err = verifier.VerifyCard(card)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err, ok = ToCardVerifierError(err)
-	assert.Error(t, err)
-	assert.True(t, ok)
+	require.Error(t, err)
+	require.True(t, ok)
 
 }
 
@@ -133,7 +133,7 @@ func addRawSign(t *testing.T, model *RawSignedModel, credentials *testCredential
 
 	err := modelSigner.SignRaw(model, credentials.Signer, credentials.PrivateKey, snapshot)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
@@ -147,7 +147,7 @@ func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) 
 		"z": credentials.Signer,
 	})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {

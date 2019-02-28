@@ -39,7 +39,7 @@ package cryptoimpl
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPrivateKeyExporter(t *testing.T) {
@@ -50,12 +50,12 @@ func TestPrivateKeyExporter(t *testing.T) {
 
 	kp, err := crypto.GenerateKeypair()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	exported, err := p.ExportPrivateKey(kp.PrivateKey())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	imported, err := p.ImportPrivateKey(exported)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Equal(t, kp.PrivateKey().contents(), imported.(*ed25519PrivateKey).contents())
+	require.Equal(t, kp.PrivateKey().contents(), imported.(*ed25519PrivateKey).contents())
 }
