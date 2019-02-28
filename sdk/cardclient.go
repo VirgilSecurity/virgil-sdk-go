@@ -136,7 +136,7 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 		var sdkErr errors.SDKError
 		var res bool
 		if sdkErr, res = errors.ToSdkError(err); !res {
-			return nil, errors.New("unknown error type")
+			return
 		}
 
 		if sdkErr.HTTPErrorCode() >= 200 && sdkErr.HTTPErrorCode() < 400 {
