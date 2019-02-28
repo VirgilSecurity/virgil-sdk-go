@@ -119,10 +119,8 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 	forceReload := false
 	var token AccessToken
 	for backoff.Continue(b) {
-
 		tokenContext.ForceReload = forceReload
 		token, err = c.AccessTokenProvider.GetToken(tokenContext)
-
 		if err != nil {
 			return nil, err
 		}
@@ -144,13 +142,9 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 		}
 
 		if sdkErr.HTTPErrorCode() >= 400 && sdkErr.HTTPErrorCode() < 500 {
-			if sdkErr.HTTPErrorCode() == 401 {
-				if sdkErr.ServiceErrorCode() != 20304 {
-					return
-				} else {
-					forceReload = true
-					continue
-				}
+			if sdkErr.HTTPErrorCode() == 401 && sdkErr.ServiceErrorCode() == 20304 {
+				forceReload = true
+				continue
 			}
 			return
 		}
