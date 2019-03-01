@@ -39,6 +39,7 @@ package sdk
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"sync"
@@ -144,12 +145,14 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 		if sdkErr.HTTPErrorCode() >= 400 && sdkErr.HTTPErrorCode() < 500 {
 			if sdkErr.HTTPErrorCode() == 401 && sdkErr.ServiceErrorCode() == 20304 {
 				forceReload = true
+				log.Printf("rertying because of auth %s\n", url)
 				continue
 			}
 			return
 		}
 
 		if sdkErr.HTTPErrorCode() >= 500 && sdkErr.HTTPErrorCode() < 600 {
+			log.Printf("rertying %s\n", url)
 			continue
 		}
 		return
