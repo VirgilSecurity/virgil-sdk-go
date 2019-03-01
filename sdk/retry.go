@@ -46,6 +46,6 @@ import (
 var policy = backoff.NewExponential(
 	backoff.WithInterval(200*time.Millisecond), // base interval
 	backoff.WithJitterFactor(0.05),             // 5% jitter
-	backoff.WithMaxRetries(10),
-	backoff.WithMaxElapsedTime(time.Second*2),
+	backoff.WithMaxRetries(5),
+	backoff.WithMaxElapsedTime(time.Second*4),
 )
