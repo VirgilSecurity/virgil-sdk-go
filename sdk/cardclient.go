@@ -138,6 +138,12 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 			return
 		}
 
+		//transport level error
+		if sdkErr.HTTPErrorCode() == 0 && sdkErr.ServiceErrorCode() == 0 {
+			log.Printf("rertying because of %s\n", sdkErr.Error())
+			continue
+		}
+
 		if sdkErr.HTTPErrorCode() >= 200 && sdkErr.HTTPErrorCode() < 400 {
 			return
 		}
