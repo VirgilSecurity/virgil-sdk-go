@@ -42,6 +42,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 
 	"gopkg.in/virgil.v5"
@@ -72,6 +73,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "VirgilHttpClient.Send: new request")
 	}
+
 	req.Header.Set("Virgil-Agent", virgil.GetAgentHeader())
 	req.Header.Set("Authorization", "Virgil "+token)
 	client := vc.getHttpClient()
@@ -115,7 +117,16 @@ func (vc *VirgilHttpClient) getHttpClient() HttpClient {
 	if vc.Client != nil {
 		return vc.Client
 	}
+
+	var netTransport = &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).DialContext,
+		TLSHandshakeTimeout: 5 * time.Second,
+	}
+
 	return &http.Client{
-		Timeout: time.Second * 10,
+		Timeout:   time.Second * 10,
+		Transport: netTransport,
 	}
 }
