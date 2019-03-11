@@ -104,7 +104,6 @@ func initCardManager() (*CardManager, error) {
 }
 
 func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
-
 	manager, err := initCardManager()
 	require.NoError(t, err)
 
