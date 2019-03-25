@@ -56,6 +56,7 @@ import (
 )
 
 func initCardManager() (*CardManager, error) {
+	SetLogLevel(LogLevelWarn)
 	apiUrl := os.Getenv("TEST_ADDRESS")
 	accID := os.Getenv("TEST_ACC_ID")
 	if accID == "" {

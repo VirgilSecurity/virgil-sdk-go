@@ -41,8 +41,6 @@ import (
 	"context"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"sync"
 
 	"encoding/hex"
@@ -115,7 +113,7 @@ func (c *CardClient) send(method string, url string, token string, payload inter
 }
 
 func (c *CardClient) sendWithRetry(method string, url string, tokenContext *TokenContext, payload interface{}, respObj interface{}) (headers http.Header, err error) {
-	b, done := policy.Start(context.Background())
+	b, done := RetryPolicy.Start(context.Background())
 	defer done()
 
 	forceReload := false
@@ -172,7 +170,7 @@ func (c *CardClient) getUrl() string {
 	if c.ServiceURL != "" {
 		return c.ServiceURL
 	}
-	return "https://api.virgilsecurity.com"
+	return "https://api2.virgilsecurity.com"
 }
 
 func (c *CardClient) getHttpClient() common.HttpClient {

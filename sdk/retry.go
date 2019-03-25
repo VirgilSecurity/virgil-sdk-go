@@ -43,7 +43,8 @@ import (
 	"github.com/lestrrat-go/backoff"
 )
 
-var policy = backoff.NewExponential(
+//The default retry policy is 5 retries during 4 second period
+var RetryPolicy = backoff.NewExponential(
 	backoff.WithInterval(200*time.Millisecond), // base interval
 	backoff.WithJitterFactor(0.05),             // 5% jitter
 	backoff.WithMaxRetries(5),

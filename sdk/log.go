@@ -37,8 +37,92 @@
 
 package sdk
 
-import "github.com/sirupsen/logrus"
+import (
+	"fmt"
 
-func Init() {
-	logrus.SetLevel(logrus.ErrorLevel)
+	"github.com/sirupsen/logrus"
+	"github.com/x-cray/logrus-prefixed-formatter"
+)
+
+type LogLevel int
+
+const (
+	LogLevelDebug LogLevel = iota
+	LogLevelWarn
+	LogLevelError
+)
+
+type Logger interface {
+	Log(severity LogLevel, message string)
+}
+
+var log *internalLogger
+
+type internalLogger struct {
+	level LogLevel
+	log   Logger
+}
+
+func (d *internalLogger) Debugf(format string, args ...string) {
+	if d.log != nil && d.level == LogLevelDebug {
+		d.log.Log(LogLevelDebug, fmt.Sprintf(format, args))
+	}
+}
+
+func (d *internalLogger) Warnf(format string, args ...string) {
+	if d.log != nil && d.level <= LogLevelWarn {
+		d.log.Log(LogLevelWarn, fmt.Sprintf(format, args))
+	}
+}
+
+func (d *internalLogger) Errorf(format string, args ...string) {
+	if d.log != nil && d.level <= LogLevelError {
+		d.log.Log(LogLevelError, fmt.Sprintf(format, args))
+	}
+}
+
+type logrusWrapper struct {
+	*logrus.Logger
+}
+
+func (w *logrusWrapper) Log(severity LogLevel, message string) {
+	switch severity {
+	case LogLevelDebug:
+		w.Logger.Debug(message)
+		break
+	case LogLevelWarn:
+		w.Logger.Warn(message)
+		break
+	case LogLevelError:
+		w.Logger.Error(message)
+		break
+	default:
+		break
+	}
+}
+
+func SetLogger(logger Logger) {
+	log.log = logger
+}
+
+func SetLogLevel(level LogLevel) {
+	if level >= LogLevelDebug && level <= LogLevelError {
+		log.level = level
+	}
+}
+
+func init() {
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	logger.SetFormatter(&prefixed.TextFormatter{
+		DisableColors:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+		FullTimestamp:   true,
+		ForceFormatting: true,
+	})
+
+	log = &internalLogger{
+		log:   &logrusWrapper{Logger: logger},
+		level: LogLevelError,
+	}
 }
