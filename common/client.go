@@ -63,7 +63,12 @@ type VirgilHttpClient struct {
 	Address string
 }
 
-func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, code int, err error) {
+func (vc *VirgilHttpClient) Send(
+	method, url, token string,
+	payload interface{},
+	respObj interface{},
+) (headers http.Header, code int, err error) {
+
 	var body []byte
 	if payload != nil {
 		body, err = json.Marshal(payload)
@@ -71,6 +76,7 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 			return nil, 0, errors.Wrap(err, "VirgilHttpClient.Send: marshal payload")
 		}
 	}
+
 	req, err := http.NewRequest(method, vc.Address+url, bytes.NewReader(body))
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "VirgilHttpClient.Send: new request")
@@ -88,14 +94,23 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 		return nil, resp.StatusCode, EntityNotFoundErr
 	}
 
-	log.Default.Debugf("Virgil-Trace-Id: %s", resp.Header.Get("Virgil-Trace-Id"))
-
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, resp.StatusCode, errors.Wrap(err, "VirgilHttpClient.Send: read response body")
+		return nil, resp.StatusCode, errors.Wrap(
+			err,
+			"VirgilHttpClient.Send: read response body (virgil-trace-id: %s)",
+		)
 	}
+
 	if !json.Valid(respBody) {
-		return nil, resp.StatusCode, errors.New(fmt.Sprintf("VirgilHttpClient.Send: invalid response JSON (status code: %d body: %s)", resp.StatusCode, respBody))
+		return nil, resp.StatusCode, errors.New(
+			fmt.Sprintf(
+				"VirgilHttpClient.Send: invalid response JSON (status code: %d body: %s virgil-trace-id: %s)",
+				resp.StatusCode,
+				respBody,
+				resp.Header.Get("Virgil-Trace-Id"),
+			),
+		)
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(respBody))
@@ -104,16 +119,30 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
 			if err = decoder.Decode(respObj); err != nil {
-				return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
+				return nil, resp.StatusCode, errors.Wrapf(
+					err,
+					"VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s virgil-trace-id: %s)",
+					resp.StatusCode,
+					respBody,
+					resp.Header.Get("Virgil-Trace-Id"),
+				)
 			}
 		}
+
 		return resp.Header, resp.StatusCode, nil
 	}
 
 	var virgilErr VirgilAPIError
 	if err = decoder.Decode(&virgilErr); err != nil {
-		return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
+		return nil, resp.StatusCode, errors.Wrapf(
+			err,
+			"VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s virgil-trace-id: %s)",
+			resp.StatusCode,
+			respBody,
+			resp.Header.Get("Virgil-Trace-Id"),
+		)
 	}
+
 	return nil, resp.StatusCode, virgilErr
 }
 
