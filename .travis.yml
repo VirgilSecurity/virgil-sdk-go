@@ -2,6 +2,9 @@ language: go
 go:
  - stable
 
+before_install:
+- cp * /home/travis/gopath/src/gopkg.in/virgil.v5
+
 script:
- - cp * /home/travis/gopath/src/gopkg.in/virgil.v5
+
  - go test -v ./... -tags=integration
