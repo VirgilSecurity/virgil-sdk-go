@@ -3,4 +3,5 @@ go:
  - stable
 
 script:
+ - cp * /home/travis/gopath/src/gopkg.in/virgil.v5
  - go test -v ./... -tags=integration
