@@ -96,9 +96,10 @@ func (vc *VirgilHttpClient) Send(
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, resp.StatusCode, errors.Wrap(
+		return nil, resp.StatusCode, errors.Wrapf(
 			err,
 			"VirgilHttpClient.Send: read response body (virgil-trace-id: %s)",
+			resp.Header.Get("Virgil-Trace-Id"),
 		)
 	}
 
