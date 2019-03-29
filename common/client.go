@@ -45,8 +45,6 @@ import (
 	"net"
 	"net/http"
 
-	"gopkg.in/virgil.v5/log"
-
 	"gopkg.in/virgil.v5"
 
 	"time"
