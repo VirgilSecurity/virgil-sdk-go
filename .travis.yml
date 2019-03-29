@@ -3,7 +3,7 @@ go:
  - stable
 
 before_install:
-- cp * /home/travis/gopath/src/gopkg.in/virgil.v5
+- mkdir -p /home/travis/gopath/src/gopkg.in/virgil.v5 && cp * /home/travis/gopath/src/gopkg.in/virgil.v5
 
 script:
 
