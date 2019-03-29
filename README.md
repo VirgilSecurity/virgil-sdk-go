@@ -203,7 +203,6 @@ In order to use the Virgil SDK with your application, you will need to first con
   * [Search user's Card by user's identity][_search_card]
   * [Get user's Card by its ID][_get_card]
   * [Use Card for crypto operations][_use_card]
-* [Reference API][_reference_api]
 
 
 ## License
