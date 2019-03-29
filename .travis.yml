@@ -3,7 +3,8 @@ go:
  - stable
 
 before_install:
-- mkdir -p /home/travis/gopath/src/gopkg.in/virgil.v5 && cp * /home/travis/gopath/src/gopkg.in/virgil.v5
+ - mkdir -p $(go env GOPATH)/src/gopkg.in/virgil.v5
+ - cp -a $(go env GOPATH)/src/VirgilSecurity/virgil-sdk-go/ $(go env GOPATH)/src/gopkg.in/virgil.v5/
 
 script:
 
