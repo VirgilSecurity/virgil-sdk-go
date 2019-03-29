@@ -35,7 +35,7 @@
  *
  */
 
-package sdk
+package log
 
 import (
 	"fmt"
@@ -56,7 +56,7 @@ type Logger interface {
 	Log(severity LogLevel, message string)
 }
 
-var log *internalLogger
+var Default *internalLogger
 
 type internalLogger struct {
 	level LogLevel
@@ -102,12 +102,12 @@ func (w *logrusWrapper) Log(severity LogLevel, message string) {
 }
 
 func SetLogger(logger Logger) {
-	log.log = logger
+	Default.log = logger
 }
 
 func SetLogLevel(level LogLevel) {
 	if level >= LogLevelDebug && level <= LogLevelError {
-		log.level = level
+		Default.level = level
 	}
 }
 
@@ -121,7 +121,7 @@ func init() {
 		ForceFormatting: true,
 	})
 
-	log = &internalLogger{
+	Default = &internalLogger{
 		log:   &logrusWrapper{Logger: logger},
 		level: LogLevelError,
 	}

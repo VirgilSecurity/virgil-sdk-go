@@ -45,6 +45,8 @@ import (
 	"net"
 	"net/http"
 
+	"gopkg.in/virgil.v5/log"
+
 	"gopkg.in/virgil.v5"
 
 	"time"
@@ -85,6 +87,8 @@ func (vc *VirgilHttpClient) Send(method string, url string, token string, payloa
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, resp.StatusCode, EntityNotFoundErr
 	}
+
+	log.Default.Debugf("Virgil-Trace-Id: %s", resp.Header.Get("Virgil-Trace-Id"))
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

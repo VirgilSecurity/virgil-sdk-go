@@ -41,6 +41,8 @@ import (
 	"context"
 	"net/http"
 
+	"gopkg.in/virgil.v5/log"
+
 	"sync"
 
 	"encoding/hex"
@@ -139,7 +141,7 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 
 		//transport level error
 		if sdkErr.HTTPErrorCode() == 0 && sdkErr.ServiceErrorCode() == 0 {
-			log.Warnf("retrying because of %s", sdkErr.Error())
+			log.Default.Warnf("retrying because of %s", sdkErr.Error())
 			continue
 		}
 
@@ -150,14 +152,14 @@ func (c *CardClient) sendWithRetry(method string, url string, tokenContext *Toke
 		if sdkErr.HTTPErrorCode() >= 400 && sdkErr.HTTPErrorCode() < 500 {
 			if sdkErr.HTTPErrorCode() == 401 && sdkErr.ServiceErrorCode() == 20304 {
 				forceReload = true
-				log.Warnf("retrying because of auth %s", url)
+				log.Default.Warnf("retrying because of auth %s", url)
 				continue
 			}
 			return
 		}
 
 		if sdkErr.HTTPErrorCode() >= 500 && sdkErr.HTTPErrorCode() < 600 {
-			log.Warnf("retrying %s", url)
+			log.Default.Warnf("retrying %s", url)
 			continue
 		}
 		return
@@ -170,7 +172,7 @@ func (c *CardClient) getUrl() string {
 	if c.ServiceURL != "" {
 		return c.ServiceURL
 	}
-	return "https://api2.virgilsecurity.com"
+	return "https://api.virgilsecurity.com"
 }
 
 func (c *CardClient) getHttpClient() common.HttpClient {

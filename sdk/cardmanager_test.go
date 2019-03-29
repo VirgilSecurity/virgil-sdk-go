@@ -47,6 +47,8 @@ import (
 	"testing"
 	"time"
 
+	"gopkg.in/virgil.v5/log"
+
 	"crypto/rand"
 	"encoding/hex"
 
@@ -56,7 +58,7 @@ import (
 )
 
 func initCardManager() (*CardManager, error) {
-	SetLogLevel(LogLevelWarn)
+	log.SetLogLevel(log.LogLevelDebug)
 	apiUrl := os.Getenv("TEST_ADDRESS")
 	accID := os.Getenv("TEST_ACC_ID")
 	if accID == "" {
