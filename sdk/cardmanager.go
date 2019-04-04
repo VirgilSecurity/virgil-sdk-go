@@ -196,7 +196,7 @@ func (c *CardManager) SearchCards(identity string) (Cards, error) {
 	if err := c.selfCheck(); err != nil {
 		return nil, err
 	}
-	tokenContext := &TokenContext{Identity: identity, Operation: "search"}
+	tokenContext := &TokenContext{Operation: "search"}
 	token, err := c.AccessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
