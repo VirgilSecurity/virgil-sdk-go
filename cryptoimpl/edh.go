@@ -38,9 +38,10 @@
 package cryptoimpl
 
 import (
+	"crypto/sha256"
+
 	"github.com/agl/ed25519"
 	"github.com/agl/ed25519/extra25519"
-	"github.com/minio/sha256-simd"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
 )
