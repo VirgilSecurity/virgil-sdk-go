@@ -75,6 +75,11 @@ func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedMod
 	return rawCards, err
 }
 
+func (c *CardClient) RevokeCard(cardId string, token string) error {
+	_, err := c.send(http.MethodPost, "/card/v5/actions/revoke/"+cardId, token, nil, nil)
+	return err
+}
+
 func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool, error) {
 
 	const (

@@ -188,6 +188,19 @@ func (c *CardManager) GetCard(cardId string) (*Card, error) {
 	return card, nil
 }
 
+func (c *CardManager) RevokeCard(cardId string) error {
+	if err := c.selfCheck(); err != nil {
+		return err
+	}
+	tokenContext := &TokenContext{Operation: "delete", Service: "cards"}
+	token, err := c.AccessTokenProvider.GetToken(tokenContext)
+	if err != nil {
+		return err
+	}
+
+	return c.getClient().RevokeCard(cardId, token.String())
+}
+
 func (c *CardManager) SearchCards(identity string) (Cards, error) {
 	if err := c.selfCheck(); err != nil {
 		return nil, err

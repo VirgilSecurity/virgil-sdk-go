@@ -62,5 +62,9 @@ func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, err
 	if context == nil {
 		return nil, errors.New("context is mandatory")
 	}
-	return g.JwtGenerator.GenerateToken(context.Identity, g.AdditionalData)
+	identity := context.Identity
+	if identity == "" {
+		identity = g.DefaultIdentity
+	}
+	return g.JwtGenerator.GenerateToken(identity, g.AdditionalData)
 }
