@@ -38,13 +38,13 @@
 package cryptoimpl
 
 import (
+	"crypto/sha256"
 	"io"
 	"strconv"
 
 	"crypto/sha512"
 
 	"github.com/agl/ed25519"
-	"github.com/minio/sha256-simd"
 	"gopkg.in/virgil.v5/errors"
 )
 

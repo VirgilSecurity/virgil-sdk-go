@@ -98,7 +98,7 @@ func initCardManager() (*CardManager, error) {
 		Crypto:              cardCrypto,
 		CardVerifier:        verifier,
 		ModelSigner:         NewModelSigner(cardCrypto),
-		AccessTokenProvider: NewGeneratorJwtProvider(generator, nil, ""),
+		AccessTokenProvider: NewGeneratorJwtProvider(generator, nil, "default_identity"),
 		CardClient:          cardsClient,
 	}
 	return NewCardManager(params)
@@ -146,7 +146,25 @@ func TestCardManager_Integration_Publish_Replace(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, oldCard)
 	assert.True(t, oldCard.IsOutdated)
+}
 
+func TestCardManager_Integration_Publish_Revoke(t *testing.T) {
+
+	manager, err := initCardManager()
+	assert.NoError(t, err)
+
+	card, err := PublishCard(t, manager, "Alice-"+randomString(), "")
+	assert.NoError(t, err)
+	assert.NotNil(t, card)
+
+	card, err = manager.GetCard(card.Id)
+	assert.NoError(t, err)
+	assert.NotNil(t, card)
+	assert.False(t, card.IsOutdated)
+
+	manager.AccessTokenProvider.(*GeneratorJwtProvider).DefaultIdentity = card.Identity
+	err = manager.RevokeCard(card.Id)
+	assert.NoError(t, err)
 }
 
 func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {

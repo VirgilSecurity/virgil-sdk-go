@@ -41,8 +41,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 
-	"github.com/minio/sha256-simd"
 	"golang.org/x/crypto/hkdf"
 )
 
