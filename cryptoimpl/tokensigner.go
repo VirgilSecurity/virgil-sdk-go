@@ -37,7 +37,11 @@
 
 package cryptoimpl
 
-import "crypto/sha512"
+import (
+	"crypto/sha512"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+)
 
 type VirgilAccessTokenSigner struct {
 	Crypto *VirgilCrypto
@@ -47,17 +51,11 @@ func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
 	return &VirgilAccessTokenSigner{Crypto: &VirgilCrypto{}}
 }
 
-func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-	Identifier() []byte
-}) ([]byte, error) {
+func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
 	return t.Crypto.Sign(data, privateKey.(*ed25519PrivateKey))
 
 }
-func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-	Identifier() []byte
-}) error {
+func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
 
 	hash := sha512.Sum512(data)
 	return t.Crypto.VerifyHashSignature(hash[:], signature, publicKey.(*ed25519PublicKey))

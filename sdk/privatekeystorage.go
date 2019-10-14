@@ -38,16 +38,16 @@
 package sdk
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type VirgilPrivateKeyStorage struct {
-	PrivateKeyExporter cryptoapi.PrivateKeyExporter
+	PrivateKeyExporter crypto.PrivateKeyExporter
 	KeyStorage         KeyStorage
 }
 
-func NewVirgilPrivateKeyStorage(privateKeyExporter cryptoapi.PrivateKeyExporter, path string) cryptoapi.PrivateKeyStorage {
+func NewVirgilPrivateKeyStorage(privateKeyExporter crypto.PrivateKeyExporter, path string) crypto.PrivateKeyStorage {
 
 	return &VirgilPrivateKeyStorage{
 		PrivateKeyExporter: privateKeyExporter,
@@ -57,10 +57,7 @@ func NewVirgilPrivateKeyStorage(privateKeyExporter cryptoapi.PrivateKeyExporter,
 	}
 }
 
-func (v *VirgilPrivateKeyStorage) Store(key interface {
-	IsPrivate() bool
-	Identifier() []byte
-}, name string, meta map[string]string) error {
+func (v *VirgilPrivateKeyStorage) Store(privateKey crypto.PrivateKey, name string, meta map[string]string) error {
 
 	if v.PrivateKeyExporter == nil {
 		return errors.New("PrivateKeyExporter is not set")
@@ -70,7 +67,7 @@ func (v *VirgilPrivateKeyStorage) Store(key interface {
 		return errors.New("KeyStorage is not set")
 	}
 
-	exported, err := v.PrivateKeyExporter.ExportPrivateKey(key)
+	exported, err := v.PrivateKeyExporter.ExportPrivateKey(privateKey)
 
 	if err != nil {
 		return err
@@ -84,10 +81,7 @@ func (v *VirgilPrivateKeyStorage) Store(key interface {
 
 }
 
-func (v *VirgilPrivateKeyStorage) Load(name string) (key interface {
-	IsPrivate() bool
-	Identifier() []byte
-}, meta map[string]string, err error) {
+func (v *VirgilPrivateKeyStorage) Load(name string) (privateKey crypto.PrivateKey, meta map[string]string, err error) {
 	if v.PrivateKeyExporter == nil {
 		err = errors.New("PrivateKeyExporter is not set")
 		return
@@ -104,12 +98,12 @@ func (v *VirgilPrivateKeyStorage) Load(name string) (key interface {
 		return
 	}
 
-	key, err = v.PrivateKeyExporter.ImportPrivateKey(item.Data)
+	privateKey, err = v.PrivateKeyExporter.ImportPrivateKey(item.Data)
 	if err != nil {
 		return
 	}
 
-	return key, item.Meta, nil
+	return privateKey, item.Meta, nil
 }
 
 func (v *VirgilPrivateKeyStorage) Delete(name string) error {

@@ -38,7 +38,7 @@
 package sdk
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
@@ -66,14 +66,14 @@ const (
 )
 
 type VirgilCardVerifier struct {
-	Crypto                cryptoapi.CardCrypto
+	Crypto                crypto.CardCrypto
 	VerifySelfSignature   bool
 	VerifyVirgilSignature bool
 	Whitelists            []*Whitelist
-	virgilPublicKey       cryptoapi.PublicKey
+	virgilPublicKey       crypto.PublicKey
 }
 
-func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, verifyVirgilSignature bool, whitelists ...*Whitelist) (*VirgilCardVerifier, error) {
+func NewVirgilCardVerifier(crypto crypto.CardCrypto, verifySelfSignature, verifyVirgilSignature bool, whitelists ...*Whitelist) (*VirgilCardVerifier, error) {
 
 	verifier := &VirgilCardVerifier{
 		Crypto:                crypto,
@@ -172,11 +172,11 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 	return nil
 }
 
-func (v *VirgilCardVerifier) GetPublicKeyFromBase64(str string) (cryptoapi.PublicKey, error) {
+func (v *VirgilCardVerifier) GetPublicKeyFromBase64(str string) (crypto.PublicKey, error) {
 	return v.Crypto.ImportPublicKey([]byte(str))
 }
 
-func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, publicKey cryptoapi.PublicKey) error {
+func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, publicKey crypto.PublicKey) error {
 	if err := v.SelfCheck(); err != nil {
 		return err
 	}

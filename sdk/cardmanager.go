@@ -42,13 +42,13 @@ import (
 
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type CardManager struct {
 	ModelSigner                                  *ModelSigner
-	Crypto                                       cryptoapi.CardCrypto
+	Crypto                                       crypto.CardCrypto
 	AccessTokenProvider                          AccessTokenProvider
 	CardVerifier                                 CardVerifier
 	CardClient                                   *CardClient

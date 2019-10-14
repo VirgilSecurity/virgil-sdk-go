@@ -37,11 +37,11 @@
 
 package sdk
 
-import "github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
 
 type CardManagerParams struct {
 	ModelSigner         *ModelSigner
-	Crypto              cryptoapi.CardCrypto
+	Crypto              crypto.CardCrypto
 	AccessTokenProvider AccessTokenProvider
 	CardVerifier        CardVerifier
 	CardClient          *CardClient

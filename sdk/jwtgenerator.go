@@ -40,19 +40,19 @@ package sdk
 import (
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type JwtGenerator struct {
-	ApiKey                 cryptoapi.PrivateKey
+	ApiKey                 crypto.PrivateKey
 	ApiPublicKeyIdentifier string
-	AccessTokenSigner      cryptoapi.AccessTokenSigner
+	AccessTokenSigner      crypto.AccessTokenSigner
 	AppId                  string
 	TTL                    time.Duration
 }
 
-func NewJwtGenerator(apiKey cryptoapi.PrivateKey, apiPublicKeyIdentifier string, signer cryptoapi.AccessTokenSigner, appId string, ttl time.Duration) *JwtGenerator {
+func NewJwtGenerator(apiKey crypto.PrivateKey, apiPublicKeyIdentifier string, signer crypto.AccessTokenSigner, appId string, ttl time.Duration) *JwtGenerator {
 
 	return &JwtGenerator{
 		AppId:                  appId,

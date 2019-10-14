@@ -40,7 +40,7 @@ package sdk
 import (
 	"fmt"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
@@ -50,14 +50,14 @@ const (
 )
 
 type ModelSigner struct {
-	Crypto cryptoapi.CardCrypto
+	Crypto crypto.CardCrypto
 }
 
-func NewModelSigner(crypto cryptoapi.CardCrypto) *ModelSigner {
+func NewModelSigner(crypto crypto.CardCrypto) *ModelSigner {
 	return &ModelSigner{Crypto: crypto}
 }
 
-func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryptoapi.PrivateKey, extraFields map[string]string) (err error) {
+func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey crypto.PrivateKey, extraFields map[string]string) (err error) {
 	var extraFieldsSnapshot []byte
 	if extraFields != nil {
 		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
@@ -72,7 +72,7 @@ func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryp
 	}, extraFieldsSnapshot)
 }
 
-func (m *ModelSigner) SignRaw(model *RawSignedModel, signer string, privateKey cryptoapi.PrivateKey, extraFieldsSnapshot []byte) (err error) {
+func (m *ModelSigner) SignRaw(model *RawSignedModel, signer string, privateKey crypto.PrivateKey, extraFieldsSnapshot []byte) (err error) {
 
 	return m.signInternal(model, &SignParams{
 		SignerPrivateKey: privateKey,
@@ -80,7 +80,7 @@ func (m *ModelSigner) SignRaw(model *RawSignedModel, signer string, privateKey c
 	}, extraFieldsSnapshot)
 }
 
-func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey cryptoapi.PrivateKey, extraFields map[string]string) (err error) {
+func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey crypto.PrivateKey, extraFields map[string]string) (err error) {
 	var extraFieldsSnapshot []byte
 	if extraFields != nil {
 		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
@@ -95,7 +95,7 @@ func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey cryptoapi.Priva
 	}, extraFieldsSnapshot)
 }
 
-func (m *ModelSigner) SelfSignRaw(model *RawSignedModel, privateKey cryptoapi.PrivateKey, extraFieldsSnapshot []byte) (err error) {
+func (m *ModelSigner) SelfSignRaw(model *RawSignedModel, privateKey crypto.PrivateKey, extraFieldsSnapshot []byte) (err error) {
 	return m.signInternal(model, &SignParams{
 		SignerPrivateKey: privateKey,
 		Signer:           SelfSigner,

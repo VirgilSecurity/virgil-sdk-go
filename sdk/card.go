@@ -40,13 +40,13 @@ package sdk
 import (
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 type Card struct {
 	Id             string
 	Identity       string
-	PublicKey      cryptoapi.PublicKey
+	PublicKey      crypto.PublicKey
 	Version        string
 	CreatedAt      time.Time
 	PreviousCardId string

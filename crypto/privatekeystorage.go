@@ -35,18 +35,10 @@
  *
  */
 
-package cryptoapi
+package crypto
 
 type PrivateKeyStorage interface {
-	Store(key interface {
-		IsPrivate() bool
-		Identifier() []byte
-	}, name string, meta map[string]string) error
-
-	Load(name string) (key interface {
-		IsPrivate() bool
-		Identifier() []byte
-	}, meta map[string]string, err error)
-
+	Store(privateKey PrivateKey, name string, meta map[string]string) error
+	Load(name string) (privateKey PrivateKey, meta map[string]string, err error)
 	Delete(name string) error
 }

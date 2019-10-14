@@ -50,9 +50,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/VirgilSecurity/virgil-sdk-go/common"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func initCardManager() (*CardManager, error) {
@@ -65,7 +65,7 @@ func initCardManager() (*CardManager, error) {
 	if apiKeySource == "" {
 		return nil, errors.New("TEST_API_KEY is required")
 	}
-	apiKey, err := crypto.ImportPrivateKey([]byte(apiKeySource), "")
+	apiKey, err := cryptoNative.ImportPrivateKey([]byte(apiKeySource), "")
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot import API private key: ")
 	}
@@ -200,7 +200,7 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 }
 
 func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardId string) (*Card, error) {
-	kp, err := crypto.GenerateKeypair()
+	kp, err := cryptoNative.GenerateKeypair()
 	assert.NoError(t, err)
 
 	cardParams := &CardParams{

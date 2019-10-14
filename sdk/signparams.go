@@ -38,12 +38,12 @@
 package sdk
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type SignParams struct {
-	SignerPrivateKey cryptoapi.PrivateKey
+	SignerPrivateKey crypto.PrivateKey
 	Signer           string
 }
 

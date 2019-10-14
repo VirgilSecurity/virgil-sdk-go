@@ -38,17 +38,17 @@
 package sdk
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type JwtVerifier struct {
-	ApiPublicKey      cryptoapi.PublicKey
+	ApiPublicKey      crypto.PublicKey
 	ApiPublicKeyId    string
-	AccessTokenSigner cryptoapi.AccessTokenSigner
+	AccessTokenSigner crypto.AccessTokenSigner
 }
 
-func NewJwtVerifier(apiPublicKey cryptoapi.PublicKey, apiPublicKeyId string, accessTokenSigner cryptoapi.AccessTokenSigner) *JwtVerifier {
+func NewJwtVerifier(apiPublicKey crypto.PublicKey, apiPublicKeyId string, accessTokenSigner crypto.AccessTokenSigner) *JwtVerifier {
 	return &JwtVerifier{
 		AccessTokenSigner: accessTokenSigner,
 		ApiPublicKeyId:    apiPublicKeyId,

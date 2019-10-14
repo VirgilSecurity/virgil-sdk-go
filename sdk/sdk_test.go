@@ -42,7 +42,7 @@ import (
 )
 
 var (
-	crypto      = cryptoimpl.NewVirgilCrypto()
-	cardCrypto  = cryptoimpl.NewVirgilCardCrypto()
-	tokenSigner = cryptoimpl.NewVirgilAccessTokenSigner()
+	cryptoNative = cryptoimpl.NewVirgilCrypto()
+	cardCrypto   = cryptoimpl.NewVirgilCardCrypto()
+	tokenSigner  = cryptoimpl.NewVirgilAccessTokenSigner()
 )

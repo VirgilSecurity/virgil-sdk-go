@@ -38,14 +38,14 @@
 package sdk
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type CardParams struct {
 	Identity       string
-	PublicKey      cryptoapi.PublicKey
-	PrivateKey     cryptoapi.PrivateKey
+	PublicKey      crypto.PublicKey
+	PrivateKey     crypto.PrivateKey
 	PreviousCardId string
 	ExtraFields    map[string]string
 }

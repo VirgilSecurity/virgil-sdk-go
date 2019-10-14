@@ -42,11 +42,11 @@ import (
 
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
-func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
+func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
 
 	if crypto == nil {
 		return nil, errors.New("crypto is mandatory")
@@ -102,7 +102,7 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 	}, nil
 }
 
-func GenerateCardId(crypto cryptoapi.CardCrypto, data []byte) (string, error) {
+func GenerateCardId(crypto crypto.CardCrypto, data []byte) (string, error) {
 	if crypto == nil {
 		return "", errors.New("crypto is mandatory")
 	}
@@ -110,7 +110,7 @@ func GenerateCardId(crypto cryptoapi.CardCrypto, data []byte) (string, error) {
 	return hex.EncodeToString(crypto.GenerateSHA512(data)[:32]), nil
 }
 
-func ParseRawCards(crypto cryptoapi.CardCrypto, models ...*RawSignedModel) ([]*Card, error) {
+func ParseRawCards(crypto crypto.CardCrypto, models ...*RawSignedModel) ([]*Card, error) {
 
 	if crypto == nil {
 		return nil, errors.New("crypto is mandatory")

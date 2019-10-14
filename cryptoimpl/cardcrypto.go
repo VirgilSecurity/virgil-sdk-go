@@ -37,7 +37,11 @@
 
 package cryptoimpl
 
-import "crypto/sha512"
+import (
+	"crypto/sha512"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+)
 
 type VirgilCardCrypto struct {
 	Crypto *VirgilCrypto
@@ -49,31 +53,19 @@ func NewVirgilCardCrypto() *VirgilCardCrypto {
 	}
 }
 
-func (c *VirgilCardCrypto) GenerateSignature(data []byte, key interface {
-	IsPrivate() bool
-	Identifier() []byte
-}) ([]byte, error) {
-	return c.Crypto.Sign(data, key)
+func (c *VirgilCardCrypto) GenerateSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
+	return c.Crypto.Sign(data, privateKey)
 }
 
-func (c *VirgilCardCrypto) VerifySignature(data []byte, signature []byte, key interface {
-	IsPublic() bool
-	Identifier() []byte
-}) error {
-	return c.Crypto.VerifySignature(data, signature, key)
+func (c *VirgilCardCrypto) VerifySignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
+	return c.Crypto.VerifySignature(data, signature, publicKey)
 }
 
-func (c *VirgilCardCrypto) ExportPublicKey(key interface {
-	IsPublic() bool
-	Identifier() []byte
-}) ([]byte, error) {
-	return c.Crypto.ExportPublicKey(key)
+func (c *VirgilCardCrypto) ExportPublicKey(publicKey crypto.PublicKey) ([]byte, error) {
+	return c.Crypto.ExportPublicKey(publicKey)
 }
 
-func (c *VirgilCardCrypto) ImportPublicKey(data []byte) (interface {
-	IsPublic() bool
-	Identifier() []byte
-}, error) {
+func (c *VirgilCardCrypto) ImportPublicKey(data []byte) (publicKey crypto.PublicKey, err error) {
 	return c.Crypto.ImportPublicKey(data)
 }
 

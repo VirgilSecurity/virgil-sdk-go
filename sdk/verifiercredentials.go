@@ -37,9 +37,9 @@
 
 package sdk
 
-import "github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
 
 type VerifierCredentials struct {
 	Signer    string
-	PublicKey cryptoapi.PublicKey
+	PublicKey crypto.PublicKey
 }

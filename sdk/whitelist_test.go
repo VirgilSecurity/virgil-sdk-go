@@ -43,13 +43,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/stretchr/testify/assert"
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
 )
 
 type testCredentials struct {
 	*VerifierCredentials
-	PrivateKey cryptoapi.PrivateKey
+	PrivateKey crypto.PrivateKey
 }
 
 func TestWhitelist(t *testing.T) {
@@ -162,8 +162,8 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 	return wl
 }
 
-func makeRandomCredentials() (cryptoapi.PrivateKey, *VerifierCredentials) {
-	kp, err := crypto.GenerateKeypair()
+func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {
+	kp, err := cryptoNative.GenerateKeypair()
 	if err != nil {
 		panic(err)
 	}

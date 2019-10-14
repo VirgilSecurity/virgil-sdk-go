@@ -40,8 +40,8 @@ package sdk
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestJwtVerifier_VerifyToken(t *testing.T) {
