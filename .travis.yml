@@ -46,7 +46,8 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       dist: trusty
       addons:
@@ -58,7 +59,8 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       dist: xenial
       addons:
@@ -70,7 +72,8 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       addons:
         apt:
@@ -144,7 +147,8 @@ matrix:
       env:
         - CC=clang-3.6
         - CXX=clang++-3.6
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       dist: trusty
       addons:
@@ -156,7 +160,8 @@ matrix:
       env:
         - CC=clang-4.0
         - CXX=clang++-4.0
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       dist: trusty
       addons:
@@ -168,7 +173,8 @@ matrix:
       env:
         - CC=clang-5.0
         - CXX=clang++-5.0
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       dist: trusty
       addons:
@@ -183,7 +189,8 @@ matrix:
       env:
         - CC=clang-6.0
         - CXX=clang++-6.0
-        - GO_BUILD_PARAM=-tags="legacy_os integration"
+        - 'GO_BUILD_PARAM=-tags="legacy_os integration"'
+        - LEGACY="true"
     - os: linux
       dist: xenial
       addons:
@@ -236,4 +243,9 @@ install:
   - go mod download
 
 script:
-  - go test $GO_BUILD_PARAM -mod=readonly -count 1 ./...
+  - echo $GO_BUILD_PARAM
+  - 'if [[ $LEGACY ]]; then 
+        go test -tags "legacy_os integration" -mod=readonly -count 1 ./... ;
+    else 
+      go test -tags integration -mod=readonly -count 1 ./... ;
+    fi'
