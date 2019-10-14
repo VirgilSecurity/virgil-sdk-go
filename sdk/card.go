@@ -40,7 +40,7 @@ package sdk
 import (
 	"time"
 
-	"gopkg.in/virgil.v5/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
 )
 
 type Card struct {

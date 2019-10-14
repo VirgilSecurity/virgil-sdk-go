@@ -42,7 +42,7 @@ import (
 	"crypto/cipher"
 	"io"
 
-	"gopkg.in/virgil.v5/cryptoimpl/gcm"
+	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl/gcm"
 )
 
 type VirgilChunkCipher interface {

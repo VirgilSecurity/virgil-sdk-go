@@ -44,7 +44,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/virgil.v5/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
 )
 
 type testCredentials struct {

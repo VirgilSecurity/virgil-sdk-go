@@ -44,8 +44,8 @@ import (
 
 	"encoding/hex"
 
-	"gopkg.in/virgil.v5/common"
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/common"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type CardClient struct {

@@ -41,7 +41,7 @@ import (
 	"crypto/aes"
 	"io"
 
-	"gopkg.in/virgil.v5/cryptoimpl/gcm"
+	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl/gcm"
 )
 
 type VirgilStreamCipher interface {

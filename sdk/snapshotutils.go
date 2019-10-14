@@ -42,7 +42,7 @@ import (
 
 	"bytes"
 
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 func TakeSnapshot(obj interface{}) ([]byte, error) {

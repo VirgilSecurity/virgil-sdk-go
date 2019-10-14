@@ -45,7 +45,7 @@ import (
 	"crypto/sha512"
 
 	"github.com/agl/ed25519"
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type VirgilSigner interface {

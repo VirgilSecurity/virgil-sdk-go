@@ -40,7 +40,7 @@ package sdk
 import (
 	"time"
 
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 const (

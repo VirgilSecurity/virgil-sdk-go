@@ -42,8 +42,8 @@ import (
 
 	"time"
 
-	"gopkg.in/virgil.v5/cryptoapi"
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type CardManager struct {

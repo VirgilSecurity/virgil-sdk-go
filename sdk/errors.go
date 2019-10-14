@@ -40,7 +40,7 @@ package sdk
 import (
 	"errors"
 
-	"gopkg.in/virgil.v5/common"
+	"github.com/VirgilSecurity/virgil-sdk-go/common"
 )
 
 type CardsAPIError common.VirgilAPIError

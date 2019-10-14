@@ -42,7 +42,7 @@ import (
 	"encoding/asn1"
 	"math"
 
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 var (

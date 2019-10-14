@@ -37,7 +37,7 @@
 
 package cryptoimpl
 
-import "gopkg.in/virgil.v5/errors"
+import "github.com/VirgilSecurity/virgil-sdk-go/errors"
 
 type VirgilPrivateKeyExporter struct {
 	Crypto   *VirgilCrypto

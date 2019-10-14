@@ -43,7 +43,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"gopkg.in/virgil.v5"
+	"github.com/VirgilSecurity/virgil-sdk-go"
 
 	"time"
 

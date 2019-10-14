@@ -30,7 +30,7 @@ The package is available for Go 1.10 or newer.
 
 Installing the package:
 
-- go get -u gopkg.in/virgil.v5/sdk
+- go get -u github.com/VirgilSecurity/virgil-sdk-go/sdk
 
 
 ### Crypto library notice
@@ -74,7 +74,7 @@ Use the following lines of code to create and publish a user's Card with Public 
 
 ```go
 import (
-	"gopkg.in/virgil.v5/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
 	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 )
 

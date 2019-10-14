@@ -51,8 +51,8 @@ import (
 	"encoding/hex"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/virgil.v5/common"
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/common"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 func initCardManager() (*CardManager, error) {

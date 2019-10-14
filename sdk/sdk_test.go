@@ -38,7 +38,7 @@
 package sdk
 
 import (
-	"gopkg.in/virgil.v5/cryptoimpl"
+	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl"
 )
 
 var (
