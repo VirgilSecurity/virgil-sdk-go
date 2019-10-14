@@ -44,7 +44,7 @@ import (
 )
 
 type ExternalCrypto struct {
-	keyType               KeyType
+	keyType               crypto.KeyType
 	UseSha256Fingerprints bool
 }
 
@@ -57,7 +57,7 @@ const (
 	signerId     = "VIRGIL-DATA-SIGNER-ID"
 )
 
-func (c *ExternalCrypto) SetKeyType(keyType KeyType) error {
+func (c *ExternalCrypto) SetKeyType(keyType crypto.KeyType) error {
 	if _, ok := KeyTypeMap[keyType]; !ok {
 		return errors.New("key type not supported")
 	} else {

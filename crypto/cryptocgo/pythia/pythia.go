@@ -38,7 +38,7 @@ import "C"
 import (
 	"fmt"
 
-	cryptocgo "github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
@@ -361,7 +361,7 @@ func (p *Pythia) UpdateDeblindedWithToken(deblindedPassword, passwordUpdateToken
 	return updatedDeblindedPasswordBuf.GetData(), nil
 }
 
-func (p *Pythia) GenerateKeypair(keypairType cryptocgo.KeyType, seed []byte) (keypair crypto.Keypair, err error) {
+func (p *Pythia) GenerateKeypair(keypairType crypto.KeyType, seed []byte) (keypair crypto.Keypair, err error) {
 	crypto := cryptocgo.NewVirgilCrypto()
 	crypto.SetKeyType(keypairType)
 	return crypto.GenerateKeypairFromKeyMaterial(seed)

@@ -35,15 +35,24 @@
  *
  */
 
-package sdk
+package crypto
 
-import (
-	// "github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
-)
+type KeyType int
 
-var (
-	cryptoNative = cryptocgo.NewVirgilCrypto()
-	cardCrypto   = cryptocgo.NewVirgilCardCrypto()
-	tokenSigner  = cryptocgo.NewVirgilAccessTokenSigner()
+const (
+	Default KeyType = iota
+	RSA_2048
+	RSA_3072
+	RSA_4096
+	RSA_8192
+	EC_SECP256R1
+	EC_SECP384R1
+	EC_SECP521R1
+	EC_BP256R1
+	EC_BP384R1
+	EC_BP512R1
+	EC_SECP256K1
+	EC_CURVE25519
+	FAST_EC_X25519
+	FAST_EC_ED25519
 )

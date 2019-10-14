@@ -32,41 +32,22 @@
 
 package cryptocgo
 
-// KeyType denotes algorithm used for key generation. See keytypes package
-type KeyType int
+import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
 
-const (
-	Default = iota
-	RSA_2048
-	RSA_3072
-	RSA_4096
-	RSA_8192
-	EC_SECP256R1
-	EC_SECP384R1
-	EC_SECP521R1
-	EC_BP256R1
-	EC_BP384R1
-	EC_BP512R1
-	EC_SECP256K1
-	EC_CURVE25519
-	FAST_EC_X25519
-	FAST_EC_ED25519
-)
-
-var KeyTypeMap = map[KeyType]interface{}{
-	Default:         VirgilKeyPairType_FAST_EC_ED25519,
-	RSA_2048:        VirgilKeyPairType_RSA_2048,
-	RSA_3072:        VirgilKeyPairType_RSA_3072,
-	RSA_4096:        VirgilKeyPairType_RSA_4096,
-	RSA_8192:        VirgilKeyPairType_RSA_8192,
-	EC_SECP256R1:    VirgilKeyPairType_EC_SECP256R1,
-	EC_SECP384R1:    VirgilKeyPairType_EC_SECP384R1,
-	EC_SECP521R1:    VirgilKeyPairType_EC_SECP521R1,
-	EC_BP256R1:      VirgilKeyPairType_EC_BP256R1,
-	EC_BP384R1:      VirgilKeyPairType_EC_BP384R1,
-	EC_BP512R1:      VirgilKeyPairType_EC_BP512R1,
-	EC_SECP256K1:    VirgilKeyPairType_EC_SECP256K1,
-	EC_CURVE25519:   VirgilKeyPairType_EC_CURVE25519,
-	FAST_EC_X25519:  VirgilKeyPairType_FAST_EC_X25519,
-	FAST_EC_ED25519: VirgilKeyPairType_FAST_EC_ED25519,
+var KeyTypeMap = map[crypto.KeyType]interface{}{
+	crypto.Default:         VirgilKeyPairType_FAST_EC_ED25519,
+	crypto.RSA_2048:        VirgilKeyPairType_RSA_2048,
+	crypto.RSA_3072:        VirgilKeyPairType_RSA_3072,
+	crypto.RSA_4096:        VirgilKeyPairType_RSA_4096,
+	crypto.RSA_8192:        VirgilKeyPairType_RSA_8192,
+	crypto.EC_SECP256R1:    VirgilKeyPairType_EC_SECP256R1,
+	crypto.EC_SECP384R1:    VirgilKeyPairType_EC_SECP384R1,
+	crypto.EC_SECP521R1:    VirgilKeyPairType_EC_SECP521R1,
+	crypto.EC_BP256R1:      VirgilKeyPairType_EC_BP256R1,
+	crypto.EC_BP384R1:      VirgilKeyPairType_EC_BP384R1,
+	crypto.EC_BP512R1:      VirgilKeyPairType_EC_BP512R1,
+	crypto.EC_SECP256K1:    VirgilKeyPairType_EC_SECP256K1,
+	crypto.EC_CURVE25519:   VirgilKeyPairType_EC_CURVE25519,
+	crypto.FAST_EC_X25519:  VirgilKeyPairType_FAST_EC_X25519,
+	crypto.FAST_EC_ED25519: VirgilKeyPairType_FAST_EC_ED25519,
 }

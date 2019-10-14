@@ -33,15 +33,14 @@
 package pythia
 
 import (
-	"testing"
-	"encoding/hex"
-	"crypto/subtle"
 	"crypto/rand"
-
+	"crypto/subtle"
+	"encoding/hex"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	cryptocgo "github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 )
 
 const (
