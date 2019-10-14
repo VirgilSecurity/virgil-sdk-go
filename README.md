@@ -58,9 +58,9 @@ in your source code use crypto objects from this library as follows:
 ```go
 
 var (
-	crypto      = virgil_crypto_go.NewVirgilCrypto()
-	cardCrypto  = virgil_crypto_go.NewCardCrypto()
-	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
+	crypto      = cryptocgo.NewVirgilCrypto()
+	cardCrypto  = cryptocgo.NewCardCrypto()
+	tokenSigner = cryptocgo.NewVirgilAccessTokenSigner()
 )
 ```
 
@@ -79,9 +79,9 @@ import (
 )
 
 var (
-	crypto      = virgil_crypto_go.NewVirgilCrypto()
-	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
-	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
+	crypto      = cryptocgo.NewVirgilCrypto()
+	cardCrypto  = cryptocgo.NewVirgilCardCrypto()
+	tokenSigner = cryptocgo.NewVirgilAccessTokenSigner()
 )
 
 func main() {
@@ -119,9 +119,9 @@ In the following example, we load a Private Key from a customized Key Storage an
 import "gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 
 var (
-	crypto      = virgil_crypto_go.NewVirgilCrypto()
-	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
-	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
+	crypto      = cryptocgo.NewVirgilCrypto()
+	cardCrypto  = cryptocgo.NewVirgilCardCrypto()
+	tokenSigner = cryptocgo.NewVirgilAccessTokenSigner()
 )
 
 func main() {
@@ -158,9 +158,9 @@ Once the Users receive the signed and encrypted message, they can decrypt it wit
 import "gopkg.in/virgilsecurity/virgil-crypto-go.v5"
 
 var (
-	crypto      = virgil_crypto_go.NewVirgilCrypto()
-	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
-	tokenSigner = virgil_crypto_go.NewVirgilAccessTokenSigner()
+	crypto      = cryptocgo.NewVirgilCrypto()
+	cardCrypto  = cryptocgo.NewVirgilCardCrypto()
+	tokenSigner = cryptocgo.NewVirgilAccessTokenSigner()
 )
 
 func main() {
