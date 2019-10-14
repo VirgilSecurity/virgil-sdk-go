@@ -46,7 +46,7 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""      
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       dist: trusty
       addons:
@@ -58,7 +58,7 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       dist: xenial
       addons:
@@ -70,7 +70,7 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       addons:
         apt:
@@ -144,7 +144,7 @@ matrix:
       env:
         - CC=clang-3.6
         - CXX=clang++-3.6
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       dist: trusty
       addons:
@@ -156,7 +156,7 @@ matrix:
       env:
         - CC=clang-4.0
         - CXX=clang++-4.0
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       dist: trusty
       addons:
@@ -168,7 +168,7 @@ matrix:
       env:
         - CC=clang-5.0
         - CXX=clang++-5.0
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       dist: trusty
       addons:
@@ -183,7 +183,7 @@ matrix:
       env:
         - CC=clang-6.0
         - CXX=clang++-6.0
-        - "GO_BUILD_PARAM=-tags=\"legacy_os integration\""
+        - GO_BUILD_PARAM=-tags="legacy_os integration"
     - os: linux
       dist: xenial
       addons:
