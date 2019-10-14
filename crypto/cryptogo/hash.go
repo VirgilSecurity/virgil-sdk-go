@@ -35,14 +35,32 @@
  *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"crypto/sha512"
+	"hash"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+type VirgilHash interface {
+	New() hash.Hash
+	Sum(data []byte) []byte
+}
+
+var Hash VirgilHash
+
+type sha512Hash struct{}
+
+func (v *sha512Hash) Sum(data []byte) []byte {
+	h := v.New()
+	h.Write(data)
+	return h.Sum(nil)
+}
+
+func (v *sha512Hash) New() hash.Hash {
+	return sha512.New()
+}
+
+func init() {
+	Hash = &sha512Hash{}
+}

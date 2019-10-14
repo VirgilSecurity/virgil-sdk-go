@@ -35,14 +35,41 @@
  *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"crypto/sha512"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+type VirgilCardCrypto struct {
+	Crypto *VirgilCrypto
+}
+
+func NewVirgilCardCrypto() *VirgilCardCrypto {
+	return &VirgilCardCrypto{
+		Crypto: NewVirgilCrypto(),
+	}
+}
+
+func (c *VirgilCardCrypto) GenerateSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
+	return c.Crypto.Sign(data, privateKey)
+}
+
+func (c *VirgilCardCrypto) VerifySignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
+	return c.Crypto.VerifySignature(data, signature, publicKey)
+}
+
+func (c *VirgilCardCrypto) ExportPublicKey(publicKey crypto.PublicKey) ([]byte, error) {
+	return c.Crypto.ExportPublicKey(publicKey)
+}
+
+func (c *VirgilCardCrypto) ImportPublicKey(data []byte) (publicKey crypto.PublicKey, err error) {
+	return c.Crypto.ImportPublicKey(data)
+}
+
+func (c *VirgilCardCrypto) GenerateSHA512(data []byte) []byte {
+	hash := sha512.Sum512(data)
+	return hash[:]
+}

@@ -32,93 +32,80 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"encoding/hex"
+	"bytes"
+	"crypto/rand"
 	"testing"
-	"time"
 
-	"sync"
-
-	"fmt"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo/gcm"
 )
 
-func TestCachingJwtProvider(t *testing.T) {
+func TestStream(t *testing.T) {
+	symmetricKey := make([]byte, 32) //256 bit AES key
+	nonce := make([]byte, 12)        //96 bit AES GCM nonce
 
-	crypto := cryptogo.NewVirgilCrypto()
+	rand.Reader.Read(symmetricKey)
+	rand.Reader.Read(nonce)
 
-	pk, err := crypto.GenerateKeypair()
-	if err != nil {
-		panic(err)
+	sc := StreamCipher
+
+	plain := make([]byte, gcm.GcmStreamBufSize*2-20)
+	rand.Reader.Read(plain)
+	ad := make([]byte, 1)
+	rand.Reader.Read(ad)
+	for i := 0; i < 40; i++ {
+
+		in := bytes.NewBuffer(plain)
+		out := &bytes.Buffer{}
+		err := sc.Encrypt(symmetricKey, nonce, ad, in, out)
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+		plainOut := &bytes.Buffer{}
+
+		err = sc.Decrypt(symmetricKey, nonce, ad, out, plainOut)
+		if err != nil {
+			t.Fatalf("%d, %+v", i, err)
+		}
+		if bytes.Compare(plain, plainOut.Bytes()) != 0 {
+			t.Fatal("plaintext and decrypted text do not match")
+		}
+		plain = append(plain, ad...)
 	}
+}
 
-	signer := cryptogo.NewVirgilAccessTokenSigner()
+func TestChunk(t *testing.T) {
+	symmetricKey := make([]byte, 32) //256 bit AES key
+	nonce := make([]byte, 12)        //96 bit AES GCM nonce
 
-	genCount := 0
+	rand.Reader.Read(symmetricKey)
+	rand.Reader.Read(nonce)
 
-	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
-
-		genCount++
-
-		issuedAt := time.Now().UTC().Truncate(time.Second)
-		expiresAt := issuedAt.Add(time.Second * 6)
-
-		jwtBody, err := NewJwtBodyContent("app_id", "identity", issuedAt, expiresAt, nil)
+	sc := ChunkCipher
+	plain := make([]byte, gcm.GcmStreamBufSize*3-20)
+	rand.Reader.Read(plain)
+	ad := make([]byte, 1)
+	rand.Reader.Read(ad)
+	for i := 0; i < 40; i++ {
+		in := bytes.NewBuffer(plain)
+		out := &bytes.Buffer{}
+		err := sc.Encrypt(symmetricKey, nonce, ad, DefaultChunkSize, in, out)
 		if err != nil {
-			return nil, err
+			t.Fatalf("%+v", err)
 		}
+		plainOut := &bytes.Buffer{}
 
-		jwtHeader, err := NewJwtHeaderContent(signer.GetAlgorithm(), hex.EncodeToString(pk.PrivateKey().Identifier()))
-
+		err = sc.Decrypt(symmetricKey, nonce, ad, DefaultChunkSize, out, plainOut)
 		if err != nil {
-			return nil, err
+			t.Fatalf("%d, %+v", i, err)
 		}
-
-		unsignedJwt, err := NewJwt(jwtHeader, jwtBody, nil)
-		if err != nil {
-			return nil, err
+		if bytes.Compare(plain, plainOut.Bytes()) != 0 {
+			t.Fatal("plaintext and decrypted text do not match")
 		}
-		jwtSignature, err := signer.GenerateTokenSignature(unsignedJwt.Unsigned(), pk.PrivateKey())
-		if err != nil {
-			return nil, err
-		}
-
-		return NewJwt(jwtHeader, jwtBody, jwtSignature)
-
-	})
-
-	routines := 100
-
-	wg := &sync.WaitGroup{}
-	wg.Add(routines)
-
-	start := time.Now()
-
-	total := 0
-	for i := 0; i < routines; i++ {
-
-		go func() {
-
-			for time.Now().Sub(start) < (time.Second * 5) {
-				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
-				assert.NotNil(t, token)
-				assert.NoError(t, err)
-				total++
-			}
-
-			wg.Done()
-		}()
-
+		plain = append(plain, ad...)
 	}
-	wg.Wait()
-	assert.Equal(t, 6, genCount)
-	fmt.Println("total", total)
-
 }

@@ -35,14 +35,33 @@
  *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"bytes"
+	"encoding/asn1"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+type publicKeyRecipient struct {
+	ID           []byte
+	PublicKey    []byte
+	tag          []byte
+	encryptedKey []byte
+	iv           []byte
+}
+
+func (kr *publicKeyRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, error) {
+	encryptedSymmetricKey, tag, ephPub, iv, err := encryptSymmetricKeyWithECIES(kr.PublicKey, symmetricKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return makePublicKeyRecipient(kr.ID, ephPub, tag, encryptedSymmetricKey, iv)
+}
+func (p *publicKeyRecipient) decryptKey(id []byte, privateKey []byte) ([]byte, error) {
+	if len(id) == 0 || !bytes.Equal(id, p.ID) {
+		return nil, CryptoError("Wrong recipient")
+	}
+	return decryptSymmetricKeyWithECIES(p.encryptedKey, p.tag, p.PublicKey, p.iv, privateKey)
+}

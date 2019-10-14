@@ -35,14 +35,32 @@
  *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"crypto/sha512"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+type VirgilAccessTokenSigner struct {
+	Crypto *VirgilCrypto
+}
+
+func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
+	return &VirgilAccessTokenSigner{Crypto: &VirgilCrypto{}}
+}
+
+func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
+	return t.Crypto.Sign(data, privateKey.(*ed25519PrivateKey))
+
+}
+func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
+
+	hash := sha512.Sum512(data)
+	return t.Crypto.VerifyHashSignature(hash[:], signature, publicKey.(*ed25519PublicKey))
+
+}
+func (t *VirgilAccessTokenSigner) GetAlgorithm() string {
+	return "VEDS512"
+}

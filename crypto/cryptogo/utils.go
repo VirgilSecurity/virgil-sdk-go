@@ -35,14 +35,10 @@
  *
  */
 
-package sdk
+package cryptogo
 
-import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
-)
-
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+func ZeroData(data []byte) {
+	for i := 0; i < len(data); i++ {
+		data[i] = 0
+	}
+}

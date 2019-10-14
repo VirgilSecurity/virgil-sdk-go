@@ -32,17 +32,30 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+func TestPrivateKeyExporter(t *testing.T) {
+
+	p := NewPrivateKeyExporter("P@ssw)rd")
+
+	crypto := NewVirgilCrypto()
+
+	kp, err := crypto.GenerateKeypair()
+
+	assert.NoError(t, err)
+
+	exported, err := p.ExportPrivateKey(kp.PrivateKey())
+	assert.NoError(t, err)
+	imported, err := p.ImportPrivateKey(exported)
+	assert.NoError(t, err)
+
+	assert.Equal(t, kp.PrivateKey().contents(), imported.(*ed25519PrivateKey).contents())
+}

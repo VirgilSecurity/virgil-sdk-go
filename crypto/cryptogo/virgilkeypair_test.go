@@ -32,17 +32,65 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"bytes"
+	"crypto/rand"
+	"fmt"
+	"testing"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+func TestKeys(t *testing.T) {
+
+	keypair, err := NewKeypair()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pus1, err := keypair.PublicKey().Encode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	prs1, err := keypair.PrivateKey().Encode(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dPub, err := DecodePublicKey(pus1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dPriv, err := DecodePrivateKey(prs1, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(keypair.PublicKey().contents(), dPub.contents()) {
+		fmt.Println(keypair.PublicKey().contents())
+		fmt.Println(dPub.contents())
+
+		t.Fatal("deserialized & original public keys do not match")
+	}
+
+	if !bytes.Equal(keypair.PrivateKey().contents(), dPriv.contents()) {
+		t.Fatal("deserialized & original private keys do not match")
+	}
+
+	//check password
+	passBytes := make([]byte, 12)
+	rand.Read(passBytes)
+	prs1, err = dPriv.Encode(passBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dPriv, err = DecodePrivateKey(prs1, passBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(keypair.PrivateKey().contents(), dPriv.contents()) {
+		t.Fatal("keys do not match")
+	}
+}

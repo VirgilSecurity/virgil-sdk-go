@@ -35,14 +35,37 @@
  *
  */
 
-package sdk
+package cryptogo
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"crypto/aes"
+	"io"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo/gcm"
 )
 
-var (
-	cryptoNative = cryptogo.NewVirgilCrypto()
-	cardCrypto   = cryptogo.NewVirgilCardCrypto()
-	tokenSigner  = cryptogo.NewVirgilAccessTokenSigner()
-)
+type VirgilStreamCipher interface {
+	Encrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error
+	Decrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error
+}
+
+var StreamCipher VirgilStreamCipher
+var ChunkCipher VirgilChunkCipher
+
+type aesGCMStreamCipher struct{}
+
+func (c *aesGCMStreamCipher) Encrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error {
+	ciph, _ := aes.NewCipher(key)
+	aesGCM, _ := gcm.NewGCM(ciph)
+	return aesGCM.SealStream(nonce, ad, in, out)
+}
+func (c *aesGCMStreamCipher) Decrypt(key, nonce, ad []byte, in io.Reader, out io.Writer) error {
+	ciph, _ := aes.NewCipher(key)
+	aesGCM, _ := gcm.NewGCM(ciph)
+	return aesGCM.OpenStream(nonce, ad, in, out)
+}
+
+func init() {
+	StreamCipher = &aesGCMStreamCipher{}
+	ChunkCipher = &aesGCMChunkStreamCipher{}
+}
