@@ -32,6 +32,8 @@
 
 package cryptocgo
 
+import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
+
 type VirgilAccessTokenSigner struct {
 	Crypto *ExternalCrypto
 }
@@ -40,17 +42,11 @@ func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
 	return &VirgilAccessTokenSigner{Crypto: &ExternalCrypto{}}
 }
 
-func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey interface {
-	IsPrivate() bool
-	Identifier() []byte
-}) ([]byte, error) {
+func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
 	return t.Crypto.Sign(data, privateKey)
 
 }
-func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey interface {
-	IsPublic() bool
-	Identifier() []byte
-}) error {
+func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
 	return t.Crypto.VerifyHashTypeSignature(SHA512, data, signature, publicKey)
 
 }

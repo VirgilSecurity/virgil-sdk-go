@@ -35,6 +35,8 @@ package cryptocgo
 import (
 	"encoding/base64"
 	"encoding/pem"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 type externalKeypair struct {
@@ -48,16 +50,10 @@ func (e *externalKeypair) HasPublic() bool {
 func (e *externalKeypair) HasPrivate() bool {
 	return e.privateKey != nil && !e.privateKey.Empty()
 }
-func (e *externalKeypair) PublicKey() interface {
-	IsPublic() bool
-	Identifier() []byte
-} {
+func (e *externalKeypair) PublicKey() crypto.PublicKey {
 	return e.publicKey
 }
-func (e *externalKeypair) PrivateKey() interface {
-	IsPrivate() bool
-	Identifier() []byte
-} {
+func (e *externalKeypair) PrivateKey() crypto.PrivateKey {
 	return e.privateKey
 }
 

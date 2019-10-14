@@ -32,7 +32,10 @@
 
 package cryptocgo
 
-import "github.com/VirgilSecurity/virgil-sdk-go/errors"
+import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+)
 
 type VirgilPrivateKeyExporter struct {
 	Crypto   *ExternalCrypto
@@ -46,15 +49,12 @@ func NewPrivateKeyExporter(password string) *VirgilPrivateKeyExporter {
 	}
 }
 
-func (v *VirgilPrivateKeyExporter) ExportPrivateKey(key interface {
-	IsPrivate() bool
-	Identifier() []byte
-}) ([]byte, error) {
+func (v *VirgilPrivateKeyExporter) ExportPrivateKey(privateKey crypto.PrivateKey) ([]byte, error) {
 
 	if v.Crypto == nil {
 		return nil, errors.New("Crypto is not set")
 	}
-	kkey, ok := key.(*externalPrivateKey)
+	kkey, ok := privateKey.(*externalPrivateKey)
 	if !ok {
 		return nil, errors.New("this key type is not supported")
 	}
@@ -62,10 +62,7 @@ func (v *VirgilPrivateKeyExporter) ExportPrivateKey(key interface {
 	return v.Crypto.ExportPrivateKey(kkey, v.Password)
 }
 
-func (v *VirgilPrivateKeyExporter) ImportPrivateKey(data []byte) (interface {
-	IsPrivate() bool
-	Identifier() []byte
-}, error) {
+func (v *VirgilPrivateKeyExporter) ImportPrivateKey(data []byte) (crypto.PrivateKey, error) {
 
 	if v.Crypto == nil {
 		return nil, errors.New("Crypto is not set")

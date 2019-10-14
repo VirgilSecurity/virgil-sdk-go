@@ -35,8 +35,9 @@ package cryptocgo
 import (
 	"bytes"
 	"crypto/rand"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSignEncrypt(t *testing.T) {
@@ -86,7 +87,7 @@ func BenchmarkSign(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		crypto.VerifySignature(data,sign, signerKeypair.publicKey)
+		crypto.VerifySignature(data, sign, signerKeypair.publicKey)
 	}
 }
 
@@ -272,7 +273,6 @@ func TestNativeCrypto_ExportImportPrivateKey(t *testing.T) {
 
 func TestExternalCrypto_GenerateKeypairFromKeyMaterial(t *testing.T) {
 
-
 	seed := make([]byte, 384)
 	for i := range seed {
 		seed[i] = byte(i)
@@ -326,9 +326,8 @@ func TestExternalCrypto_ImportPublicKey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, pk)
 
-	pk, err = crypto.ImportPublicKey([]byte{1,2,3,4,5,6})
+	pk, err = crypto.ImportPublicKey([]byte{1, 2, 3, 4, 5, 6})
 
 	assert.Nil(t, pk)
 	assert.Error(t, err)
-
 }

@@ -39,6 +39,7 @@ import (
 	"fmt"
 
 	cryptocgo "github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 var (
@@ -360,19 +361,8 @@ func (p *Pythia) UpdateDeblindedWithToken(deblindedPassword, passwordUpdateToken
 	return updatedDeblindedPasswordBuf.GetData(), nil
 }
 
-func (p *Pythia) GenerateKeypair(keypairType cryptocgo.KeyType, seed []byte) (keypair interface {
-	PublicKey() interface {
-		IsPublic() bool
-		Identifier() []byte
-	}
-
-	PrivateKey() interface {
-		IsPrivate() bool
-		Identifier() []byte
-	}
-}, err error) {
+func (p *Pythia) GenerateKeypair(keypairType cryptocgo.KeyType, seed []byte) (keypair crypto.Keypair, err error) {
 	crypto := cryptocgo.NewVirgilCrypto()
 	crypto.SetKeyType(keypairType)
-	keypair, err = crypto.GenerateKeypairFromKeyMaterial(seed)
-	return
+	return crypto.GenerateKeypairFromKeyMaterial(seed)
 }
