@@ -17,16 +17,28 @@ matrix:
     - os: osx
       osx_image: xcode11
       compiler: clang
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: osx
       osx_image: xcode8.3
       compiler: clang
       env:
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: osx
       osx_image: xcode6.4
       compiler: clang
       env:
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
 
     ##########################################################################
     # GCC on Linux
@@ -42,7 +54,11 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - GO_BUILD_PARAM="-tags legacy_os,integration"
+        - GO_BUILD_PARAM="-tags \"legacy_os integration\"""
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: trusty
       addons:
@@ -54,7 +70,11 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - GO_BUILD_PARAM="-tags legacy_os,integration"
+        - GO_BUILD_PARAM="-tags \"legacy_os integration\"""
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: xenial
       addons:
@@ -66,7 +86,11 @@ matrix:
       env:
         - CC=gcc-4.9
         - CXX=g++-4.9
-        - GO_BUILD_PARAM='-tags legacy_os,integration'
+        - GO_BUILD_PARAM='-tags \"legacy_os integration\""'
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       addons:
         apt:
@@ -78,6 +102,10 @@ matrix:
         - CC=gcc-5
         - CXX=g++-5
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     # works on Precise and Trusty
     - os: linux
       addons:
@@ -90,6 +118,10 @@ matrix:
         - CC=gcc-6
         - CXX=g++-6
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     # works on Precise and Trusty
     - os: linux
       addons:
@@ -102,6 +134,10 @@ matrix:
         - CC=gcc-7
         - CXX=g++-7
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       addons:
         apt:
@@ -113,6 +149,10 @@ matrix:
         - CC=gcc-8
         - CXX=g++-8
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       addons:
         apt:
@@ -124,6 +164,10 @@ matrix:
         - CC=gcc-9
         - CXX=g++-9
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
 
     ##########################################################################
     # Clang on Linux
@@ -140,7 +184,11 @@ matrix:
       env:
         - CC=clang-3.6
         - CXX=clang++-3.6
-        - GO_BUILD_PARAM="-tags legacy_os,integration"
+        - GO_BUILD_PARAM="-tags \"legacy_os integration\"""
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: trusty
       addons:
@@ -152,7 +200,11 @@ matrix:
       env:
         - CC=clang-4.0
         - CXX=clang++-4.0
-        - GO_BUILD_PARAM="-tags legacy_os,integration"
+        - GO_BUILD_PARAM="-tags \"legacy_os integration\"""
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: trusty
       addons:
@@ -164,7 +216,11 @@ matrix:
       env:
         - CC=clang-5.0
         - CXX=clang++-5.0
-        - GO_BUILD_PARAM="-tags legacy_os,integration"
+        - GO_BUILD_PARAM="-tags \"legacy_os integration\"""
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: trusty
       addons:
@@ -179,7 +235,11 @@ matrix:
       env:
         - CC=clang-6.0
         - CXX=clang++-6.0
-        - GO_BUILD_PARAM="-tags legacy_os,integration"
+        - GO_BUILD_PARAM="-tags \"legacy_os integration\"""
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: xenial
       addons:
@@ -193,6 +253,10 @@ matrix:
         - CC=clang-7
         - CXX=clang++-7
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: xenial
       addons:
@@ -209,6 +273,10 @@ matrix:
         - CC=clang-8
         - CXX=clang++-8
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - os: linux
       dist: xenial
       addons:
@@ -223,6 +291,10 @@ matrix:
         - CC=clang-9
         - CXX=clang++-9
         - GO_BUILD_PARAM="-tags integration"
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
 
 env:
   global:
