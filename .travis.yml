@@ -1,8 +1,218 @@
 language: go
 go:
   - stable
-  - tip
+  - "1.12.x"
+  - "1.x"
+
+matrix:
+  include:
+    ##########################################################################
+    # Clang on OSX
+    # Travis seems to take longer to start OSX instances,
+    # so leave this first for the overall build to be faster
+    ##########################################################################
+    - os: osx
+      osx_image: xcode11
+      compiler: clang
+    - os: osx
+      osx_image: xcode8.3
+      compiler: clang
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+
+    ##########################################################################
+    # GCC on Linux
+    ##########################################################################
+    - os: linux
+      dist: precise
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+        - CC=gcc-4.9
+        - CXX=g++-4.9
+        - GO_BUILD_PARAM="-tags legacy_os"
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+        - CC=gcc-4.9
+        - CXX=g++-4.9
+        - GO_BUILD_PARAM="-tags legacy_os"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+        - CC=gcc-4.9
+        - CXX=g++-4.9
+        - GO_BUILD_PARAM='-tags legacy_os'
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - CC=gcc-5
+        - CXX=g++-5
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - CC=gcc-6
+        - CXX=g++-6
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CC=gcc-7
+        - CXX=g++-7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - CC=gcc-8
+        - CXX=g++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - CC=gcc-9
+        - CXX=g++-9
+
+    ##########################################################################
+    # Clang on Linux
+    ##########################################################################
+    - os: linux
+      dist: precise
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - CC=clang-3.6
+        - CXX=clang++-3.6
+        - GO_BUILD_PARAM="-tags legacy_os"
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - CC=clang-4.0
+        - CXX=clang++-4.0
+        - GO_BUILD_PARAM="-tags legacy_os"
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - CC=clang-5.0
+        - CXX=clang++-5.0
+        - GO_BUILD_PARAM="-tags legacy_os"
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          packages:
+            - clang-6.0
+      env:
+        - CC=clang-6.0
+        - CXX=clang++-6.0
+        - GO_BUILD_PARAM="-tags legacy_os"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+      env:
+        - CC=clang-7
+        - CXX=clang++-7
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-8
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - clang-8
+      env:
+        - CC=clang-8
+        - CXX=clang++-8
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - clang-9
+      env:
+        - CC=clang-9
+        - CXX=clang++-9
+
+env:
+  global:
+    - GO111MODULE=on
 
 script:
-  - go get github.com/VirgilSecurity/virgil-sdk-go/sdk
-  - cd $GOPATH/src/github.com/VirgilSecurity/virgil-sdk-go && go test -v ./... -tags=integration
+  - go mod download
+  - go test -tags=integration $GO_BUILD_PARAM -mod=readonly ./...
