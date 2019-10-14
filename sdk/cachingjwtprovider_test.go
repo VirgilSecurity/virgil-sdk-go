@@ -47,7 +47,7 @@ import (
 	"fmt"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptoimpl"
 )
 
 func TestCachingJwtProvider(t *testing.T) {

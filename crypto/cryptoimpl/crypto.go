@@ -43,7 +43,7 @@ import (
 
 	"crypto/sha512"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl/keytypes"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptoimpl/keytypes"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 

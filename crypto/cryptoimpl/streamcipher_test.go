@@ -41,7 +41,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/cryptoimpl/gcm"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptoimpl/gcm"
 )
 
 func TestStream(t *testing.T) {
