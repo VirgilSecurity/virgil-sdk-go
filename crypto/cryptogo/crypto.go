@@ -43,7 +43,7 @@ import (
 
 	"crypto/sha512"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo/keytypes"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
@@ -58,8 +58,8 @@ func NewVirgilCrypto() *VirgilCrypto {
 	return &VirgilCrypto{}
 }
 
-func (c *VirgilCrypto) SetKeyType(keyType KeyType) error {
-	if keyType != keytypes.Default && keyType != keytypes.FAST_EC_ED25519 {
+func (c *VirgilCrypto) SetKeyType(keyType crypto.KeyType) error {
+	if keyType != crypto.Default && keyType != crypto.FAST_EC_ED25519 {
 		return errors.New("Only ED25519 keys are supported")
 	}
 	return nil
