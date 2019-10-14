@@ -9,7 +9,6 @@ env:
 
 cache:
   directories:
-    - $HOME/.cache/go-build
     - $HOME/gopath/pkg/mod
 
 matrix:
@@ -232,7 +231,9 @@ matrix:
 env:
   global:
     - GO111MODULE=on
+    
+install:
+  - go mod download
 
 script:
-  - go mod download
-  - go test $GO_BUILD_PARAM -mod=readonly ./...
+  - go test $GO_BUILD_PARAM -mod=readonly -count 1 ./...
