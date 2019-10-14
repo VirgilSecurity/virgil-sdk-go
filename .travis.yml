@@ -6,6 +6,7 @@ go:
 
 env:
   - GO_BUILD_PARAM="-tags integration"
+
 matrix:
   include:
     ##########################################################################
@@ -229,4 +230,4 @@ env:
 
 script:
   - go mod download
-  - go test -tags=integration $GO_BUILD_PARAM -mod=readonly ./...
+  - go test $GO_BUILD_PARAM -mod=readonly ./...
