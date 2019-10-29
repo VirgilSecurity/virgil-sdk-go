@@ -145,7 +145,9 @@ func (g *gcm) SealStream(nonce, data []byte, plain io.Reader, ciph io.Writer) er
 		buf := inBuf[:n]
 		g.counterCrypt(buf, buf, &counter)
 		g.update(&y, buf)
-		written, err := ciph.Write(buf)
+
+		var written int
+		written, err = ciph.Write(buf)
 		if written != len(buf) || err != nil {
 			return errors.Wrap(err, "cipher: could not write to output virgilbuffer")
 		}
@@ -165,7 +167,10 @@ func (g *gcm) SealStream(nonce, data []byte, plain io.Reader, ciph io.Writer) er
 	putUint64(tag[8:], y.high)
 	xorWords(tag, tag, tagMask[:])
 
-	ciph.Write(tag)
+	written, err := ciph.Write(tag)
+	if written != len(tag) || err != nil {
+		return errors.Wrap(err, "cipher: could not write to output virgilbuffer")
+	}
 
 	return nil
 }
@@ -223,8 +228,8 @@ func (g *gcm) OpenStream(nonce, data []byte, ciphertext io.Reader, plaintext io.
 		g.update(&y, buf)
 		g.counterCrypt(buf, buf, &counter)
 
-		written, err := plaintext.Write(buf)
-
+		var written int
+		written, err = plaintext.Write(buf)
 		if written != len(buf) || err != nil {
 			return errors.Wrap(err, "Could not write to output virgilbuffer")
 		}
@@ -425,24 +430,6 @@ func (g *gcm) deriveCounter(counter *[gcmBlockSize]byte, nonce []byte) {
 		putUint64(counter[:8], y.low)
 		putUint64(counter[8:], y.high)
 	}
-}
-
-// auth calculates GHASH(ciphertext, additionalData), masks the result with
-// tagMask and writes the result to out.
-func (g *gcm) auth(out, ciphertext, additionalData []byte, tagMask *[gcmTagSize]byte) {
-	var y gcmFieldElement
-	g.update(&y, additionalData)
-	g.update(&y, ciphertext)
-
-	y.low ^= uint64(len(additionalData)) * 8
-	y.high ^= uint64(len(ciphertext)) * 8
-
-	g.mul(&y)
-
-	putUint64(out, y.low)
-	putUint64(out[8:], y.high)
-
-	xorWords(out, out, tagMask[:])
 }
 
 func getUint64(data []byte) uint64 {

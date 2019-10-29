@@ -39,12 +39,12 @@ package cryptogo
 
 import (
 	"crypto/sha256"
+	"crypto/sha512"
 	"io"
 	"strconv"
 
-	"crypto/sha512"
-
 	"github.com/agl/ed25519"
+
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
@@ -198,7 +198,10 @@ func hashStream(data io.Reader) ([]byte, error) {
 	}
 
 	for ; read > 0 && (err == nil || err == io.EOF); read, err = data.Read(buf) {
-		hash.Write(buf[:read])
+		_, err := hash.Write(buf[:read])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err != nil && err != io.EOF {

@@ -38,7 +38,6 @@ package cryptogo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"testing"
 )
 
@@ -47,7 +46,7 @@ func TestSignEncrypt(t *testing.T) {
 
 	//make random data
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	keypair, err := crypto.GenerateKeypair()
 	if err != nil {

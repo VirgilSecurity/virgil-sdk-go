@@ -38,15 +38,17 @@ package cryptogo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"testing"
 )
 
 func testEncryptWithKey(data []byte, key *ed25519PublicKey) {
 
 	cipher := NewCipher()
-	cipher.AddKeyRecipient(key)
-	_, err := cipher.Encrypt(data)
+	err := cipher.AddKeyRecipient(key)
+	if err != nil {
+		panic(err)
+	}
+	_, err = cipher.Encrypt(data)
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +56,7 @@ func testEncryptWithKey(data []byte, key *ed25519PublicKey) {
 func BenchmarkEncrypt(b *testing.B) {
 
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
 
 	kp, err := NewKeypair()
 	if err != nil {
@@ -76,7 +78,7 @@ func testDecryptWithKey(data []byte, key *ed25519PrivateKey) {
 func BenchmarkDecrypt(b *testing.B) {
 
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
 
 	keypair, err := NewKeypair()
 	if err != nil {
@@ -84,10 +86,13 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 
 	cipher := NewCipher()
-	cipher.AddKeyRecipient(keypair.PublicKey())
+	err = cipher.AddKeyRecipient(keypair.PublicKey())
+	if err != nil {
+		b.Fatal(err)
+	}
 	ciphertext, err := cipher.Encrypt(data)
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 
 	b.ResetTimer()
@@ -98,7 +103,7 @@ func BenchmarkDecrypt(b *testing.B) {
 func BenchmarkSign(b *testing.B) {
 
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
 
 	keypair, err := NewKeypair()
 	if err != nil {
@@ -113,9 +118,8 @@ func BenchmarkSign(b *testing.B) {
 	}
 }
 func BenchmarkVerify(b *testing.B) {
-
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
 
 	keypair, err := NewKeypair()
 	if err != nil {
@@ -138,7 +142,7 @@ func TestCMS(t *testing.T) {
 
 	//make random data
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	keypair, err := NewKeypair()
 	if err != nil {
@@ -147,11 +151,14 @@ func TestCMS(t *testing.T) {
 
 	//make random password
 	passBytes := make([]byte, 12)
-	rand.Read(passBytes)
+	readRandom(t, passBytes)
 
 	cipher := NewCipher()
 	cipher.AddPasswordRecipient(passBytes)
-	cipher.AddKeyRecipient(keypair.PublicKey())
+	err = cipher.AddKeyRecipient(keypair.PublicKey())
+	if err != nil {
+		t.Fatal(err)
+	}
 	cipherText, err := cipher.Encrypt(data)
 	if err != nil {
 		t.Fatal(err)
@@ -169,9 +176,11 @@ func TestCMS(t *testing.T) {
 	}
 
 	cipher = NewCipher()
-	cipher.AddKeyRecipient(keypair.PublicKey())
+	err = cipher.AddKeyRecipient(keypair.PublicKey())
+	if err != nil {
+		t.Fatal(err)
+	}
 	cipherText, err = cipher.SignThenEncrypt(data, signerKeypair.PrivateKey())
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,13 +198,16 @@ func TestStreamCipher(t *testing.T) {
 
 	//make random password
 	passBytes := make([]byte, 12)
-	rand.Read(passBytes)
+	readRandom(t, passBytes)
 
 	cipher := NewCipher()
-	cipher.AddKeyRecipient(keypair.PublicKey())
+	err = cipher.AddKeyRecipient(keypair.PublicKey())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	plainBuf := make([]byte, 1023)
-	rand.Read(plainBuf)
+	readRandom(t, plainBuf)
 	plain := bytes.NewBuffer(plainBuf)
 	cipheredStream := &bytes.Buffer{}
 	err = cipher.EncryptStream(plain, cipheredStream)

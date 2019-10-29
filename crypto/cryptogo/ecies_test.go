@@ -38,7 +38,6 @@ package cryptogo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"testing"
 
 	"github.com/agl/ed25519/extra25519"
@@ -53,8 +52,7 @@ func TestECIES(t *testing.T) {
 		t.Fatal(err)
 	}
 	symmetricKey := make([]byte, 32)
-
-	rand.Read(symmetricKey)
+	readRandom(t, symmetricKey)
 
 	encryptedSymmetricKey, tag, ephPub, iv, err := encryptSymmetricKeyWithECIES(kp.PublicKey().contents(), symmetricKey)
 

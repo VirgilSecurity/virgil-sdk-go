@@ -62,18 +62,20 @@ var (
 
 func TestBlindStable(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		b, s, err := p.Blind([]byte("1234"))
+		_, _, err := p.Blind([]byte("1234"))
 		if err != nil {
 			panic(err)
 		}
-		b = append(b, s...)
 	}
 }
 
 func TestBadBufFails(t *testing.T) {
 
 	bigBuf := make([]byte, 51)
-	rand.Read(bigBuf)
+	_, err := rand.Read(bigBuf)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	res1, err := hex.DecodeString(deblinded1)
 	assert.NoError(t, err)

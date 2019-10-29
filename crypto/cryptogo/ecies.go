@@ -91,7 +91,11 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 
 	//calculate mac
 	mac := hmac.New(Hash.New, keys[32:])
-	mac.Write(encryptedSymmetricKey)
+	_, err = mac.Write(encryptedSymmetricKey)
+	if err != nil {
+		err = cryptoError(err, "")
+		return nil, err
+	}
 	macResult := mac.Sum(nil)
 
 	if subtle.ConstantTimeCompare(macResult, tag) == 1 {
@@ -176,7 +180,11 @@ func encryptSymmetricKeyWithECIES(publicKey, symmetricKey []byte) (encryptedSymm
 
 	//calculate tag
 	mac := hmac.New(Hash.New, keys[32:])
-	mac.Write(encryptedSymmetricKey)
+	_, err = mac.Write(encryptedSymmetricKey)
+	if err != nil {
+		err = cryptoError(err, "")
+		return
+	}
 	tag = mac.Sum(nil)
 
 	return encryptedSymmetricKey, tag, ephPub, iv, nil

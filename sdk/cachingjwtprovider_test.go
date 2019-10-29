@@ -46,8 +46,8 @@ import (
 
 	"fmt"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCachingJwtProvider(t *testing.T) {
@@ -106,7 +106,7 @@ func TestCachingJwtProvider(t *testing.T) {
 
 		go func() {
 
-			for time.Now().Sub(start) < (time.Second * 5) {
+			for time.Since(start) < (time.Second * 5) {
 				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
 				assert.NotNil(t, token)
 				assert.NoError(t, err)

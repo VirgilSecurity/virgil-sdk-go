@@ -77,7 +77,8 @@ func (c *aesGCMChunkStreamCipher) Encrypt(key, nonce, ad []byte, chunkSize int, 
 
 		res := aesGCM.Seal(buf[:0], chunkNonce, buf[:n], ad)
 
-		written, err := out.Write(res)
+		var written int
+		written, err = out.Write(res)
 		if written != len(res) || err != nil {
 			return CryptoError("Could not write to output virgilbuffer")
 		}
@@ -107,11 +108,13 @@ func (c *aesGCMChunkStreamCipher) Decrypt(key, nonce, ad []byte, chunkSize int, 
 		ciph, _ := aes.NewCipher(key)
 		aesGCM, _ := cipher.NewGCM(ciph)
 
-		res, err := aesGCM.Open(buf[:0], chunkNonce, buf[:n], ad)
+		var res []byte
+		res, err = aesGCM.Open(buf[:0], chunkNonce, buf[:n], ad)
 		if err != nil {
 			return err
 		}
-		written, err := out.Write(res)
+		var written int
+		written, err = out.Write(res)
 		if written != len(res) || err != nil {
 			return CryptoError("Could not write to output virgilbuffer")
 		}

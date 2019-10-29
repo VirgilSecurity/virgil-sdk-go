@@ -39,8 +39,9 @@ package cryptogo
 import (
 	"bytes"
 	"crypto/rand"
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestKeys(t *testing.T) {
@@ -68,8 +69,8 @@ func TestKeys(t *testing.T) {
 	}
 
 	if !bytes.Equal(keypair.PublicKey().contents(), dPub.contents()) {
-		fmt.Println(keypair.PublicKey().contents())
-		fmt.Println(dPub.contents())
+		t.Log(keypair.PublicKey().contents())
+		t.Log(dPub.contents())
 
 		t.Fatal("deserialized & original public keys do not match")
 	}
@@ -80,7 +81,7 @@ func TestKeys(t *testing.T) {
 
 	//check password
 	passBytes := make([]byte, 12)
-	rand.Read(passBytes)
+	readRandom(t, passBytes)
 	prs1, err = dPriv.Encode(passBytes)
 	if err != nil {
 		t.Fatal(err)
@@ -93,4 +94,9 @@ func TestKeys(t *testing.T) {
 	if !bytes.Equal(keypair.PrivateKey().contents(), dPriv.contents()) {
 		t.Fatal("keys do not match")
 	}
+}
+
+func readRandom(tb testing.TB, dst []byte) {
+	_, err := rand.Read(dst)
+	assert.NoError(tb, err)
 }

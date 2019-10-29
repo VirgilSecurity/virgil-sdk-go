@@ -79,7 +79,10 @@ func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]
 	kdf := hkdf.New(sha256.New, sk, nil, nil)
 
 	res := make([]byte, 128)
-	kdf.Read(res)
+	_, err = kdf.Read(res)
+	if err != nil {
+		return nil, err
+	}
 	return res, nil
 
 }
@@ -117,7 +120,10 @@ func EDHRespond(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey) 
 	kdf := hkdf.New(sha256.New, sk, nil, nil)
 
 	res := make([]byte, 128)
-	kdf.Read(res)
+	_, err = kdf.Read(res)
+	if err != nil {
+		return nil, err
+	}
 	return res, nil
 
 }

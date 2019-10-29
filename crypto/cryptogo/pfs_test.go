@@ -39,8 +39,6 @@ package cryptogo
 import (
 	"testing"
 
-	"crypto/rand"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -75,7 +73,7 @@ func TestPFS(t *testing.T) {
 	assert.NoError(t, err)
 
 	msg := make([]byte, 1025)
-	rand.Read(msg)
+	readRandom(t, msg)
 
 	salt, ciphertext := sessA.Encrypt(msg)
 
@@ -115,13 +113,11 @@ func TestPFS(t *testing.T) {
 	plaintext, err = sessA.Decrypt(salt, ciphertext)
 
 	assert.NoError(t, err)
-
 	assert.Equal(t, plaintext, msg)
 
 	plaintext, err = sessB.Decrypt(salt, ciphertext)
 
 	assert.Error(t, err)
-
 	assert.NotEqual(t, plaintext, msg)
 }
 
@@ -153,14 +149,13 @@ func TestPFSNoOTC(t *testing.T) {
 	assert.NoError(t, err)
 
 	msg := make([]byte, 1025)
-	rand.Read(msg)
+	readRandom(t, msg)
 
 	salt, ciphertext := sessA.Encrypt(msg)
 
 	plaintext, err := sessB.Decrypt(salt, ciphertext)
 
 	assert.NoError(t, err)
-
 	assert.Equal(t, plaintext, msg)
 
 	/*ICab, _ := c.ExportPrivateKey(ICa.PrivateKey(), "")
@@ -191,7 +186,5 @@ func TestPFSNoOTC(t *testing.T) {
 	plaintext, err = sessB.Decrypt(salt, ciphertext)
 
 	assert.Error(t, err)
-
 	assert.NotEqual(t, plaintext, msg)
-
 }

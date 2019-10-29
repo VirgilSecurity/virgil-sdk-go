@@ -53,7 +53,7 @@ func TestCrossTestCrypto(t *testing.T) {
 	assert.NoError(t, err)
 
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	kp2p, err := c2.ExportPublicKey(kp2.PublicKey())
 	assert.NoError(t, err)
@@ -93,9 +93,10 @@ func TestTokenSigner(t *testing.T) {
 	assert.NoError(t, err)
 
 	pk2, err := c2.ExtractPublicKey(sk2)
+	assert.NoError(t, err)
 
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	sig1, err := v1.GenerateTokenSignature(data, kp1.PrivateKey())
 	assert.NoError(t, err)
@@ -110,7 +111,8 @@ func BenchmarkVirgilAccessTokenSigner_VerifyTokenSignature(b *testing.B) {
 	kp1, err := c1.GenerateKeypair()
 	assert.NoError(b, err)
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
+
 	v1 := NewVirgilAccessTokenSigner()
 	sig1, err := v1.GenerateTokenSignature(data, kp1.PrivateKey())
 	assert.NoError(b, err)
@@ -127,13 +129,21 @@ func BenchmarkInternalVirgilAccessTokenSigner_VerifyTokenSignature(b *testing.B)
 	kp1, err := c1.GenerateKeypair()
 	assert.NoError(b, err)
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
+
 	v1 := cryptogo.NewVirgilAccessTokenSigner()
 	sig1, err := v1.GenerateTokenSignature(data, kp1.PrivateKey())
 	assert.NoError(b, err)
 
 	for i := 0; i < b.N; i++ {
 		err = v1.VerifyTokenSignature(data, sig1, kp1.PublicKey())
-		assert.NoError(b, err)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
+}
+
+func readRandom(tb testing.TB, dst []byte) {
+	_, err := rand.Read(dst)
+	assert.NoError(tb, err)
 }

@@ -53,7 +53,10 @@ type sha512Hash struct{}
 
 func (v *sha512Hash) Sum(data []byte) []byte {
 	h := v.New()
-	h.Write(data)
+	_, err := h.Write(data)
+	if err != nil {
+		panic(err)
+	}
 	return h.Sum(nil)
 }
 

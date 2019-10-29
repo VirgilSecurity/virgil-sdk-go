@@ -53,9 +53,15 @@ func kdf2(key []byte, length int, h func() hash.Hash) []byte {
 	res := make([]byte, length)
 	b := make([]byte, 4)
 	for i := 0; i < cThreshold; i++ {
-		kdfHash.Write(key)
+		_, err := kdfHash.Write(key)
+		if err != nil {
+			panic(err)
+		}
 		binary.BigEndian.PutUint32(b, counter)
-		kdfHash.Write(b)
+		_, err = kdfHash.Write(b)
+		if err != nil {
+			panic(err)
+		}
 		counter++
 		digest := kdfHash.Sum(nil)
 

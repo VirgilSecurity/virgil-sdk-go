@@ -54,7 +54,6 @@ var (
 	OidSha512         = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
 	oidKdf2           = asn1.ObjectIdentifier{1, 0, 18033, 2, 5, 2}
 	oidEnvelopedData  = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 3}
-	oidHmacWithSha384 = asn1.ObjectIdentifier{1, 2, 840, 113549, 2, 10}
 	oidHmacWithSha512 = asn1.ObjectIdentifier{1, 2, 840, 113549, 2, 11}
 
 	oidPbkdf2 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 5, 12}
@@ -185,10 +184,6 @@ type envelopeKey struct {
 	CipherText []byte
 }
 
-type validator interface {
-	Validate() error
-}
-
 func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte, keyIv []byte) (*asn1.RawValue, error) {
 
 	encryptedKey := encryptedData{
@@ -280,13 +275,10 @@ func makeSignature(sign []byte, hashSize int) ([]byte, error) {
 	switch hashSize {
 	case 32:
 		algo = OidSha256
-		break
 	case 48:
 		algo = OidSha384
-		break
 	case 64:
 		algo = OidSha512
-		break
 	default:
 		return nil, CryptoError("unsupported hash")
 	}
@@ -392,7 +384,6 @@ func makeParam(key string, v interface{}) (CustomParam, error) {
 	switch v.(type) {
 	case []byte:
 		tag = 2
-		break
 	case string:
 		tag = 1
 	}

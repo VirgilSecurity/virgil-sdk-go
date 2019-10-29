@@ -78,8 +78,8 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, E
 	ad := hash[:]
 
 	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
-
-	toHash = append(sk, ad...)
+	toHash = append(toHash, sk...)
+	toHash = append(toHash, ad...)
 	toHash = append(toHash, []byte(virgil)...)
 
 	sessHash := sha256.Sum256(toHash)
@@ -113,7 +113,8 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa *ed25519PublicKey, ICb, LTCb, 
 
 	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
 
-	toHash = append(sk, ad...)
+	toHash = append(toHash, sk...)
+	toHash = append(toHash, ad...)
 	toHash = append(toHash, []byte(virgil)...)
 
 	sessHash := sha256.Sum256(toHash)

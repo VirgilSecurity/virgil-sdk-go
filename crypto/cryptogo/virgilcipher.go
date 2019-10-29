@@ -274,8 +274,14 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 	symmetricKey := make([]byte, 32) //256 bit AES key
 	nonce := make([]byte, 12)        //96 bit AES GCM nonce
 
-	rand.Reader.Read(symmetricKey)
-	rand.Reader.Read(nonce)
+	_, err := rand.Reader.Read(symmetricKey)
+	if err != nil {
+		return err
+	}
+	_, err = rand.Reader.Read(nonce)
+	if err != nil {
+		return err
+	}
 
 	for _, r := range c.recipients {
 		model, err := r.encryptKey(symmetricKey)
@@ -361,8 +367,14 @@ func encryptData(data []byte) (cipherText, symmetricKey, nonce []byte) {
 	symmetricKey = make([]byte, 32) //256 bit AES key
 	nonce = make([]byte, 12)        //96 bit AES GCM nonce
 
-	rand.Reader.Read(symmetricKey)
-	rand.Reader.Read(nonce)
+	_, err := rand.Reader.Read(symmetricKey)
+	if err != nil {
+		panic(err)
+	}
+	_, err = rand.Reader.Read(nonce)
+	if err != nil {
+		panic(err)
+	}
 
 	ciph, _ := aes.NewCipher(symmetricKey)
 	aesGCM, _ := cipher.NewGCM(ciph)

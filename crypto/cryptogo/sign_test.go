@@ -38,7 +38,6 @@ package cryptogo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"io"
 	"testing"
 )
@@ -58,7 +57,7 @@ func (r *badReader) Read(p []byte) (n int, err error) {
 func TestSignatures(t *testing.T) {
 	//make random data
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	_, err := Signer.Sign(data, &ed25519PrivateKey{})
 	if err == nil {
@@ -93,6 +92,9 @@ func TestSignatures(t *testing.T) {
 	}
 
 	badSignature, err := makeSignature(make([]byte, 1), 32)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	err = Verifier.Verify(data, keypair.PublicKey(), badSignature)
 	if err == nil {
@@ -100,7 +102,6 @@ func TestSignatures(t *testing.T) {
 	}
 
 	err = Verifier.Verify(data, keypair.PublicKey(), signature)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +111,6 @@ func TestSignatures(t *testing.T) {
 	keypair.PublicKey().contents()[1] = ^keypair.PublicKey().contents()[1]
 
 	err = Verifier.Verify(data, keypair.PublicKey(), signature)
-
 	if err == nil {
 		t.Fatal("Signature verification succeeded but must fail")
 	}
@@ -119,7 +119,7 @@ func TestSignatures(t *testing.T) {
 func TestStreamSignatures(t *testing.T) {
 	//make random data
 	data := make([]byte, 255)
-	rand.Read(data)
+	readRandom(t, data)
 
 	keypair, err := NewKeypair()
 	if err != nil {
@@ -127,20 +127,19 @@ func TestStreamSignatures(t *testing.T) {
 	}
 
 	badbuf := &badReader{buf: bytes.NewBuffer(data)}
-	signature, err := Signer.SignStream(badbuf, keypair.PrivateKey())
+	_, err = Signer.SignStream(badbuf, keypair.PrivateKey())
 	if err == nil {
 		t.Fatal("read must fail")
 	}
 
 	buf := bytes.NewBuffer(data)
-	signature, err = Signer.SignStream(buf, keypair.PrivateKey())
+	signature, err := Signer.SignStream(buf, keypair.PrivateKey())
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	buf = bytes.NewBuffer(data)
 	err = Verifier.VerifyStream(buf, keypair.PublicKey(), signature)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,14 +149,12 @@ func TestStreamSignatures(t *testing.T) {
 	keypair.PublicKey().contents()[1] = ^keypair.PublicKey().contents()[1]
 	buf = bytes.NewBuffer(data)
 	err = Verifier.VerifyStream(buf, keypair.PublicKey(), signature)
-
 	if err == nil {
 		t.Fatal("Signature verification succeeded but must fail")
 	}
 
 	badbuf = &badReader{buf: bytes.NewBuffer(data)}
 	err = Verifier.VerifyStream(badbuf, keypair.PublicKey(), signature)
-
 	if err == nil {
 		t.Fatal("read must fail")
 	}
@@ -175,7 +172,10 @@ func BenchmarkEd25519Signer_Sign(b *testing.B) {
 	data := make([]byte, 300)
 
 	for i := 0; i < b.N; i++ {
-		Signer.Sign(data, sk)
+		_, err = Signer.Sign(data, sk)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -190,11 +190,17 @@ func BenchmarkEd25519Verifier_Verify(b *testing.B) {
 	data := make([]byte, 300)
 
 	sign, err := Signer.Sign(data, keypair.PrivateKey())
+	if err != nil {
+		b.Fatal(err)
+	}
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			Verifier.Verify(data, pk, sign)
+			err := Verifier.Verify(data, pk, sign)
+			if err != nil {
+				b.Fatal(err)
+			}
 		}
 	})
 }

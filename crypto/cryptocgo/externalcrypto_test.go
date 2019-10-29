@@ -34,7 +34,6 @@ package cryptocgo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,22 +44,16 @@ func TestSignEncrypt(t *testing.T) {
 
 	//make random data
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	keypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	signerKeypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	cipherText, err := crypto.SignThenEncrypt(data, signerKeypair.PrivateKey(), keypair.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	if plaintext, err := crypto.DecryptThenVerify(cipherText, keypair.PrivateKey(), keypair.PublicKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
@@ -73,21 +66,20 @@ func BenchmarkSign(b *testing.B) {
 
 	//make random data
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
 
 	signerKeypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		b.Fatal(err)
-	}
+	assert.NoError(b, err)
 
 	sign, err := crypto.Sign(data, signerKeypair.PrivateKey())
-	if err != nil {
-		b.Fatal(err)
-	}
+	assert.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		crypto.VerifySignature(data, sign, signerKeypair.publicKey)
+		err = crypto.VerifySignature(data, sign, signerKeypair.publicKey)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -97,17 +89,13 @@ func BenchmarkSignThenEncrypt(b *testing.B) {
 
 	//make random data
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(b, data)
 
 	keypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		b.Fatal(err)
-	}
+	assert.NoError(b, err)
 
 	signerKeypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		b.Fatal(err)
-	}
+	assert.NoError(b, err)
 
 	for i := 0; i < b.N; i++ {
 		cipherText, err := crypto.SignThenEncrypt(data, signerKeypair.PrivateKey(), keypair.PublicKey())
@@ -124,27 +112,22 @@ func BenchmarkSignThenEncrypt(b *testing.B) {
 func TestStreamCipher(t *testing.T) {
 	crypto := &ExternalCrypto{}
 	keypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	plainBuf := make([]byte, 102301)
-	rand.Read(plainBuf)
+	readRandom(t, plainBuf)
+
 	plain := bytes.NewBuffer(plainBuf)
 	cipheredStream := &bytes.Buffer{}
 	err = crypto.EncryptStream(plain, cipheredStream, keypair.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	//decrypt with key
 
 	cipheredInputStream := bytes.NewBuffer(cipheredStream.Bytes())
 	plainOutBuffer := &bytes.Buffer{}
 	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey())
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	if !bytes.Equal(plainBuf, plainOutBuffer.Bytes()) {
 		t.Fatal("plain & decrypted buffers do not match")
@@ -156,56 +139,39 @@ func TestStreamCipher(t *testing.T) {
 	plainOutBuffer = &bytes.Buffer{}
 
 	keypair, err = crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
+
 	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey())
-	if err == nil {
-		t.Fatal("decrypt must fail but didn't")
-	}
+	assert.Error(t, err)
 
 	//decrypt with wrong key must fail
 	keypair1, err := crypto.GenerateKeypair()
+	assert.NoError(t, err)
 
-	if err != nil {
-		t.Fatal(err)
-	}
 	cipheredInputStream = bytes.NewBuffer(cipheredStream.Bytes())
 	plainOutBuffer = &bytes.Buffer{}
 	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, keypair1.PrivateKey())
-	if err == nil {
-		t.Fatal("decrypt must fail but didn't")
-	}
-
+	assert.Error(t, err, "decrypt must fail but didn't")
 }
 
 func TestStreamSigner(t *testing.T) {
 	crypto := &ExternalCrypto{}
 	keypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	plainBuf := make([]byte, 1023)
-	rand.Read(plainBuf)
+	readRandom(t, plainBuf)
+
 	plain := bytes.NewBuffer(plainBuf)
 	sign, err := crypto.SignStream(plain, keypair.PrivateKey())
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	//verify signature
 
 	plain = bytes.NewBuffer(plainBuf)
-
 	res, err := crypto.VerifyStream(plain, sign, keypair.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !res {
-		t.Fatal("verify result is ok but err is nil")
-	}
+	assert.NoError(t, err)
+	assert.True(t, res)
 
 	//verify with wrong signature must fail
 
@@ -213,57 +179,42 @@ func TestStreamSigner(t *testing.T) {
 
 	sign[len(sign)-1] = ^sign[len(sign)-1] //invert last byte
 
-	res, err = crypto.VerifyStream(plain, sign, keypair.PublicKey())
-	if res {
-		t.Fatal("verify must fail but didn't")
-	}
+	res, _ = crypto.VerifyStream(plain, sign, keypair.PublicKey())
+	assert.NoError(t, err)
+	assert.False(t, res, "verify must fail but didn't")
 
 	sign[len(sign)-1] = ^sign[len(sign)-1] //restore last byte
 	//verify with wrong key must fail
 	keypair, err = crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
-	res, err = crypto.VerifyStream(plain, sign, keypair.PublicKey())
-	if res {
-		t.Fatal("verify must fail but didn't")
-	}
+	assert.NoError(t, err)
 
+	res, err = crypto.VerifyStream(plain, sign, keypair.PublicKey())
+	assert.NoError(t, err)
+	assert.False(t, res, "verify must fail but didn't")
 }
 
 func TestNativeCrypto_ExportImportPrivateKey(t *testing.T) {
 	crypto := &ExternalCrypto{}
 	keypair, err := crypto.GenerateKeypair()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	pubb, err := crypto.ExportPublicKey(keypair.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	privb, err := crypto.ExportPrivateKey(keypair.PrivateKey(), "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	pub, err := crypto.ImportPublicKey(pubb)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
+
 	priv, err := crypto.ImportPrivateKey(privb, "abc")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	data := make([]byte, 257)
-	rand.Read(data)
+	readRandom(t, data)
 
 	cipherText, err := crypto.SignThenEncrypt(data, keypair.PrivateKey(), keypair.PublicKey())
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	if plaintext, err := crypto.DecryptThenVerify(cipherText, priv, pub, pub); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)

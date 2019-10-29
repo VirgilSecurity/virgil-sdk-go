@@ -363,6 +363,9 @@ func (p *Pythia) UpdateDeblindedWithToken(deblindedPassword, passwordUpdateToken
 
 func (p *Pythia) GenerateKeypair(keypairType crypto.KeyType, seed []byte) (keypair crypto.Keypair, err error) {
 	crypto := cryptocgo.NewVirgilCrypto()
-	crypto.SetKeyType(keypairType)
+	err =crypto.SetKeyType(keypairType)
+	if err!=nil{
+		return nil, err
+	}
 	return crypto.GenerateKeypairFromKeyMaterial(seed)
 }

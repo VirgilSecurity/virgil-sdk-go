@@ -38,7 +38,6 @@ package cryptogo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"testing"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo/gcm"
@@ -48,15 +47,17 @@ func TestStream(t *testing.T) {
 	symmetricKey := make([]byte, 32) //256 bit AES key
 	nonce := make([]byte, 12)        //96 bit AES GCM nonce
 
-	rand.Reader.Read(symmetricKey)
-	rand.Reader.Read(nonce)
+	readRandom(t, symmetricKey)
+	readRandom(t, nonce)
 
 	sc := StreamCipher
 
 	plain := make([]byte, gcm.GcmStreamBufSize*2-20)
-	rand.Reader.Read(plain)
+	readRandom(t, plain)
+
 	ad := make([]byte, 1)
-	rand.Reader.Read(ad)
+	readRandom(t, ad)
+
 	for i := 0; i < 40; i++ {
 
 		in := bytes.NewBuffer(plain)
@@ -71,7 +72,7 @@ func TestStream(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%d, %+v", i, err)
 		}
-		if bytes.Compare(plain, plainOut.Bytes()) != 0 {
+		if !bytes.Equal(plain, plainOut.Bytes()) {
 			t.Fatal("plaintext and decrypted text do not match")
 		}
 		plain = append(plain, ad...)
@@ -82,14 +83,16 @@ func TestChunk(t *testing.T) {
 	symmetricKey := make([]byte, 32) //256 bit AES key
 	nonce := make([]byte, 12)        //96 bit AES GCM nonce
 
-	rand.Reader.Read(symmetricKey)
-	rand.Reader.Read(nonce)
+	readRandom(t, symmetricKey)
+	readRandom(t, nonce)
 
 	sc := ChunkCipher
 	plain := make([]byte, gcm.GcmStreamBufSize*3-20)
-	rand.Reader.Read(plain)
+	readRandom(t, plain)
+
 	ad := make([]byte, 1)
-	rand.Reader.Read(ad)
+	readRandom(t, ad)
+
 	for i := 0; i < 40; i++ {
 		in := bytes.NewBuffer(plain)
 		out := &bytes.Buffer{}
@@ -103,7 +106,7 @@ func TestChunk(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%d, %+v", i, err)
 		}
-		if bytes.Compare(plain, plainOut.Bytes()) != 0 {
+		if !bytes.Equal(plain, plainOut.Bytes()) {
 			t.Fatal("plaintext and decrypted text do not match")
 		}
 		plain = append(plain, ad...)

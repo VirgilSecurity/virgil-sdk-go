@@ -51,13 +51,13 @@ func (envelope *Envelope) Validate() error {
 		return unsupported("envelope type")
 	}
 
-	if len(envelope.CustomParams) > 0 {
-		for _, e := range envelope.CustomParams {
-			if e.Key == "chunkSize" {
+	// if len(envelope.CustomParams) > 0 {
+	// 	for _, e := range envelope.CustomParams {
+	// 		if e.Key == "chunkSize" {
 
-			}
-		}
-	}
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
