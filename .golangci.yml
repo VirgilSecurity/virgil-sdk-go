@@ -202,7 +202,6 @@ linters:
     - lll
     - maligned
     - ineffassign
-    - interfacer
     - unparam
     - unused
     - unconvert
