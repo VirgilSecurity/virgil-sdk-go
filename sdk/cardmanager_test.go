@@ -56,7 +56,7 @@ import (
 )
 
 func initCardManager() (*CardManager, error) {
-	apiUrl := os.Getenv("TEST_ADDRESS")
+	apiURL := os.Getenv("TEST_ADDRESS")
 	accID := os.Getenv("TEST_ACC_ID")
 	if accID == "" {
 		return nil, errors.New("TEST_ACC_ID is required")
@@ -90,7 +90,7 @@ func initCardManager() (*CardManager, error) {
 	}
 
 	generator := NewJwtGenerator(apiKey, accID, tokenSigner, appID, time.Minute*1)
-	cardsClient := NewCardsClient(apiUrl)
+	cardsClient := NewCardsClient(apiURL)
 	if os.Getenv("TEST_DEBUG_OUTPUT") == "true" {
 		cardsClient.HttpClient = &DebugClient{}
 	}
@@ -174,10 +174,11 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 
 	identity := "Alice-" + randomString()
 
+	var card *Card
 	for i := 0; i < 3; i++ { //3 branches of 3 cards each
 		prev := ""
 		for j := 0; j < 3; j++ {
-			card, err := PublishCard(t, manager, identity, prev)
+			card, err = PublishCard(t, manager, identity, prev)
 			assert.NoError(t, err)
 			prev = card.Id
 		}
@@ -199,7 +200,7 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 
 }
 
-func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardId string) (*Card, error) {
+func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardID string) (*Card, error) {
 	kp, err := cryptoNative.GenerateKeypair()
 	assert.NoError(t, err)
 
@@ -207,7 +208,7 @@ func PublishCard(t *testing.T, manager *CardManager, identity string, previousCa
 		PublicKey:      kp.PublicKey(),
 		PrivateKey:     kp.PrivateKey(),
 		Identity:       identity,
-		PreviousCardId: previousCardId,
+		PreviousCardId: previousCardID,
 		ExtraFields:    map[string]string{"key": "value"},
 	}
 

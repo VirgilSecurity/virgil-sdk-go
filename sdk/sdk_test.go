@@ -45,4 +45,5 @@ import (
 var (
 	cryptoNative = cryptocgo.NewVirgilCrypto()
 	cardCrypto   = cryptocgo.NewVirgilCardCrypto()
+	tokenSigner  = cryptocgo.NewVirgilAccessTokenSigner()
 )
