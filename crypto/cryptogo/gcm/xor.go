@@ -42,6 +42,7 @@ import (
 	"unsafe"
 )
 
+// nolint: gosec
 const wordSize = int(unsafe.Sizeof(uintptr(0)))
 const supportsUnaligned = runtime.GOARCH == "386" ||
 	runtime.GOARCH == "amd64" ||
@@ -86,19 +87,18 @@ func safeXORBytes(dst, a, b []byte) int {
 	return n
 }
 
-// xorBytes xors the bytes in a and b. The destination is assumed to have enough
+// XorBytes xors the bytes in a and b. The destination is assumed to have enough
 // space. Returns the number of bytes xor'd.
 func XorBytes(dst, a, b []byte) int {
 	if supportsUnaligned {
 		return fastXORBytes(dst, a, b)
-	} else {
-		// TODO(hanwen): if (dst, a, b) have common alignment
-		// we could still try fastXORBytes. It is not clear
-		// how often this happens, and it's only worth it if
-		// the block encryption itself is hardware
-		// accelerated.
-		return safeXORBytes(dst, a, b)
 	}
+	// TODO(hanwen): if (dst, a, b) have common alignment
+	// we could still try fastXORBytes. It is not clear
+	// how often this happens, and it's only worth it if
+	// the block encryption itself is hardware
+	// accelerated.
+	return safeXORBytes(dst, a, b)
 }
 
 // fastXORWords XORs multiples of 4 or 8 bytes (depending on architecture.)

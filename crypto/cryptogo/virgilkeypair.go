@@ -50,11 +50,14 @@ type KeyType int
 
 var NewKeypair func() (*ed25519Keypair, error)
 
-const EC_PRIVATE_KEY = "PRIVATE KEY"
-const ENCRYPTED_PRIVATE_KEY = "ENCRYPTED PRIVATE KEY"
-const PUBLIC_KEY = "PUBLIC KEY"
+// nolint: golint
+const (
+	EC_PRIVATE_KEY        = "PRIVATE KEY"
+	ENCRYPTED_PRIVATE_KEY = "ENCRYPTED PRIVATE KEY"
+	PUBLIC_KEY            = "PUBLIC KEY"
 
-const MINIMAL_KEY_LENGTH = 32
+	MINIMAL_KEY_LENGTH = 32
+)
 
 type ed25519Keypair struct {
 	publicKey  *ed25519PublicKey

@@ -69,9 +69,5 @@ func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, erro
 		return nil, errors.New("context is mandatory")
 	}
 
-	if jwt, err := c.GetTokenCallback(context); err != nil {
-		return nil, err
-	} else {
-		return jwt, nil
-	}
+	return c.GetTokenCallback(context)
 }

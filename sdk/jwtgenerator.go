@@ -52,10 +52,16 @@ type JwtGenerator struct {
 	TTL                    time.Duration
 }
 
-func NewJwtGenerator(apiKey crypto.PrivateKey, apiPublicKeyIdentifier string, signer crypto.AccessTokenSigner, appId string, ttl time.Duration) *JwtGenerator {
+func NewJwtGenerator(
+	apiKey crypto.PrivateKey,
+	apiPublicKeyIdentifier string,
+	signer crypto.AccessTokenSigner,
+	appID string,
+	ttl time.Duration,
+) *JwtGenerator {
 
 	return &JwtGenerator{
-		AppId:                  appId,
+		AppId:                  appID,
 		AccessTokenSigner:      signer,
 		TTL:                    ttl,
 		ApiKey:                 apiKey,

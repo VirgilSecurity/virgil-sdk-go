@@ -68,7 +68,7 @@ var newCipherFunc func() Cipher
 
 const (
 	signatureKey = "VIRGIL-DATA-SIGNATURE"
-	signerId     = "VIRGIL-DATA-SIGNER-ID"
+	signerID     = "VIRGIL-DATA-SIGNER-ID"
 )
 
 func NewCipher() Cipher {
@@ -138,7 +138,7 @@ func (c *defaultCipher) SignThenEncrypt(data []byte, signer *ed25519PrivateKey) 
 
 	customParams := map[string]interface{}{
 		signatureKey: signature,
-		signerId:     signer.Identifier(),
+		signerID:     signer.Identifier(),
 	}
 	var models []*asn1.RawValue
 
@@ -193,7 +193,11 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKe
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
 
-func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519PrivateKey, verifierPublicKeys ...*ed25519PublicKey) ([]byte, error) {
+func (c *defaultCipher) DecryptThenVerify(
+	data []byte,
+	decryptionKey *ed25519PrivateKey,
+	verifierPublicKeys ...*ed25519PublicKey,
+) ([]byte, error) {
 
 	if decryptionKey == nil || decryptionKey.Empty() {
 		return nil, CryptoError("no keypair provided")
@@ -219,8 +223,8 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 			}
 		}
 
-		if signerID, ok := customParams[signerId]; ok {
-			if tmp, ok := signerID.(*[]byte); ok {
+		if sid, ok := customParams[signerID]; ok {
+			if tmp, ok := sid.(*[]byte); ok {
 				signerIDValue = *tmp
 			} else {
 				return nil, CryptoError("got signerId but could not decode")

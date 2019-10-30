@@ -80,11 +80,12 @@ func (vc *VirgilHttpClient) Send(
 	}
 	req.Header.Set("Virgil-Agent", virgil.GetAgentHeader())
 	req.Header.Set("Authorization", "Virgil "+token)
-	client := vc.getHttpClient()
+	client := vc.getHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "VirgilHttpClient.Send: send request")
 	}
+	//nolint: errcheck
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, resp.StatusCode, EntityNotFoundErr
@@ -98,10 +99,11 @@ func (vc *VirgilHttpClient) Send(
 	decoder := json.NewDecoder(bytes.NewReader(respBody))
 	decoder.DisallowUnknownFields()
 
+	msgErrorFormat := "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)"
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		if respObj != nil {
 			if err = decoder.Decode(respObj); err != nil {
-				return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
+				return nil, resp.StatusCode, errors.Wrapf(err, msgErrorFormat, resp.StatusCode, respBody)
 			}
 		}
 		return resp.Header, resp.StatusCode, nil
@@ -109,12 +111,12 @@ func (vc *VirgilHttpClient) Send(
 
 	var virgilErr VirgilAPIError
 	if err = decoder.Decode(&virgilErr); err != nil {
-		return nil, resp.StatusCode, errors.Wrapf(err, "VirgilHttpClient.Send: unmarshal response object (status code: %d body: %s)", resp.StatusCode, respBody)
+		return nil, resp.StatusCode, errors.Wrapf(err, msgErrorFormat, resp.StatusCode, respBody)
 	}
 	return nil, resp.StatusCode, virgilErr
 }
 
-func (vc *VirgilHttpClient) getHttpClient() HttpClient {
+func (vc *VirgilHttpClient) getHTTPClient() HttpClient {
 	if vc.Client != nil {
 		return vc.Client
 	}

@@ -54,13 +54,14 @@ func (k *externalPrivateKey) Encode(password []byte) ([]byte, error) {
 		defer DeleteVirgilByteArray(venc)
 
 		return ToSlice(venc), nil
-	} else {
-		vkey := ToVirgilByteArray(k.key)
-		defer DeleteVirgilByteArray(vkey)
-		vpass := ToVirgilByteArray(password)
-		defer DeleteVirgilByteArray(vpass)
-		return ToSlice(VirgilKeyPairEncryptPrivateKey(vkey, vpass)), nil
 	}
+
+	vkey := ToVirgilByteArray(k.key)
+	defer DeleteVirgilByteArray(vkey)
+	vpass := ToVirgilByteArray(password)
+	defer DeleteVirgilByteArray(vpass)
+
+	return ToSlice(VirgilKeyPairEncryptPrivateKey(vkey, vpass)), nil
 }
 
 func (k *externalPrivateKey) Empty() bool {

@@ -103,6 +103,7 @@ func (s *FileKeyStorage) Load(name string) (*StorageItem, error) {
 	if !s.Exists(name) {
 		return nil, ErrorKeyNotFound
 	}
+	//nolint: gosec
 	d, err := ioutil.ReadFile(path.Join(dir, name))
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot read file")

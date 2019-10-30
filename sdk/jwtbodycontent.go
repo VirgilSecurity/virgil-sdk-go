@@ -58,18 +58,25 @@ type JwtBodyContent struct {
 	AdditionalData map[string]interface{} `json:"ada,omitempty"`
 }
 
-func NewJwtBodyContent(appId string, identity string, issuedAt time.Time, expiresAt time.Time, data map[string]interface{}) (*JwtBodyContent, error) {
-	if err := ValidateJwtBodyParams(appId, identity, issuedAt, expiresAt); err != nil {
+func NewJwtBodyContent(
+	appID string,
+	identity string,
+	issuedAt time.Time,
+	expiresAt time.Time,
+	data map[string]interface{},
+) (*JwtBodyContent, error) {
+
+	if err := ValidateJwtBodyParams(appID, identity, issuedAt, expiresAt); err != nil {
 		return nil, err
 	}
 
 	return &JwtBodyContent{
-		AppID:          appId,
+		AppID:          appID,
 		Identity:       identity,
 		IssuedAt:       issuedAt.UTC().Unix(),
 		ExpiresAt:      expiresAt.UTC().Unix(),
 		AdditionalData: data,
-		Issuer:         IssuerPrefix + appId,
+		Issuer:         IssuerPrefix + appID,
 		Subject:        IdentityPrefix + identity,
 	}, nil
 }

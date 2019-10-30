@@ -10,7 +10,7 @@ run:
   deadline: 1m
 
   # exit code when at least one issue was found, default is 1
-  issues-exit-code: 20
+  issues-exit-code: 100
 
   # include test files or not, default is true
   tests: true
@@ -243,7 +243,13 @@ issues:
         - lll
     - linters:
         - golint
-      text: "should have comment"
+      text: "^(func|method|type|struct field) [^\\s]+ should be [^\\s]+$"
+    - linters:
+        - golint
+      text: "should have (comment|name)"
+    - linters:
+        - golint
+      text: "returns unexported type"     
   # Independently from option `exclude` we use default exclude patterns,
   # it can be disabled by this option. To list all
   # excluded by default patterns execute `golangci-lint run --help`.

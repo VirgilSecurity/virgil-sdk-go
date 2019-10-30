@@ -42,6 +42,7 @@ import (
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 )
 
+//nolint: golint
 var (
 	BN_SIZE = int(C.PYTHIA_BN_BUF_SIZE)
 	G1_SIZE = int(C.PYTHIA_G1_BUF_SIZE)
@@ -115,19 +116,17 @@ func (p *Pythia) Deblind(transformedPassword []byte, blindingSecret []byte) (deb
 	return deblindedBuf.GetData(), nil
 }
 
-/**
- * ComputeTransformationKeypair Computes transformation private and public key.
- *
- * @param [in] transformation_key_id - ensemble key ID used to enclose operations in subsets.
- * @param [in] pythia_secret - global common for all secret random Key.
- * @param [in] pythia_scope_secret - ensemble secret generated and versioned transparently.
- * @param [out] transformation_private_key - BN transformation_private_key Pythia's private key
- *              which was generated using pythia_secret and pythia_scope_secret.
- *              This key is used to emit proof tokens (proof_value_c, proof_value_u).
- * @param [out] transformation_public_key
- *
- * @return 0 if succeeded, -1 otherwise
- */
+// ComputeTransformationKeypair Computes transformation private and public key.
+//
+// @param [in] transformation_key_id - ensemble key ID used to enclose operations in subsets.
+// @param [in] pythia_secret - global common for all secret random Key.
+// @param [in] pythia_scope_secret - ensemble secret generated and versioned transparently.
+// @param [out] transformation_private_key - BN transformation_private_key Pythia's private key
+//              which was generated using pythia_secret and pythia_scope_secret.
+//              This key is used to emit proof tokens (proof_value_c, proof_value_u).
+// @param [out] transformation_public_key
+//
+// @return 0 if succeeded, -1 otherwise
 func (p *Pythia) ComputeTransformationKeypair(
 	transformationKeyID []byte,
 	pythiaSecret []byte,

@@ -39,6 +39,7 @@ package crypto
 
 type KeyType int
 
+// nolint: golint
 const (
 	Default KeyType = iota
 	RSA_2048

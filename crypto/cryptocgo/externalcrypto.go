@@ -54,16 +54,15 @@ func NewVirgilCrypto() *ExternalCrypto {
 
 const (
 	signatureKey = "VIRGIL-DATA-SIGNATURE"
-	signerId     = "VIRGIL-DATA-SIGNER-ID"
+	signerID     = "VIRGIL-DATA-SIGNER-ID"
 )
 
 func (c *ExternalCrypto) SetKeyType(keyType crypto.KeyType) error {
 	if _, ok := KeyTypeMap[keyType]; !ok {
 		return errors.New("key type not supported")
-	} else {
-		c.keyType = keyType
-		return nil
 	}
+	c.keyType = keyType
+	return nil
 }
 
 func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
@@ -90,11 +89,11 @@ func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
 	defer DeleteVirgilByteArray(der)
 
 	rawPub := ToSlice(der)
-	receiverId := c.CalculateFingerprint(rawPub)
+	receiverID := c.CalculateFingerprint(rawPub)
 
 	pub := &externalPublicKey{
 		key:        rawPub,
-		receiverID: receiverId,
+		receiverID: receiverID,
 	}
 
 	der1 := VirgilKeyPairPrivateKeyToDER(kp.PrivateKey())
@@ -103,7 +102,7 @@ func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
 
 	priv := &externalPrivateKey{
 		key:        rawPriv,
-		receiverID: receiverId,
+		receiverID: receiverID,
 	}
 
 	return &externalKeypair{
@@ -139,11 +138,11 @@ func (c *ExternalCrypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (_ *
 	defer DeleteVirgilByteArray(der)
 
 	rawPub := ToSlice(der)
-	receiverId := c.CalculateFingerprint(rawPub)
+	receiverID := c.CalculateFingerprint(rawPub)
 
 	pub := &externalPublicKey{
 		key:        rawPub,
-		receiverID: receiverId,
+		receiverID: receiverID,
 	}
 
 	der1 := VirgilKeyPairPrivateKeyToDER(kp.PrivateKey())
@@ -152,7 +151,7 @@ func (c *ExternalCrypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (_ *
 
 	priv := &externalPrivateKey{
 		key:        rawPriv,
-		receiverID: receiverId,
+		receiverID: receiverID,
 	}
 
 	return &externalKeypair{
@@ -199,11 +198,11 @@ func (c *ExternalCrypto) ImportPrivateKey(data []byte, password string) (_ crypt
 
 	rawPub := ToSlice(vpub)
 
-	receiverId := c.CalculateFingerprint(rawPub)
+	receiverID := c.CalculateFingerprint(rawPub)
 
 	return &externalPrivateKey{
 		key:        rawPriv,
-		receiverID: receiverId,
+		receiverID: receiverID,
 	}, nil
 }
 
@@ -228,11 +227,11 @@ func (c *ExternalCrypto) ImportPublicKey(data []byte) (_ crypto.PublicKey, err e
 	defer DeleteVirgilByteArray(derKey)
 
 	rawPub = ToSlice(derKey)
-	receiverId := c.CalculateFingerprint(rawPub)
+	receiverID := c.CalculateFingerprint(rawPub)
 
 	return &externalPublicKey{
 		key:        rawPub,
-		receiverID: receiverId,
+		receiverID: receiverID,
 	}, nil
 
 }
@@ -542,13 +541,17 @@ func (c *ExternalCrypto) CalculateFingerprint(data []byte) []byte {
 	if c.UseSha256Fingerprints {
 		hash := sha256.Sum256(data)
 		return hash[:]
-	} else {
-		hash := sha512.Sum512(data)
-		return hash[:8]
 	}
+	hash := sha512.Sum512(data)
+	return hash[:8]
 }
 
-func (c *ExternalCrypto) SignThenEncrypt(data []byte, signerKey crypto.PrivateKey, recipients ...crypto.PublicKey) (_ []byte, err error) {
+func (c *ExternalCrypto) SignThenEncrypt(
+	data []byte,
+	signerKey crypto.PrivateKey,
+	recipients ...crypto.PublicKey,
+) (_ []byte, err error) {
+
 	defer func() {
 		if r := recover(); r != nil {
 			var ok bool
@@ -560,7 +563,10 @@ func (c *ExternalCrypto) SignThenEncrypt(data []byte, signerKey crypto.PrivateKe
 	}()
 	ci := NewVirgilCipher()
 	defer DeleteVirgilCipher(ci)
-	params := ci.CustomParams().(VirgilCustomParams)
+	params, ok := ci.CustomParams().(VirgilCustomParams)
+	if !ok {
+		panic("unexpected custom params")
+	}
 
 	signature, err := c.Sign(data, signerKey)
 	if err != nil {
@@ -573,7 +579,7 @@ func (c *ExternalCrypto) SignThenEncrypt(data []byte, signerKey crypto.PrivateKe
 	defer DeleteVirgilByteArray(vsig)
 	params.SetData(vsigKey, vsig)
 
-	vsignerKey := ToVirgilByteArray([]byte(signerId))
+	vsignerKey := ToVirgilByteArray([]byte(signerID))
 	defer DeleteVirgilByteArray(vsignerKey)
 	vsigner := ToVirgilByteArray(signerKey.Identifier())
 	defer DeleteVirgilByteArray(vsigner)
@@ -641,16 +647,16 @@ func (c *ExternalCrypto) DecryptThenVerify(
 		}
 
 	} else {
-		vsignerIdKey := ToVirgilByteArray([]byte(signerId))
-		defer DeleteVirgilByteArray(vsignerIdKey)
-		signerIdString := ci.CustomParams().(VirgilCustomParams).GetData(vsignerIdKey)
-		defer DeleteVirgilByteArray(signerIdString)
+		vsignerIDKey := ToVirgilByteArray([]byte(signerID))
+		defer DeleteVirgilByteArray(vsignerIDKey)
+		signerIDString := ci.CustomParams().(VirgilCustomParams).GetData(vsignerIDKey)
+		defer DeleteVirgilByteArray(signerIDString)
 
-		signerIdValue := ToSlice(signerIdString)
+		signerIDValue := ToSlice(signerIDString)
 
 		for _, v := range verifierKeys {
 
-			if subtle.ConstantTimeCompare(v.Identifier(), signerIdValue) == 1 {
+			if subtle.ConstantTimeCompare(v.Identifier(), signerIDValue) == 1 {
 				err := c.VerifySignature(plaintext, sig, v)
 				if err != nil {
 					return nil, err
