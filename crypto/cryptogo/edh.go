@@ -67,8 +67,8 @@ func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]
 	sk = append(sk, dh3...)
 
 	if OTCb != nil {
-
-		dh4, err := dhED25519(EKa, OTCb)
+		var dh4 []byte
+		dh4, err = dhED25519(EKa, OTCb)
 		if err != nil {
 			return nil, err
 		}
@@ -108,8 +108,8 @@ func EDHRespond(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey) 
 	sk = append(sk, dh3...)
 
 	if OTCb != nil {
-
-		dh4, err := dhED25519(OTCb, EKa)
+		var dh4 []byte
+		dh4, err = dhED25519(OTCb, EKa)
 		if err != nil {
 			return nil, err
 		}

@@ -131,46 +131,39 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 			return errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
 		}
 	}
+	return v.verifyCardByWhitelist(card)
+}
 
-	if len(v.Whitelists) == 0 {
-		return nil
-	}
-
+func (v *VirgilCardVerifier) verifyCardByWhitelist(card *Card) error {
 	hasNil := false
 	hasNonNil := false
 
 	for _, whitelist := range v.Whitelists {
 
+		hasNil = hasNil || whitelist == nil
+		hasNonNil = hasNonNil || whitelist != nil
+		if hasNil && hasNonNil {
+			return errors.New("can't mix nil and non nil whitelists")
+		}
+
 		if whitelist == nil {
-			hasNil = true
 			continue
-		} else {
-			hasNonNil = true
 		}
 
 		ok := false
-		var lastErr error
+		var lastErr = CardValidationExpectedSignerWasNotFoundErr
 		for _, cred := range whitelist.VerifierCredentials {
-			err := v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey)
-			if err == nil {
-				ok = true
-				break
-			} else {
+			if err := v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey); err != nil {
 				lastErr = errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
+				continue
 			}
+
+			ok = true
+			break
 		}
-
 		if !ok {
-			if lastErr == nil {
-				lastErr = CardValidationExpectedSignerWasNotFoundErr
-			}
-
 			return lastErr
 		}
-	}
-
-	if hasNil && hasNonNil {
-		return errors.New("can't mix nil and non nil whitelists")
 	}
 
 	return nil
@@ -188,7 +181,6 @@ func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, 
 		return CardValidationExpectedSignerWasNotFoundErr
 	}
 	for _, s := range card.Signatures {
-
 		if s.Signer == signer {
 			snapshot := append(card.ContentSnapshot, s.Snapshot...)
 			return v.Crypto.VerifySignature(snapshot, s.Signature, publicKey)

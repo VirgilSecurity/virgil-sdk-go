@@ -139,6 +139,7 @@ func BenchmarkVerify(b *testing.B) {
 	}
 }
 func TestCMS(t *testing.T) {
+	var plaintext []byte
 
 	//make random data
 	data := make([]byte, 257)
@@ -163,10 +164,11 @@ func TestCMS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if plaintext, err := cipher.DecryptWithPassword(cipherText, passBytes); err != nil || !bytes.Equal(plaintext, data) {
+
+	if plaintext, err = cipher.DecryptWithPassword(cipherText, passBytes); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
-	if plaintext, err := cipher.DecryptWithPrivateKey(cipherText, keypair.PrivateKey()); err != nil || !bytes.Equal(plaintext, data) {
+	if plaintext, err = cipher.DecryptWithPrivateKey(cipherText, keypair.PrivateKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
 
@@ -185,7 +187,7 @@ func TestCMS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if plaintext, err := NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey(), keypair.PublicKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
+	if plaintext, err = NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey(), keypair.PublicKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
 

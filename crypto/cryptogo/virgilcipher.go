@@ -43,6 +43,7 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/asn1"
+	"fmt"
 	"io"
 )
 
@@ -140,20 +141,18 @@ func (c *defaultCipher) SignThenEncrypt(data []byte, signer *ed25519PrivateKey) 
 		signatureKey: signature,
 		signerID:     signer.Identifier(),
 	}
-	var models []*asn1.RawValue
 
 	ciphertext, symmetricKey, nonce := encryptData(data)
 
-	for _, r := range c.recipients {
-		model, err := r.encryptKey(symmetricKey)
+	models := make([]*asn1.RawValue, len(c.recipients))
+	for i, r := range c.recipients {
+		models[i], err = r.encryptKey(symmetricKey)
 		if err != nil {
 			return nil, err
 		}
-		models = append(models, model)
 	}
 
 	envelope, err := composeCMSMessage(nonce, models, customParams)
-
 	if err != nil {
 		return nil, err
 	}
@@ -213,67 +212,59 @@ func (c *defaultCipher) DecryptThenVerify(
 	}
 
 	var signature, signerIDValue []byte
-	if len(customParams) > 0 {
-
-		if signatureValue, ok := customParams[signatureKey]; ok {
-			if tmp, ok := signatureValue.(*[]byte); ok {
-				signature = *tmp
-			} else {
-				return nil, CryptoError("got signature but could not decode")
-			}
-		}
-
-		if sid, ok := customParams[signerID]; ok {
-			if tmp, ok := sid.(*[]byte); ok {
-				signerIDValue = *tmp
-			} else {
-				return nil, CryptoError("got signerId but could not decode")
-			}
-		}
+	if signature, err = getCustomParmas(signatureKey, customParams); err != nil {
+		return nil, err
 	}
+	if signerIDValue, err = getCustomParmas(signerID, customParams); err != nil {
+		return nil, err
+	}
+
 	for _, r := range recipients {
 		key, err := r.decryptKey(decryptionKey.Identifier(), decryptionKey.contents())
-		if err == nil {
-			data, err := decryptData(ciphertext, key, nonce)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, v := range verifierPublicKeys {
-				if len(signerIDValue) > 0 {
-					//found match
-					if subtle.ConstantTimeCompare(signerIDValue, v.Identifier()) == 1 {
-						err := Verifier.Verify(data, v, signature)
-						if err != nil {
-							return nil, CryptoError("signature validation failed")
-						}
-						if err != nil {
-							return nil, err
-						}
-						return data, nil
-					}
-				} else {
-					err := Verifier.Verify(data, v, signature)
-					if err == nil {
-						return data, nil
-					}
-				}
-			}
-
-			return nil, CryptoError("Could not verify signature with provided public keys")
-
+		if err != nil {
+			continue
 		}
 
+		data, err := decryptData(ciphertext, key, nonce)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range verifierPublicKeys {
+			if len(signerIDValue) > 0 && subtle.ConstantTimeCompare(signerIDValue, v.Identifier()) == 1 {
+				//found match
+				if err = Verifier.Verify(data, v, signature); err != nil {
+					return nil, CryptoError("signature validation failed")
+				}
+				return data, nil
+			}
+
+			if err = Verifier.Verify(data, v, signature); err == nil {
+				return data, nil
+			}
+		}
+
+		return nil, CryptoError("Could not verify signature with provided public keys")
 	}
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
+}
+
+func getCustomParmas(name string, p map[string]interface{}) ([]byte, error) {
+	v, ok := p[name]
+	if !ok {
+		return nil, nil
+	}
+	tmp, ok := v.(*[]byte)
+	if !ok {
+		return nil, CryptoError(fmt.Sprintf("got %v but could not decode", name))
+	}
+	return *tmp, nil
 }
 
 func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 	if len(c.recipients) == 0 {
 		return CryptoError("No recipients specified")
 	}
-
-	var models []*asn1.RawValue
 
 	symmetricKey := make([]byte, 32) //256 bit AES key
 	nonce := make([]byte, 12)        //96 bit AES GCM nonce
@@ -287,16 +278,15 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 		return err
 	}
 
-	for _, r := range c.recipients {
-		model, err := r.encryptKey(symmetricKey)
+	models := make([]*asn1.RawValue, len(c.recipients))
+	for i, r := range c.recipients {
+		models[i], err = r.encryptKey(symmetricKey)
 		if err != nil {
 			return err
 		}
-		models = append(models, model)
 	}
 
 	envelope, err := composeCMSMessage(nonce, models, map[string]interface{}{"chunkSize": DefaultChunkSize})
-
 	if err != nil {
 		return err
 	}

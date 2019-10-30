@@ -232,8 +232,12 @@ func TestExternalCrypto_GenerateKeypairFromKeyMaterial(t *testing.T) {
 	pub1, priv1, err := GenKeysFromSeed(seed)
 	assert.NoError(t, err)
 
+	var (
+		pub2  []byte
+		priv2 []byte
+	)
 	for i := 0; i < 10; i++ {
-		pub2, priv2, err := GenKeysFromSeed(seed)
+		pub2, priv2, err = GenKeysFromSeed(seed)
 		assert.NoError(t, err)
 		assert.Equal(t, pub1, pub2)
 		assert.Equal(t, priv1, priv2)
