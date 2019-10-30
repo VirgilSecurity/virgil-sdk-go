@@ -106,13 +106,12 @@ func encodePrivateKey(privateKey *ed25519PrivateKey, encodeToPem bool) ([]byte, 
 
 	if !encodeToPem {
 		return serializedKey, nil
-	} else {
-		block := &pem.Block{
-			Type:  "PRIVATE KEY",
-			Bytes: serializedKey,
-		}
-		return pem.EncodeToMemory(block), nil
 	}
+	block := &pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: serializedKey,
+	}
+	return pem.EncodeToMemory(block), nil
 }
 func encodePrivateKeyEncrypted(privateKey *ed25519PrivateKey, password []byte, encodeToPem bool) ([]byte, error) {
 
@@ -144,13 +143,12 @@ func encodePrivateKeyEncrypted(privateKey *ed25519PrivateKey, password []byte, e
 
 	if !encodeToPem {
 		return envelopeBytes, nil
-	} else {
-		block := &pem.Block{
-			Type:  ENCRYPTED_PRIVATE_KEY,
-			Bytes: envelopeBytes,
-		}
-		return pem.EncodeToMemory(block), nil
 	}
+	block := &pem.Block{
+		Type:  ENCRYPTED_PRIVATE_KEY,
+		Bytes: envelopeBytes,
+	}
+	return pem.EncodeToMemory(block), nil
 }
 func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
 

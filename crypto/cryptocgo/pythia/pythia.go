@@ -38,8 +38,8 @@ import "C"
 import (
 	"fmt"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 )
 
 var (
@@ -128,7 +128,11 @@ func (p *Pythia) Deblind(transformedPassword []byte, blindingSecret []byte) (deb
  *
  * @return 0 if succeeded, -1 otherwise
  */
-func (p *Pythia) ComputeTransformationKeypair(transformationKeyId, pythiaSecret, pythiaScopeSecret []byte) (privateKey, publicKey []byte, err error) {
+func (p *Pythia) ComputeTransformationKeypair(
+	transformationKeyID []byte,
+	pythiaSecret []byte,
+	pythiaScopeSecret []byte,
+) (privateKey, publicKey []byte, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -140,8 +144,8 @@ func (p *Pythia) ComputeTransformationKeypair(transformationKeyId, pythiaSecret,
 		}
 	}()
 
-	transformationKeyIdBuf := NewBufWithData(transformationKeyId)
-	defer transformationKeyIdBuf.Close()
+	transformationKeyIDBuf := NewBufWithData(transformationKeyID)
+	defer transformationKeyIDBuf.Close()
 	pythiaSecretBuf := NewBufWithData(pythiaSecret)
 	defer pythiaSecretBuf.Close()
 	pythiaScopeSecretBuf := NewBufWithData(pythiaScopeSecret)
@@ -152,7 +156,13 @@ func (p *Pythia) ComputeTransformationKeypair(transformationKeyId, pythiaSecret,
 	publicKeyBuf := NewBuf(G2_SIZE)
 	defer publicKeyBuf.Close()
 
-	pErr := C.virgil_pythia_compute_transformation_key_pair(transformationKeyIdBuf.inBuf, pythiaSecretBuf.inBuf, pythiaScopeSecretBuf.inBuf, privateKeyBuf.inBuf, publicKeyBuf.inBuf)
+	pErr := C.virgil_pythia_compute_transformation_key_pair(
+		transformationKeyIDBuf.inBuf,
+		pythiaSecretBuf.inBuf,
+		pythiaScopeSecretBuf.inBuf,
+		privateKeyBuf.inBuf,
+		publicKeyBuf.inBuf,
+	)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
 		return
@@ -175,7 +185,11 @@ func (p *Pythia) ComputeTransformationKeypair(transformationKeyId, pythiaSecret,
  *
  * @return 0 if succeeded, -1 otherwise
  */
-func (p *Pythia) Transform(blindedPassword, tweak, transformationPrivateKey []byte) (transformedPassword, transformedTweak []byte, err error) {
+func (p *Pythia) Transform(
+	blindedPassword,
+	tweak,
+	transformationPrivateKey []byte,
+) (transformedPassword, transformedTweak []byte, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -199,7 +213,13 @@ func (p *Pythia) Transform(blindedPassword, tweak, transformationPrivateKey []by
 	transformedTweakBuf := NewBuf(G2_SIZE)
 	defer transformedTweakBuf.Close()
 
-	pErr := C.virgil_pythia_transform(blindedPasswordBuf.inBuf, tweakBuf.inBuf, transformationPrivateKeyBuf.inBuf, transformedPasswordBuf.inBuf, transformedTweakBuf.inBuf)
+	pErr := C.virgil_pythia_transform(
+		blindedPasswordBuf.inBuf,
+		tweakBuf.inBuf,
+		transformationPrivateKeyBuf.inBuf,
+		transformedPasswordBuf.inBuf,
+		transformedTweakBuf.inBuf,
+	)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
 		return
@@ -209,7 +229,13 @@ func (p *Pythia) Transform(blindedPassword, tweak, transformationPrivateKey []by
 }
 
 // Prove proves that server possesses secret values that are used to protect password
-func (p *Pythia) Prove(transformedPassword, blindedPassword, transformedTweak, transformationPrivateKey, transformationPublicKey []byte) (proofValueC, proofValueU []byte, err error) {
+func (p *Pythia) Prove(
+	transformedPassword []byte,
+	blindedPassword []byte,
+	transformedTweak []byte,
+	transformationPrivateKey []byte,
+	transformationPublicKey []byte,
+) (proofValueC, proofValueU []byte, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -242,7 +268,15 @@ func (p *Pythia) Prove(transformedPassword, blindedPassword, transformedTweak, t
 	proofValueUBuf := NewBuf(BN_SIZE)
 	defer proofValueUBuf.Close()
 
-	pErr := C.virgil_pythia_prove(transformedPasswordBuf.inBuf, blindedPasswordBuf.inBuf, transformedTweakBuf.inBuf, transformationPrivateKeyBuf.inBuf, transformationPublicKeyBuf.inBuf, proofValueCBuf.inBuf, proofValueUBuf.inBuf)
+	pErr := C.virgil_pythia_prove(
+		transformedPasswordBuf.inBuf,
+		blindedPasswordBuf.inBuf,
+		transformedTweakBuf.inBuf,
+		transformationPrivateKeyBuf.inBuf,
+		transformationPublicKeyBuf.inBuf,
+		proofValueCBuf.inBuf,
+		proofValueUBuf.inBuf,
+	)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
 		return
@@ -289,7 +323,15 @@ func (p *Pythia) Verify(transformedPassword, blindedPassword, tweak, transformat
 
 	var verified C.int
 
-	pErr := C.virgil_pythia_verify(transformedPasswordBuf.inBuf, blindedPasswordBuf.inBuf, tweakBuf.inBuf, transformationPublicKeyBuf.inBuf, proofValueCBuf.inBuf, proofValueUBuf.inBuf, &verified)
+	pErr := C.virgil_pythia_verify(
+		transformedPasswordBuf.inBuf,
+		blindedPasswordBuf.inBuf,
+		tweakBuf.inBuf,
+		transformationPublicKeyBuf.inBuf,
+		proofValueCBuf.inBuf,
+		proofValueUBuf.inBuf,
+		&verified,
+	)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
 		return
@@ -302,8 +344,12 @@ func (p *Pythia) Verify(transformedPassword, blindedPassword, tweak, transformat
 	return nil
 }
 
-// GetPasswordUpdateToken generates token that can update protected passwords from the combination of (old) w1, msk1, ssk1 to (new) w2, msk2, ssk2
-func (p *Pythia) GetPasswordUpdateToken(previousTransformationPrivateKey, newTransformationPrivateKey []byte) (passwordUpdateToken []byte, err error) {
+// GetPasswordUpdateToken generates token that can update protected passwords
+// from the combination of (old) w1, msk1, ssk1 to (new) w2, msk2, ssk2
+func (p *Pythia) GetPasswordUpdateToken(
+	previousTransformationPrivateKey,
+	newTransformationPrivateKey []byte,
+) (passwordUpdateToken []byte, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -323,7 +369,11 @@ func (p *Pythia) GetPasswordUpdateToken(previousTransformationPrivateKey, newTra
 	passwordUpdateTokenBuf := NewBuf(BN_SIZE)
 	defer passwordUpdateTokenBuf.Close()
 
-	pErr := C.virgil_pythia_get_password_update_token(previousTransformationPrivateKeyBuf.inBuf, newTransformationPrivateKeyBuf.inBuf, passwordUpdateTokenBuf.inBuf)
+	pErr := C.virgil_pythia_get_password_update_token(
+		previousTransformationPrivateKeyBuf.inBuf,
+		newTransformationPrivateKeyBuf.inBuf,
+		passwordUpdateTokenBuf.inBuf,
+	)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
 		return
@@ -332,8 +382,12 @@ func (p *Pythia) GetPasswordUpdateToken(previousTransformationPrivateKey, newTra
 	return passwordUpdateTokenBuf.GetData(), nil
 }
 
-// UpdateDeblindedWithToken updates previously stored deblinded protected password with token. After this call, Transform() called with new arguments will return corresponding values
-func (p *Pythia) UpdateDeblindedWithToken(deblindedPassword, passwordUpdateToken []byte) (updatedDeblindedPassword []byte, err error) {
+// UpdateDeblindedWithToken updates previously stored deblinded protected password with token.
+// After this call, Transform() called with new arguments will return corresponding values
+func (p *Pythia) UpdateDeblindedWithToken(
+	deblindedPassword,
+	passwordUpdateToken []byte,
+) (updatedDeblindedPassword []byte, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -352,7 +406,11 @@ func (p *Pythia) UpdateDeblindedWithToken(deblindedPassword, passwordUpdateToken
 
 	updatedDeblindedPasswordBuf := NewBuf(GT_SIZE)
 	defer updatedDeblindedPasswordBuf.Close()
-	pErr := C.virgil_pythia_update_deblinded_with_token(deblindedPasswordBuf.inBuf, passwordUpdateTokenBuf.inBuf, updatedDeblindedPasswordBuf.inBuf)
+	pErr := C.virgil_pythia_update_deblinded_with_token(
+		deblindedPasswordBuf.inBuf,
+		passwordUpdateTokenBuf.inBuf,
+		updatedDeblindedPasswordBuf.inBuf,
+	)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
 		return
@@ -363,8 +421,8 @@ func (p *Pythia) UpdateDeblindedWithToken(deblindedPassword, passwordUpdateToken
 
 func (p *Pythia) GenerateKeypair(keypairType crypto.KeyType, seed []byte) (keypair crypto.Keypair, err error) {
 	crypto := cryptocgo.NewVirgilCrypto()
-	err =crypto.SetKeyType(keypairType)
-	if err!=nil{
+	err = crypto.SetKeyType(keypairType)
+	if err != nil {
 		return nil, err
 	}
 	return crypto.GenerateKeypairFromKeyMaterial(seed)

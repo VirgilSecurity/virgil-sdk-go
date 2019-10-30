@@ -44,7 +44,7 @@ type HTTPError struct {
 	code int
 }
 
-// GetCode gets HTTP status code.
+// HTTPErrorCode gets HTTP status code.
 func (httpError HTTPError) HTTPErrorCode() int {
 	return httpError.code
 }
@@ -54,7 +54,7 @@ type ServiceError struct {
 	code int
 }
 
-// GetCode gets Service error code.
+// ServiceErrorCode gets Service error code.
 func (serviceError ServiceError) ServiceErrorCode() int {
 	return serviceError.code
 }

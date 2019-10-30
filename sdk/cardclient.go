@@ -75,24 +75,24 @@ func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedMod
 	return rawCards, err
 }
 
-func (c *CardClient) RevokeCard(cardId string, token string) error {
-	_, err := c.send(http.MethodPost, "/card/v5/actions/revoke/"+cardId, token, nil, nil)
+func (c *CardClient) RevokeCard(cardID string, token string) error {
+	_, err := c.send(http.MethodPost, "/card/v5/actions/revoke/"+cardID, token, nil, nil)
 	return err
 }
 
-func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool, error) {
+func (c *CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool, error) {
 
 	const (
 		SupersededCardIDHTTPHeader      = "X-Virgil-Is-Superseeded"
 		SupersededCardIDHTTPHeaderValue = "true"
 	)
 
-	if _, err := hex.DecodeString(cardId); err != nil || len(cardId) != 64 {
+	if _, err := hex.DecodeString(cardID); err != nil || len(cardID) != 64 {
 		return nil, false, errors.New("invalid card id")
 	}
 
 	var rawCard *RawSignedModel
-	headers, err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
+	headers, err := c.send(http.MethodGet, "/card/v5/"+cardID, token, nil, &rawCard)
 
 	var outdated bool
 	if headers != nil {
@@ -102,7 +102,14 @@ func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool
 	return rawCard, outdated, err
 }
 
-func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, err error) {
+func (c *CardClient) send(
+	method string,
+	url string,
+	token string,
+	payload interface{},
+	respObj interface{},
+) (headers http.Header, err error) {
+
 	client := c.getVirgilClient()
 	headers, httpCode, err := client.Send(method, url, token, payload, respObj)
 	if err != nil {

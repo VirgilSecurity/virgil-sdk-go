@@ -242,7 +242,6 @@ func TestExternalCrypto_GenerateKeypairFromKeyMaterial(t *testing.T) {
 	seed[383] = seed[383] + 1
 	pub3, priv3, err := GenKeysFromSeed(seed)
 	assert.NoError(t, err)
-
 	assert.NotEqual(t, pub1, pub3)
 	assert.NotEqual(t, priv1, priv3)
 }

@@ -60,7 +60,14 @@ type (
 
 var virgil = []byte("Virgil")
 
-func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, EKa *ed25519PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) StartPFSSession(
+	ICb *ed25519PublicKey,
+	LTCb *ed25519PublicKey,
+	OTCb *ed25519PublicKey,
+	ICa *ed25519PrivateKey,
+	EKa *ed25519PrivateKey,
+	additionalData []byte,
+) (sess *PFSSession, err error) {
 
 	sk, err := EDHInit(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
@@ -71,7 +78,7 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, E
 
 	toHash := make([]byte, 0, len(additionalData)+len(virgil))
 	toHash = append(toHash, additionalData...)
-	toHash = append(toHash, []byte(virgil)...)
+	toHash = append(toHash, virgil...)
 
 	hash := sha256.Sum256(toHash)
 
@@ -80,7 +87,7 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, E
 	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
 	toHash = append(toHash, sk...)
 	toHash = append(toHash, ad...)
-	toHash = append(toHash, []byte(virgil)...)
+	toHash = append(toHash, virgil...)
 
 	sessHash := sha256.Sum256(toHash)
 	sessionID := sessHash[:]
@@ -95,7 +102,14 @@ func (c *VirgilCrypto) StartPFSSession(ICb, LTCb, OTCb *ed25519PublicKey, ICa, E
 
 }
 
-func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey, additionalData []byte) (sess *PFSSession, err error) {
+func (c *VirgilCrypto) ReceivePFCSession(
+	ICa *ed25519PublicKey,
+	EKa *ed25519PublicKey,
+	ICb *ed25519PrivateKey,
+	LTCb *ed25519PrivateKey,
+	OTCb *ed25519PrivateKey,
+	additionalData []byte,
+) (sess *PFSSession, err error) {
 
 	sk, err := EDHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
@@ -105,7 +119,7 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa *ed25519PublicKey, ICb, LTCb, 
 
 	toHash := make([]byte, 0, len(additionalData)+len(virgil))
 	toHash = append(toHash, additionalData...)
-	toHash = append(toHash, []byte(virgil)...)
+	toHash = append(toHash, virgil...)
 
 	hash := sha256.Sum256(toHash)
 
@@ -115,7 +129,7 @@ func (c *VirgilCrypto) ReceivePFCSession(ICa, EKa *ed25519PublicKey, ICb, LTCb, 
 
 	toHash = append(toHash, sk...)
 	toHash = append(toHash, ad...)
-	toHash = append(toHash, []byte(virgil)...)
+	toHash = append(toHash, virgil...)
 
 	sessHash := sha256.Sum256(toHash)
 	sessionID := sessHash[:]

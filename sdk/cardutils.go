@@ -66,8 +66,7 @@ func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bo
 
 		var extraFields map[string]string
 		if len(signature.Snapshot) > 0 {
-			err := ParseSnapshot(signature.Snapshot, &extraFields)
-			if err != nil {
+			if err := ParseSnapshot(signature.Snapshot, &extraFields); err != nil {
 				extraFields = nil
 			}
 		}

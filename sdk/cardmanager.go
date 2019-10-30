@@ -100,7 +100,12 @@ func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, 
 }
 
 //PublishRawSignedModel left for backwards compatibility
-func (c *CardManager) PublishRawSignedModel(rawSignedModel *RawSignedModel, tokenContext *TokenContext, token AccessToken) (card *Card, err error) {
+func (c *CardManager) PublishRawSignedModel(
+	rawSignedModel *RawSignedModel,
+	tokenContext *TokenContext,
+	token AccessToken,
+) (card *Card, err error) {
+
 	return c.PublishRawCard(rawSignedModel)
 }
 
@@ -162,7 +167,7 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 	return c.PublishRawCard(rawSignedModel)
 }
 
-func (c *CardManager) GetCard(cardId string) (*Card, error) {
+func (c *CardManager) GetCard(cardID string) (*Card, error) {
 	if err := c.selfCheck(); err != nil {
 		return nil, err
 	}
@@ -172,7 +177,7 @@ func (c *CardManager) GetCard(cardId string) (*Card, error) {
 		return nil, err
 	}
 
-	rawCard, outdated, err := c.getClient().GetCard(cardId, token.String())
+	rawCard, outdated, err := c.getClient().GetCard(cardID, token.String())
 
 	if err != nil {
 		return nil, err
@@ -188,7 +193,7 @@ func (c *CardManager) GetCard(cardId string) (*Card, error) {
 	return card, nil
 }
 
-func (c *CardManager) RevokeCard(cardId string) error {
+func (c *CardManager) RevokeCard(cardID string) error {
 	if err := c.selfCheck(); err != nil {
 		return err
 	}
@@ -198,7 +203,7 @@ func (c *CardManager) RevokeCard(cardId string) error {
 		return err
 	}
 
-	return c.getClient().RevokeCard(cardId, token.String())
+	return c.getClient().RevokeCard(cardID, token.String())
 }
 
 func (c *CardManager) SearchCards(identity string) (Cards, error) {

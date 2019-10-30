@@ -218,7 +218,7 @@ func (c *VirgilCrypto) SignStream(in io.Reader, key interface {
 	if err != nil {
 		return nil, err
 	}
-	return []byte(res), nil
+	return res, nil
 }
 
 func (c *VirgilCrypto) VerifyStream(in io.Reader, signature []byte, key interface {

@@ -213,7 +213,9 @@ func (k *privateKeyAsn) Validate() error {
 		return unsupported("key type")
 	}
 
-	if len(k.PrivateKey) != 34 || k.PrivateKey[0] != 0x04 || k.PrivateKey[1] != 0x20 { //2 bytes asn.1 octet string encoding + 32 bytes secret part
+	if len(k.PrivateKey) != 34 ||
+		k.PrivateKey[0] != 0x04 ||
+		k.PrivateKey[1] != 0x20 { //2 bytes asn.1 octet string encoding + 32 bytes secret part
 		return unsupported("private key size")
 	}
 	return nil

@@ -597,7 +597,12 @@ func (c *ExternalCrypto) SignThenEncrypt(data []byte, signerKey crypto.PrivateKe
 	return ct, nil
 }
 
-func (c *ExternalCrypto) DecryptThenVerify(data []byte, decryptionKey crypto.PrivateKey, verifierKeys ...crypto.PublicKey) (_ []byte, err error) {
+func (c *ExternalCrypto) DecryptThenVerify(
+	data []byte,
+	decryptionKey crypto.PrivateKey,
+	verifierKeys ...crypto.PublicKey,
+) (_ []byte, err error) {
+
 	defer func() {
 		if r := recover(); r != nil {
 			var ok bool

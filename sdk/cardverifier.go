@@ -73,7 +73,12 @@ type VirgilCardVerifier struct {
 	virgilPublicKey       crypto.PublicKey
 }
 
-func NewVirgilCardVerifier(crypto crypto.CardCrypto, verifySelfSignature, verifyVirgilSignature bool, whitelists ...*Whitelist) (*VirgilCardVerifier, error) {
+func NewVirgilCardVerifier(
+	crypto crypto.CardCrypto,
+	verifySelfSignature,
+	verifyVirgilSignature bool,
+	whitelists ...*Whitelist,
+) (*VirgilCardVerifier, error) {
 
 	verifier := &VirgilCardVerifier{
 		Crypto:                crypto,
@@ -87,12 +92,11 @@ func NewVirgilCardVerifier(crypto crypto.CardCrypto, verifySelfSignature, verify
 	}
 
 	if verifyVirgilSignature {
-		if pub, err := verifier.GetPublicKeyFromBase64(VirgilPublicKey); err != nil {
+		pub, err := verifier.GetPublicKeyFromBase64(VirgilPublicKey)
+		if err != nil {
 			return nil, err
-		} else {
-			verifier.virgilPublicKey = pub
 		}
-
+		verifier.virgilPublicKey = pub
 	}
 	return verifier, nil
 }
@@ -187,22 +191,18 @@ func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, 
 
 		if s.Signer == signer {
 			snapshot := append(card.ContentSnapshot, s.Snapshot...)
-			err := v.Crypto.VerifySignature(snapshot, s.Signature, publicKey)
-			if err != nil {
-				return err
-			} else {
-				return nil
-			}
+			return v.Crypto.VerifySignature(snapshot, s.Signature, publicKey)
 		}
 	}
 	return CardValidationExpectedSignerWasNotFoundErr
 }
 
 func (v *VirgilCardVerifier) ReplaceVirgilPublicKey(newKey string) error {
-	if pub, err := v.GetPublicKeyFromBase64(newKey); err != nil {
+	pub, err := v.GetPublicKeyFromBase64(newKey)
+	if err != nil {
 		return err
-	} else {
-		v.virgilPublicKey = pub
-		return nil
 	}
+
+	v.virgilPublicKey = pub
+	return nil
 }

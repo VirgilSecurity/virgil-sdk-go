@@ -51,16 +51,16 @@ type JwtHeaderContent struct {
 	ApiKeyId    string `json:"kid"`
 }
 
-func NewJwtHeaderContent(algorithm string, apiKeyId string) (*JwtHeaderContent, error) {
+func NewJwtHeaderContent(algorithm string, apiKeyID string) (*JwtHeaderContent, error) {
 	if SpaceMap(algorithm) == "" {
 		return nil, errors.New("algorithm is empty")
 	}
-	if SpaceMap(apiKeyId) == "" {
-		return nil, errors.New("apiKeyId is empty")
+	if SpaceMap(apiKeyID) == "" {
+		return nil, errors.New("apiKeyID is empty")
 	}
 	return &JwtHeaderContent{
 		Algorithm:   algorithm,
-		ApiKeyId:    apiKeyId,
+		ApiKeyId:    apiKeyID,
 		ContentType: VirgilContentType,
 		Type:        JwtType,
 	}, nil

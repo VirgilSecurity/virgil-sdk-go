@@ -176,22 +176,22 @@ func (j *Jwt) Unsigned() []byte {
 
 func (j *Jwt) HeaderBase64() (string, error) {
 	if j.headerBytes == nil {
-		if headerBytes, err := json.Marshal(j.HeaderContent); err != nil {
+		headerBytes, err := json.Marshal(j.HeaderContent)
+		if err != nil {
 			return "", err
-		} else {
-			j.headerBytes = headerBytes
 		}
+		j.headerBytes = headerBytes
 	}
 	return base64.RawURLEncoding.EncodeToString(j.headerBytes), nil
 }
 
 func (j *Jwt) BodyBase64() (string, error) {
 	if j.bodyBytes == nil {
-		if bodyBytes, err := json.Marshal(j.BodyContent); err != nil {
+		bodyBytes, err := json.Marshal(j.BodyContent)
+		if err != nil {
 			return "", err
-		} else {
-			j.bodyBytes = bodyBytes
 		}
+		j.bodyBytes = bodyBytes
 	}
 	return base64.RawURLEncoding.EncodeToString(j.bodyBytes), nil
 }

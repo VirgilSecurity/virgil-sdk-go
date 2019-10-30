@@ -198,7 +198,7 @@ func hashStream(data io.Reader) ([]byte, error) {
 	}
 
 	for ; read > 0 && (err == nil || err == io.EOF); read, err = data.Read(buf) {
-		_, err := hash.Write(buf[:read])
+		_, err = hash.Write(buf[:read])
 		if err != nil {
 			return nil, err
 		}

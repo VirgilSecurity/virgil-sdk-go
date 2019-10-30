@@ -59,7 +59,14 @@ type VirgilHttpClient struct {
 	Address string
 }
 
-func (vc *VirgilHttpClient) Send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, code int, err error) {
+func (vc *VirgilHttpClient) Send(
+	method string,
+	url string,
+	token string,
+	payload interface{},
+	respObj interface{},
+) (headers http.Header, code int, err error) {
+
 	var body []byte
 	if payload != nil {
 		body, err = json.Marshal(payload)

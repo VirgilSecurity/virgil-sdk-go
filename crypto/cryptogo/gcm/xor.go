@@ -43,10 +43,15 @@ import (
 )
 
 const wordSize = int(unsafe.Sizeof(uintptr(0)))
-const supportsUnaligned = runtime.GOARCH == "386" || runtime.GOARCH == "amd64" || runtime.GOARCH == "ppc64" || runtime.GOARCH == "ppc64le" || runtime.GOARCH == "s390x"
+const supportsUnaligned = runtime.GOARCH == "386" ||
+	runtime.GOARCH == "amd64" ||
+	runtime.GOARCH == "ppc64" ||
+	runtime.GOARCH == "ppc64le" ||
+	runtime.GOARCH == "s390x"
 
 // fastXORBytes xors in bulk. It only works on architectures that
 // support unaligned read/writes.
+//nolint: gosec
 func fastXORBytes(dst, a, b []byte) int {
 	n := len(a)
 	if len(b) < n {
@@ -98,6 +103,7 @@ func XorBytes(dst, a, b []byte) int {
 
 // fastXORWords XORs multiples of 4 or 8 bytes (depending on architecture.)
 // The arguments are assumed to be of equal length.
+//nolint: gosec
 func fastXORWords(dst, a, b []byte) {
 	dw := *(*[]uintptr)(unsafe.Pointer(&dst))
 	aw := *(*[]uintptr)(unsafe.Pointer(&a))

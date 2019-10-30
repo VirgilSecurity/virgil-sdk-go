@@ -43,6 +43,7 @@ import (
 	"testing"
 )
 
+//nolint: lll
 var aesGCMTests = []struct {
 	key, nonce, plaintext, ad, result string
 }{

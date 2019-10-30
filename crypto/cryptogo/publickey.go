@@ -104,13 +104,11 @@ func (k *ed25519PublicKey) Encode() ([]byte, error) {
 	}
 	if !encodeToPem {
 		return rawKey, nil
-	} else {
-		block := &pem.Block{
-			Type:  PUBLIC_KEY,
-			Bytes: rawKey,
-		}
-		return pem.EncodeToMemory(block), nil
 	}
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  PUBLIC_KEY,
+		Bytes: rawKey,
+	}), nil
 }
 
 func (k *ed25519PublicKey) Empty() bool {

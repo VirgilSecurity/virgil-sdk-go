@@ -55,7 +55,7 @@ type passwordRecipient struct {
 }
 
 func (p *passwordRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, error) {
-	kdfIv, iterations, keyIv, encryptedKey, err := encryptKeyWithPassword(symmetricKey, []byte(p.Password))
+	kdfIv, iterations, keyIv, encryptedKey, err := encryptKeyWithPassword(symmetricKey, p.Password)
 	if err != nil {
 		return nil, CryptoError(err.Error())
 	}

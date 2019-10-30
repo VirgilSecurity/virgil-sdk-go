@@ -108,17 +108,13 @@ func unwrapKey(key []byte) ([]byte, string, error) {
 	block, _ := pem.Decode(key)
 	if block != nil {
 		return block.Bytes, block.Type, nil
-	} else {
-		buf := make([]byte, base64.StdEncoding.DecodedLen(len(key)))
-
-		read, err := base64.StdEncoding.Decode(buf, key)
-
-		if err == nil {
-			return buf[:read], "", nil
-		}
-
-		return key, "", nil //already DER
 	}
+	buf := make([]byte, base64.StdEncoding.DecodedLen(len(key)))
+	read, err := base64.StdEncoding.Decode(buf, key)
+	if err == nil {
+		return buf[:read], "", nil
+	}
+	return key, "", nil //already DER
 }
 
 func init() {

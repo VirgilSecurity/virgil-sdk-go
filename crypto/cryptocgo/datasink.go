@@ -36,23 +36,23 @@ import (
 	"io"
 )
 
-type dataSink struct {
+type DataSink struct {
 	writer io.Writer
 	isGood bool
 }
 
-func NewDataSink(writer io.Writer) *dataSink {
-	return &dataSink{
+func NewDataSink(writer io.Writer) *DataSink {
+	return &DataSink{
 		isGood: true,
 		writer: writer,
 	}
 }
 
-func (d *dataSink) IsGood() (_swig_ret bool) {
+func (d *DataSink) IsGood() bool {
 	return d.isGood
 }
 
-func (d *dataSink) Write(b VirgilByteArray) {
+func (d *DataSink) Write(b VirgilByteArray) {
 	if !d.isGood {
 		return
 	}

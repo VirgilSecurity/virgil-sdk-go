@@ -50,11 +50,11 @@ func NewDataSource(reader io.Reader) *dataSource {
 	}
 }
 
-func (d *dataSource) HasData() (_swig_ret bool) {
+func (d *dataSource) HasData() bool {
 	return d.hasData
 }
 
-func (d *dataSource) Read() (_swig_ret VirgilByteArray) {
+func (d *dataSource) Read() (ret VirgilByteArray) {
 	if !d.hasData {
 		return
 	}

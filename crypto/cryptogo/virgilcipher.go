@@ -208,7 +208,7 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 		return nil, err
 	}
 
-	var signature, signerIdValue []byte
+	var signature, signerIDValue []byte
 	if len(customParams) > 0 {
 
 		if signatureValue, ok := customParams[signatureKey]; ok {
@@ -219,9 +219,9 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 			}
 		}
 
-		if signerId, ok := customParams[signerId]; ok {
-			if tmp, ok := signerId.(*[]byte); ok {
-				signerIdValue = *tmp
+		if signerID, ok := customParams[signerId]; ok {
+			if tmp, ok := signerID.(*[]byte); ok {
+				signerIDValue = *tmp
 			} else {
 				return nil, CryptoError("got signerId but could not decode")
 			}
@@ -236,9 +236,9 @@ func (c *defaultCipher) DecryptThenVerify(data []byte, decryptionKey *ed25519Pri
 			}
 
 			for _, v := range verifierPublicKeys {
-				if len(signerIdValue) > 0 {
+				if len(signerIDValue) > 0 {
 					//found match
-					if subtle.ConstantTimeCompare(signerIdValue, v.Identifier()) == 1 {
+					if subtle.ConstantTimeCompare(signerIDValue, v.Identifier()) == 1 {
 						err := Verifier.Verify(data, v, signature)
 						if err != nil {
 							return nil, CryptoError("signature validation failed")

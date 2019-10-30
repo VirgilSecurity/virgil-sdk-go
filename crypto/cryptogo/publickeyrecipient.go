@@ -59,9 +59,9 @@ func (kr *publicKeyRecipient) encryptKey(symmetricKey []byte) (*asn1.RawValue, e
 
 	return makePublicKeyRecipient(kr.ID, ephPub, tag, encryptedSymmetricKey, iv)
 }
-func (p *publicKeyRecipient) decryptKey(id []byte, privateKey []byte) ([]byte, error) {
-	if len(id) == 0 || !bytes.Equal(id, p.ID) {
+func (kr *publicKeyRecipient) decryptKey(id []byte, privateKey []byte) ([]byte, error) {
+	if len(id) == 0 || !bytes.Equal(id, kr.ID) {
 		return nil, CryptoError("Wrong recipient")
 	}
-	return decryptSymmetricKeyWithECIES(p.encryptedKey, p.tag, p.PublicKey, p.iv, privateKey)
+	return decryptSymmetricKeyWithECIES(kr.encryptedKey, kr.tag, kr.PublicKey, kr.iv, privateKey)
 }

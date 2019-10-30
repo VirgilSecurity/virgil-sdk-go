@@ -224,7 +224,7 @@ before_script:
   - go install github.com/golangci/golangci-lint/cmd/golangci-lint
 
 script:
-  - golangci-lint run --skip-files virgil_crypto_go_* --max-same-issues 50
+  - golangci-lint run
   - 'if [[ $LEGACY ]]; then
     go test -tags "legacy_os integration" -mod=readonly -count 1 ./... ;
     else

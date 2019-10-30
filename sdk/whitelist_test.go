@@ -53,9 +53,6 @@ type testCredentials struct {
 }
 
 func TestWhitelist(t *testing.T) {
-
-	pk, cardCreds := makeRandomCredentials()
-
 	var creds []*testCredentials
 	for i := 0; i < 5; i++ {
 		pk, cred := makeRandomCredentials()
@@ -63,11 +60,10 @@ func TestWhitelist(t *testing.T) {
 	}
 
 	var wl []*Whitelist
-
 	wl = addWhitelist(wl, creds[0], creds[1])
-
 	wl = addWhitelist(wl, creds[2])
 
+	pk, cardCreds := makeRandomCredentials()
 	model, err := GenerateRawCard(cardCrypto, &CardParams{
 		Identity:   cardCreds.Signer,
 		PrivateKey: pk,

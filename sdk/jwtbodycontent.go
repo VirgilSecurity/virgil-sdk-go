@@ -74,8 +74,8 @@ func NewJwtBodyContent(appId string, identity string, issuedAt time.Time, expire
 	}, nil
 }
 
-func ValidateJwtBodyParams(appId string, identity string, issuedAt time.Time, expiresAt time.Time) error {
-	if SpaceMap(appId) == "" {
+func ValidateJwtBodyParams(appID string, identity string, issuedAt time.Time, expiresAt time.Time) error {
+	if SpaceMap(appID) == "" {
 		return errors.New("appID is empty")
 	}
 

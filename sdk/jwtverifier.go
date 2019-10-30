@@ -48,10 +48,10 @@ type JwtVerifier struct {
 	AccessTokenSigner crypto.AccessTokenSigner
 }
 
-func NewJwtVerifier(apiPublicKey crypto.PublicKey, apiPublicKeyId string, accessTokenSigner crypto.AccessTokenSigner) *JwtVerifier {
+func NewJwtVerifier(apiPublicKey crypto.PublicKey, apiPublicKeyID string, accessTokenSigner crypto.AccessTokenSigner) *JwtVerifier {
 	return &JwtVerifier{
 		AccessTokenSigner: accessTokenSigner,
-		ApiPublicKeyId:    apiPublicKeyId,
+		ApiPublicKeyId:    apiPublicKeyID,
 		ApiPublicKey:      apiPublicKey,
 	}
 }

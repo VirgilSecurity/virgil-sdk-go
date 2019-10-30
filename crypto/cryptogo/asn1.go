@@ -227,7 +227,7 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 
 	recipient := publicKeyRecipientInfo{
 		Version:                2,
-		RecipientID:            []byte(id),
+		RecipientID:            id,
 		KeyEncryptionAlgorithm: ed25519Algo,
 		EncryptedKey:           contentBytes,
 	}
@@ -283,8 +283,8 @@ func makeSignature(sign []byte, hashSize int) ([]byte, error) {
 		return nil, CryptoError("unsupported hash")
 	}
 
-	signature := signature{O: pkix.AlgorithmIdentifier{Algorithm: algo, Parameters: asn1Null}, S: sign}
-	sBytes, err := asn1.Marshal(signature)
+	s := signature{O: pkix.AlgorithmIdentifier{Algorithm: algo, Parameters: asn1Null}, S: sign}
+	sBytes, err := asn1.Marshal(s)
 	if err != nil {
 		return nil, cryptoError(err, "")
 	}
@@ -313,7 +313,7 @@ func decodeSignature(signatureBytes []byte) ([]byte, *asn1.ObjectIdentifier, err
 
 	return signature.S, algo, nil
 }
-func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams map[string]interface{}) (resBytes []byte, err error) {
+func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams map[string]interface{}) ([]byte, error) {
 
 	ciphertextInfo := encryptedContentInfo{
 		ContentType: oidData,
@@ -368,7 +368,7 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 		res.CustomParams = params
 	}
 
-	resBytes, err = asn1.Marshal(res)
+	resBytes, err := asn1.Marshal(res)
 	if err != nil {
 		return nil, cryptoError(err, "")
 	}
@@ -485,17 +485,17 @@ func decodeRecipients(value *asn1.RawValue) (models []recipient, err error) {
 
 	for _, v := range values {
 
-		var recipient recipient
+		var r recipient
 		switch v.Tag {
 		case 3:
-			recipient, err = decodePasswordRecipient(v)
+			r, err = decodePasswordRecipient(v)
 		case 16:
-			recipient, err = decodeKeyRecipient(v)
+			r, err = decodeKeyRecipient(v)
 		default:
 			err = unsupported("recipient type")
 		}
 		if err == nil {
-			models = append(models, recipient)
+			models = append(models, r)
 		}
 	}
 
