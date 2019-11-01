@@ -33,12 +33,12 @@
 package cryptocgo
 
 import (
+	"crypto/rand"
 	"testing"
 
-	"crypto/rand"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCrossTestCrypto(t *testing.T) {

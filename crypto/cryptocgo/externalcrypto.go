@@ -39,8 +39,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/pkg/errors"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 type ExternalCrypto struct {
@@ -67,15 +68,7 @@ func (c *ExternalCrypto) SetKeyType(keyType crypto.KeyType) error {
 
 func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	keyType, ok := KeyTypeMap[c.keyType]
 	if !ok {
@@ -113,15 +106,7 @@ func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
 
 func (c *ExternalCrypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (_ *externalKeypair, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	keyType, ok := KeyTypeMap[c.keyType]
 	if !ok {
@@ -161,15 +146,7 @@ func (c *ExternalCrypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (_ *
 }
 
 func (c *ExternalCrypto) ImportPrivateKey(data []byte, password string) (_ crypto.PrivateKey, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 	var rawPriv []byte
 
 	unwrappedKey := unwrapKey(data)
@@ -208,15 +185,7 @@ func (c *ExternalCrypto) ImportPrivateKey(data []byte, password string) (_ crypt
 
 func (c *ExternalCrypto) ImportPublicKey(data []byte) (_ crypto.PublicKey, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	rawPub := unwrapKey(data)
 
@@ -237,42 +206,18 @@ func (c *ExternalCrypto) ImportPublicKey(data []byte) (_ crypto.PublicKey, err e
 }
 
 func (c *ExternalCrypto) ExportPrivateKey(privateKey crypto.PrivateKey, password string) (_ []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	return privateKey.(*externalPrivateKey).Encode([]byte(password))
 }
 
 func (c *ExternalCrypto) ExportPublicKey(publicKey crypto.PublicKey) (_ []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 	return publicKey.(*externalPublicKey).Encode()
 }
 
 func (c *ExternalCrypto) Encrypt(data []byte, recipients ...crypto.PublicKey) (_ []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	ci := NewVirgilCipher()
 	defer DeleteVirgilCipher(ci)
@@ -296,15 +241,7 @@ func (c *ExternalCrypto) Encrypt(data []byte, recipients ...crypto.PublicKey) (_
 }
 
 func (c *ExternalCrypto) EncryptStream(in io.Reader, out io.Writer, recipients ...crypto.PublicKey) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	s := NewDirectorVirgilDataSource(NewDataSource(in))
 	defer DeleteDirectorVirgilDataSource(s)
@@ -327,20 +264,12 @@ func (c *ExternalCrypto) EncryptStream(in io.Reader, out io.Writer, recipients .
 
 	ci.Encrypt(s, d)
 
-	return
+	return nil
 
 }
 
 func (c *ExternalCrypto) Decrypt(data []byte, privateKey crypto.PrivateKey) (_ []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	ci := NewVirgilCipher()
 	defer DeleteVirgilCipher(ci)
@@ -359,15 +288,7 @@ func (c *ExternalCrypto) Decrypt(data []byte, privateKey crypto.PrivateKey) (_ [
 }
 
 func (c *ExternalCrypto) DecryptStream(in io.Reader, out io.Writer, privateKey crypto.PrivateKey) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	d := NewDirectorVirgilDataSink(NewDataSink(out))
 	defer DeleteDirectorVirgilDataSink(d)
@@ -389,15 +310,7 @@ func (c *ExternalCrypto) DecryptStream(in io.Reader, out io.Writer, privateKey c
 }
 
 func (c *ExternalCrypto) Sign(data []byte, signer crypto.PrivateKey) (_ []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	var algo interface{}
 	if c.UseSha256Fingerprints {
@@ -420,15 +333,7 @@ func (c *ExternalCrypto) Sign(data []byte, signer crypto.PrivateKey) (_ []byte, 
 }
 
 func (c *ExternalCrypto) VerifySignature(data []byte, signature []byte, publicKey crypto.PublicKey) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 	s := NewVirgilSigner(VirgilHashAlgorithm_SHA512)
 	defer DeleteVirgilSigner(s)
 
@@ -449,15 +354,7 @@ func (c *ExternalCrypto) VerifySignature(data []byte, signature []byte, publicKe
 }
 
 func (c *ExternalCrypto) VerifyHashTypeSignature(hashType HashType, data []byte, signature []byte, publicKey crypto.PublicKey) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 	s := NewVirgilSigner(VirgilHashAlgorithm_SHA512)
 	defer DeleteVirgilSigner(s)
 
@@ -484,15 +381,7 @@ func (c *ExternalCrypto) VerifyHashTypeSignature(hashType HashType, data []byte,
 
 func (c *ExternalCrypto) SignStream(in io.Reader, signerKey crypto.PrivateKey) (_ []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	signer := NewVirgilStreamSigner(VirgilHashAlgorithm_SHA512)
 	defer DeleteVirgilStreamSigner(signer)
@@ -511,15 +400,7 @@ func (c *ExternalCrypto) SignStream(in io.Reader, signerKey crypto.PrivateKey) (
 
 func (c *ExternalCrypto) VerifyStream(in io.Reader, signature []byte, publicKey crypto.PublicKey) (res bool, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	signer := NewVirgilStreamSigner(VirgilHashAlgorithm_SHA512)
 	defer DeleteVirgilStreamSigner(signer)
@@ -552,15 +433,8 @@ func (c *ExternalCrypto) SignThenEncrypt(
 	recipients ...crypto.PublicKey,
 ) (_ []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
+
 	ci := NewVirgilCipher()
 	defer DeleteVirgilCipher(ci)
 	params, ok := ci.CustomParams().(VirgilCustomParams)
@@ -609,15 +483,7 @@ func (c *ExternalCrypto) DecryptThenVerify(
 	verifierKeys ...crypto.PublicKey,
 ) (_ []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	ci := NewVirgilCipher()
 	defer DeleteVirgilCipher(ci)
@@ -672,15 +538,7 @@ func (c *ExternalCrypto) DecryptThenVerify(
 }
 
 func (c *ExternalCrypto) ExtractPublicKey(key crypto.PrivateKey) (_ crypto.PublicKey, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	return key.(*externalPrivateKey).ExtractPublicKey()
 
@@ -704,4 +562,14 @@ func ToVirgilByteArray(data []byte) VirgilByteArray {
 		b.Set(i, data[i])
 	}
 	return b
+}
+
+func deferRecover(err *error) {
+	if r := recover(); r != nil {
+		var ok bool
+		*err, ok = r.(error)
+		if !ok {
+			*err = fmt.Errorf("pkg: %v", r)
+		}
+	}
 }

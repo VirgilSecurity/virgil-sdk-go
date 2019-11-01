@@ -59,24 +59,13 @@ func New() *Pythia {
 
 // Blind turns password into a pseudo-random string.
 func (p *Pythia) Blind(password []byte) (blindedPassword, blindingSecret []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	blindedPasswordBuf := NewBuf(G1_SIZE)
-	defer blindedPasswordBuf.Close()
-
 	blindingSecretBuf := NewBuf(BN_SIZE)
-	defer blindingSecretBuf.Close()
-
 	passwordBuf := NewBufWithData(password)
-	defer passwordBuf.Close()
+
+	defer deferClose(blindedPasswordBuf, blindingSecretBuf, passwordBuf)
 
 	pErr := C.virgil_pythia_blind(passwordBuf.inBuf, blindedPasswordBuf.inBuf, blindingSecretBuf.inBuf)
 	if pErr != 0 {
@@ -90,23 +79,14 @@ func (p *Pythia) Blind(password []byte) (blindedPassword, blindingSecret []byte,
 // Deblind unmasks value y with previously returned secret from Blind()
 func (p *Pythia) Deblind(transformedPassword []byte, blindingSecret []byte) (deblindedPassword []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	transformedPasswordBuf := NewBufWithData(transformedPassword)
-	defer transformedPasswordBuf.Close()
 	secretBuf := NewBufWithData(blindingSecret)
-	defer secretBuf.Close()
-
 	deblindedBuf := NewBuf(GT_SIZE)
-	defer deblindedBuf.Close()
+
+	defer deferClose(transformedPasswordBuf, secretBuf, deblindedBuf)
+
 	pErr := C.virgil_pythia_deblind(transformedPasswordBuf.inBuf, secretBuf.inBuf, deblindedBuf.inBuf)
 	if pErr != 0 {
 		err = NewPythiaError(int(pErr), "Internal Pythia error")
@@ -133,27 +113,15 @@ func (p *Pythia) ComputeTransformationKeypair(
 	pythiaScopeSecret []byte,
 ) (privateKey, publicKey []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	transformationKeyIDBuf := NewBufWithData(transformationKeyID)
-	defer transformationKeyIDBuf.Close()
 	pythiaSecretBuf := NewBufWithData(pythiaSecret)
-	defer pythiaSecretBuf.Close()
 	pythiaScopeSecretBuf := NewBufWithData(pythiaScopeSecret)
-	defer pythiaScopeSecretBuf.Close()
-
 	privateKeyBuf := NewBuf(G2_SIZE)
-	defer privateKeyBuf.Close()
 	publicKeyBuf := NewBuf(G2_SIZE)
-	defer publicKeyBuf.Close()
+
+	defer deferClose(transformationKeyIDBuf, pythiaSecretBuf, pythiaScopeSecretBuf, privateKeyBuf, publicKeyBuf)
 
 	pErr := C.virgil_pythia_compute_transformation_key_pair(
 		transformationKeyIDBuf.inBuf,
@@ -190,27 +158,16 @@ func (p *Pythia) Transform(
 	transformationPrivateKey []byte,
 ) (transformedPassword, transformedTweak []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	tweakBuf := NewBufWithData(tweak)
-	defer tweakBuf.Close()
 	blindedPasswordBuf := NewBufWithData(blindedPassword)
-	defer blindedPasswordBuf.Close()
 	transformationPrivateKeyBuf := NewBufWithData(transformationPrivateKey)
-	defer transformationPrivateKeyBuf.Close()
 
 	transformedPasswordBuf := NewBuf(GT_SIZE)
-	defer transformedPasswordBuf.Close()
 	transformedTweakBuf := NewBuf(G2_SIZE)
-	defer transformedTweakBuf.Close()
+
+	defer deferClose(tweakBuf, blindedPasswordBuf, transformationPrivateKeyBuf, transformedPasswordBuf, transformedTweakBuf)
 
 	pErr := C.virgil_pythia_transform(
 		blindedPasswordBuf.inBuf,
@@ -234,38 +191,20 @@ func (p *Pythia) Prove(
 	transformedTweak []byte,
 	transformationPrivateKey []byte,
 	transformationPublicKey []byte,
-) (proofValueC, proofValueU []byte, err error) {
+) (proofValueC []byte, proofValueU []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	blindedPasswordBuf := NewBufWithData(blindedPassword)
-	defer blindedPasswordBuf.Close()
-
 	transformedTweakBuf := NewBufWithData(transformedTweak)
-	defer transformedTweakBuf.Close()
-
 	transformationPrivateKeyBuf := NewBufWithData(transformationPrivateKey)
-	defer transformationPrivateKeyBuf.Close()
-
 	transformedPasswordBuf := NewBufWithData(transformedPassword)
-	defer transformedPasswordBuf.Close()
-
 	transformationPublicKeyBuf := NewBufWithData(transformationPublicKey)
-	defer transformationPublicKeyBuf.Close()
-
 	proofValueCBuf := NewBuf(BN_SIZE)
-	defer proofValueCBuf.Close()
-
 	proofValueUBuf := NewBuf(BN_SIZE)
-	defer proofValueUBuf.Close()
+
+	defer deferClose(blindedPasswordBuf, transformedTweakBuf, transformationPrivateKeyBuf, transformedPasswordBuf,
+		transformationPublicKeyBuf, proofValueCBuf, proofValueUBuf)
 
 	pErr := C.virgil_pythia_prove(
 		transformedPasswordBuf.inBuf,
@@ -277,13 +216,10 @@ func (p *Pythia) Prove(
 		proofValueUBuf.inBuf,
 	)
 	if pErr != 0 {
-		err = NewPythiaError(int(pErr), "Internal Pythia error")
-		return
+		return nil, nil, NewPythiaError(int(pErr), "Internal Pythia error")
 	}
 
-	proofValueC = proofValueCBuf.GetData()
-	proofValueU = proofValueUBuf.GetData()
-	return
+	return proofValueCBuf.GetData(), proofValueUBuf.GetData(), nil
 }
 
 //Verify The protocol enables a client to verify that
@@ -292,33 +228,16 @@ func (p *Pythia) Prove(
 //y of the Transform() with a zero-knowledge proof (c, u) of correctness
 func (p *Pythia) Verify(transformedPassword, blindedPassword, tweak, transformationPublicKey, proofValueC, proofValueU []byte) (err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	blindedPasswordBuf := NewBufWithData(blindedPassword)
-	defer blindedPasswordBuf.Close()
-
 	tweakBuf := NewBufWithData(tweak)
-	defer tweakBuf.Close()
-
 	transformedPasswordBuf := NewBufWithData(transformedPassword)
-	defer transformedPasswordBuf.Close()
-
 	transformationPublicKeyBuf := NewBufWithData(transformationPublicKey)
-	defer transformationPublicKeyBuf.Close()
-
 	proofValueCBuf := NewBufWithData(proofValueC)
-	defer proofValueCBuf.Close()
-
 	proofValueUBuf := NewBufWithData(proofValueU)
-	defer proofValueUBuf.Close()
+
+	defer deferClose(blindedPasswordBuf, tweakBuf, transformedPasswordBuf, transformationPublicKeyBuf, proofValueCBuf, proofValueUBuf)
 
 	var verified C.int
 
@@ -350,23 +269,13 @@ func (p *Pythia) GetPasswordUpdateToken(
 	newTransformationPrivateKey []byte,
 ) (passwordUpdateToken []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	previousTransformationPrivateKeyBuf := NewBufWithData(previousTransformationPrivateKey)
-	defer previousTransformationPrivateKeyBuf.Close()
 	newTransformationPrivateKeyBuf := NewBufWithData(newTransformationPrivateKey)
-	defer newTransformationPrivateKeyBuf.Close()
-
 	passwordUpdateTokenBuf := NewBuf(BN_SIZE)
-	defer passwordUpdateTokenBuf.Close()
+
+	defer deferClose(previousTransformationPrivateKeyBuf, newTransformationPrivateKeyBuf, passwordUpdateTokenBuf)
 
 	pErr := C.virgil_pythia_get_password_update_token(
 		previousTransformationPrivateKeyBuf.inBuf,
@@ -388,23 +297,14 @@ func (p *Pythia) UpdateDeblindedWithToken(
 	passwordUpdateToken []byte,
 ) (updatedDeblindedPassword []byte, err error) {
 
-	defer func() {
-		if r := recover(); r != nil {
-			var ok bool
-			err, ok = r.(error)
-			if !ok {
-				err = fmt.Errorf("pkg: %v", r)
-			}
-		}
-	}()
+	defer deferRecover(&err)
 
 	deblindedPasswordBuf := NewBufWithData(deblindedPassword)
-	defer deblindedPasswordBuf.Close()
 	passwordUpdateTokenBuf := NewBufWithData(passwordUpdateToken)
-	defer passwordUpdateTokenBuf.Close()
-
 	updatedDeblindedPasswordBuf := NewBuf(GT_SIZE)
-	defer updatedDeblindedPasswordBuf.Close()
+
+	defer deferClose(deblindedPasswordBuf, passwordUpdateTokenBuf, updatedDeblindedPasswordBuf)
+
 	pErr := C.virgil_pythia_update_deblinded_with_token(
 		deblindedPasswordBuf.inBuf,
 		passwordUpdateTokenBuf.inBuf,
@@ -425,4 +325,24 @@ func (p *Pythia) GenerateKeypair(keypairType crypto.KeyType, seed []byte) (keypa
 		return nil, err
 	}
 	return crypto.GenerateKeypairFromKeyMaterial(seed)
+}
+
+func deferRecover(err *error) {
+	if r := recover(); r != nil {
+		var ok bool
+		*err, ok = r.(error)
+		if !ok {
+			*err = fmt.Errorf("pkg: %v", r)
+		}
+	}
+}
+
+type closer interface {
+	Close()
+}
+
+func deferClose(closers ...closer) {
+	for _, c := range closers {
+		c.Close()
+	}
 }

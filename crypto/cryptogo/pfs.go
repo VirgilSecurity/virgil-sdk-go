@@ -74,32 +74,7 @@ func (c *VirgilCrypto) StartPFSSession(
 		return
 	}
 
-	ska, skb := sk[:64], sk[64:]
-
-	toHash := make([]byte, 0, len(additionalData)+len(virgil))
-	toHash = append(toHash, additionalData...)
-	toHash = append(toHash, virgil...)
-
-	hash := sha256.Sum256(toHash)
-
-	ad := hash[:]
-
-	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
-	toHash = append(toHash, sk...)
-	toHash = append(toHash, ad...)
-	toHash = append(toHash, virgil...)
-
-	sessHash := sha256.Sum256(toHash)
-	sessionID := sessHash[:]
-
-	return &PFSSession{
-		Initiator: true,
-		SKa:       ska,
-		SKb:       skb,
-		AD:        ad,
-		SessionID: sessionID,
-	}, nil
-
+	return c.makeSession(sk, additionalData, true), nil
 }
 
 func (c *VirgilCrypto) ReceivePFCSession(
@@ -113,8 +88,14 @@ func (c *VirgilCrypto) ReceivePFCSession(
 
 	sk, err := EDHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
-		return
+		return nil, err
 	}
+
+	return c.makeSession(sk, additionalData, false), nil
+
+}
+
+func (c *VirgilCrypto) makeSession(sk []byte, additionalData []byte, initiator bool) *PFSSession {
 	ska, skb := sk[:64], sk[64:]
 
 	toHash := make([]byte, 0, len(additionalData)+len(virgil))
@@ -126,7 +107,6 @@ func (c *VirgilCrypto) ReceivePFCSession(
 	ad := hash[:]
 
 	toHash = make([]byte, 0, len(sk)+len(ad)+len(virgil))
-
 	toHash = append(toHash, sk...)
 	toHash = append(toHash, ad...)
 	toHash = append(toHash, virgil...)
@@ -135,13 +115,12 @@ func (c *VirgilCrypto) ReceivePFCSession(
 	sessionID := sessHash[:]
 
 	return &PFSSession{
-		Initiator: false,
+		Initiator: initiator,
 		SKa:       ska,
 		SKb:       skb,
 		AD:        ad,
 		SessionID: sessionID,
-	}, nil
-
+	}
 }
 
 func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {

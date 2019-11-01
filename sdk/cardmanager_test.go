@@ -40,6 +40,8 @@ package sdk
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -47,12 +49,10 @@ import (
 	"testing"
 	"time"
 
-	"crypto/rand"
-	"encoding/hex"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/common"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
-	"github.com/stretchr/testify/assert"
 )
 
 func initCardManager() (*CardManager, error) {

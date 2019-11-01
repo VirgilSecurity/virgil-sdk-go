@@ -39,15 +39,14 @@ package sdk
 
 import (
 	"encoding/hex"
+	"fmt"
+	"sync"
 	"testing"
 	"time"
 
-	"sync"
-
-	"fmt"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCachingJwtProvider(t *testing.T) {

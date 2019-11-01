@@ -399,21 +399,21 @@ func decodeCMSMessage(data []byte) (customParams map[string]interface{}, ciphert
 
 	envelope := &Envelope{}
 	if ciphertext, err = asn1.Unmarshal(data, envelope); err != nil {
-		return
+		return customParams, ciphertext, nonce, recipients, err
 	}
 
 	if err = envelope.Validate(); err != nil {
-		return
+		return customParams, ciphertext, nonce, recipients, err
 	}
 
 	content := envelope.Data.Content
 
 	if err = content.Validate(); err != nil {
-		return
+		return customParams, ciphertext, nonce, recipients, err
 	}
 
 	if recipients, err = decodeRecipients(&content.RecipientInfos); err != nil {
-		return
+		return customParams, ciphertext, nonce, recipients, err
 	}
 
 	nonce = content.EncryptedContentInfo.ContentEncryptionAlgorithm.Parameters
@@ -424,13 +424,13 @@ func decodeCMSMessage(data []byte) (customParams map[string]interface{}, ciphert
 			value, er := decodeParam(e.Value)
 			if er != nil {
 				err = er
-				return
+				return customParams, ciphertext, nonce, recipients, err
 			}
 			customParams[e.Key] = value
 		}
 	}
 
-	return
+	return customParams, ciphertext, nonce, recipients, err
 }
 
 func decodeParam(value asn1.RawValue) (interface{}, error) {
@@ -698,7 +698,7 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 	// byte to read. Thus this check is for robustness:
 	if offset >= len(bytes) {
 		err = errors.New("asn1: internal error in parseTagAndLength")
-		return
+		return ret, offset, err
 	}
 	b := bytes[offset]
 	offset++
@@ -711,17 +711,17 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 	if ret.tag == 0x1f {
 		ret.tag, offset, err = parseBase128Int(bytes, offset)
 		if err != nil {
-			return
+			return ret, offset, err
 		}
 		// Tags should be encoded in minimal form.
 		if ret.tag < 0x1f {
 			err = SyntaxError{"non-minimal tag"}
-			return
+			return ret, offset, err
 		}
 	}
 	if offset >= len(bytes) {
 		err = SyntaxError{"truncated tag or length"}
-		return
+		return ret, offset, err
 	}
 	b = bytes[offset]
 	offset++
@@ -733,13 +733,13 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 		numBytes := int(b & 0x7f)
 		if numBytes == 0 {
 			err = SyntaxError{"indefinite length found (not DER)"}
-			return
+			return ret, offset, err
 		}
 		ret.length = 0
 		for i := 0; i < numBytes; i++ {
 			if offset >= len(bytes) {
 				err = SyntaxError{"truncated tag or length"}
-				return
+				return ret, offset, err
 			}
 			b = bytes[offset]
 			offset++
@@ -747,22 +747,22 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 				// We can't shift ret.length up without
 				// overflowing.
 				err = StructuralError{"length too large"}
-				return
+				return ret, offset, err
 			}
 			ret.length <<= 8
 			ret.length |= int(b)
 			if ret.length == 0 {
 				// DER requires that lengths be minimal.
 				err = StructuralError{"superfluous leading zeros in length"}
-				return
+				return ret, offset, err
 			}
 		}
 		// Short lengths must be encoded in short form.
 		if ret.length < 0x80 {
 			err = StructuralError{"non-minimal length"}
-			return
+			return ret, offset, err
 		}
 	}
 
-	return
+	return ret, offset, err
 }

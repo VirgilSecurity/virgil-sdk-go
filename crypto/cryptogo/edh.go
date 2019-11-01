@@ -46,6 +46,8 @@ import (
 	"golang.org/x/crypto/hkdf"
 )
 
+// EDHInit init EDH
+// nolint: dupl
 func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]byte, error) {
 
 	dh1, err := dhED25519(ICa, LTCb)
@@ -87,6 +89,8 @@ func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]
 
 }
 
+// EDHRespond respond EDH
+// nolint: dupl
 func EDHRespond(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey) ([]byte, error) {
 
 	dh1, err := dhED25519(LTCb, ICa)

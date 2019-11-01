@@ -213,6 +213,10 @@ linters:
     - gosimple
     - gocyclo
     - gofmt
+    - goimports
+    - nakedret
+    - dupl
+    # - funlen    -- how many statements in a function
   enable-all: false
   disable:
   disable-all: false
