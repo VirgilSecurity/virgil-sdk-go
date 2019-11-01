@@ -216,7 +216,6 @@ linters:
     - goimports
     - nakedret
     - dupl
-    - interfacer
     - misspell
     - gosec
     - deadcode 
