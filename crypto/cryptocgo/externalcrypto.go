@@ -67,7 +67,6 @@ func (c *ExternalCrypto) SetKeyType(keyType crypto.KeyType) error {
 }
 
 func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
-
 	defer deferRecover(&err)
 
 	keyType, ok := KeyTypeMap[c.keyType]
@@ -105,7 +104,6 @@ func (c *ExternalCrypto) GenerateKeypair() (_ *externalKeypair, err error) {
 }
 
 func (c *ExternalCrypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (_ *externalKeypair, err error) {
-
 	defer deferRecover(&err)
 
 	keyType, ok := KeyTypeMap[c.keyType]
@@ -153,7 +151,6 @@ func (c *ExternalCrypto) ImportPrivateKey(data []byte, password string) (_ crypt
 	if password == "" {
 		rawPriv = unwrappedKey
 	} else {
-
 		vdata := ToVirgilByteArray(unwrappedKey)
 		defer DeleteVirgilByteArray(vdata)
 		vpassword := ToVirgilByteArray([]byte(password))
@@ -184,7 +181,6 @@ func (c *ExternalCrypto) ImportPrivateKey(data []byte, password string) (_ crypt
 }
 
 func (c *ExternalCrypto) ImportPublicKey(data []byte) (_ crypto.PublicKey, err error) {
-
 	defer deferRecover(&err)
 
 	rawPub := unwrapKey(data)
@@ -202,7 +198,6 @@ func (c *ExternalCrypto) ImportPublicKey(data []byte) (_ crypto.PublicKey, err e
 		key:        rawPub,
 		receiverID: receiverID,
 	}, nil
-
 }
 
 func (c *ExternalCrypto) ExportPrivateKey(privateKey crypto.PrivateKey, password string) (_ []byte, err error) {
@@ -259,13 +254,11 @@ func (c *ExternalCrypto) EncryptStream(in io.Reader, out io.Writer, recipients .
 		vcon := ToVirgilByteArray(r.(*externalPublicKey).contents())
 		defer DeleteVirgilByteArray(vcon)
 		ci.AddKeyRecipient(vrec, vcon)
-
 	}
 
 	ci.Encrypt(s, d)
 
 	return nil
-
 }
 
 func (c *ExternalCrypto) Decrypt(data []byte, privateKey crypto.PrivateKey) (_ []byte, err error) {
@@ -380,7 +373,6 @@ func (c *ExternalCrypto) VerifyHashTypeSignature(hashType HashType, data []byte,
 }
 
 func (c *ExternalCrypto) SignStream(in io.Reader, signerKey crypto.PrivateKey) (_ []byte, err error) {
-
 	defer deferRecover(&err)
 
 	signer := NewVirgilStreamSigner(VirgilHashAlgorithm_SHA512)
@@ -399,7 +391,6 @@ func (c *ExternalCrypto) SignStream(in io.Reader, signerKey crypto.PrivateKey) (
 }
 
 func (c *ExternalCrypto) VerifyStream(in io.Reader, signature []byte, publicKey crypto.PublicKey) (res bool, err error) {
-
 	defer deferRecover(&err)
 
 	signer := NewVirgilStreamSigner(VirgilHashAlgorithm_SHA512)
@@ -432,7 +423,6 @@ func (c *ExternalCrypto) SignThenEncrypt(
 	signerKey crypto.PrivateKey,
 	recipients ...crypto.PublicKey,
 ) (_ []byte, err error) {
-
 	defer deferRecover(&err)
 
 	ci := NewVirgilCipher()
@@ -460,7 +450,6 @@ func (c *ExternalCrypto) SignThenEncrypt(
 	params.SetData(vsignerKey, vsigner)
 
 	for _, r := range recipients {
-
 		vrec := ToVirgilByteArray(r.Identifier())
 		defer DeleteVirgilByteArray(vrec)
 		vconts := ToVirgilByteArray(r.(*externalPublicKey).contents())
@@ -482,7 +471,6 @@ func (c *ExternalCrypto) DecryptThenVerify(
 	decryptionKey crypto.PrivateKey,
 	verifierKeys ...crypto.PublicKey,
 ) (_ []byte, err error) {
-
 	defer deferRecover(&err)
 
 	ci := NewVirgilCipher()
@@ -511,7 +499,6 @@ func (c *ExternalCrypto) DecryptThenVerify(
 		if err != nil {
 			return nil, err
 		}
-
 	} else {
 		vsignerIDKey := ToVirgilByteArray([]byte(signerID))
 		defer DeleteVirgilByteArray(vsignerIDKey)
@@ -521,7 +508,6 @@ func (c *ExternalCrypto) DecryptThenVerify(
 		signerIDValue := ToSlice(signerIDString)
 
 		for _, v := range verifierKeys {
-
 			if subtle.ConstantTimeCompare(v.Identifier(), signerIDValue) == 1 {
 				err := c.VerifySignature(plaintext, sig, v)
 				if err != nil {
@@ -531,7 +517,6 @@ func (c *ExternalCrypto) DecryptThenVerify(
 			}
 		}
 		return nil, errors.New("Could not verify signature with provided keys")
-
 	}
 
 	return plaintext, nil
@@ -541,7 +526,6 @@ func (c *ExternalCrypto) ExtractPublicKey(key crypto.PrivateKey) (_ crypto.Publi
 	defer deferRecover(&err)
 
 	return key.(*externalPrivateKey).ExtractPublicKey()
-
 }
 
 //ToSlice converts VirgilByteArray to a go slice

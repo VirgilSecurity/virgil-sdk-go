@@ -105,7 +105,6 @@ func (c *CardManager) PublishRawSignedModel(
 	tokenContext *TokenContext,
 	token AccessToken,
 ) (card *Card, err error) {
-
 	return c.PublishRawCard(rawSignedModel)
 }
 
@@ -253,7 +252,6 @@ func (c *CardManager) ExportCardAsJson(card *Card) (string, error) {
 }
 
 func (c *CardManager) ImportCardFromString(str string) (*Card, error) {
-
 	model, err := GenerateRawSignedModelFromString(str)
 	if err != nil {
 		return nil, err
@@ -263,7 +261,6 @@ func (c *CardManager) ImportCardFromString(str string) (*Card, error) {
 }
 
 func (c *CardManager) ImportCardFromJson(json string) (*Card, error) {
-
 	model, err := GenerateRawSignedModelFromJson(json)
 	if err != nil {
 		return nil, err

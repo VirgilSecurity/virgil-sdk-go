@@ -66,7 +66,6 @@ func (vc *VirgilHttpClient) Send(
 	payload interface{},
 	respObj interface{},
 ) (headers http.Header, code int, err error) {
-
 	var body []byte
 	if payload != nil {
 		body, err = json.Marshal(payload)

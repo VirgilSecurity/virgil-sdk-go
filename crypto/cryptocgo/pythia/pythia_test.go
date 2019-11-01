@@ -70,7 +70,6 @@ func TestBlindStable(t *testing.T) {
 }
 
 func TestBadBufFails(t *testing.T) {
-
 	bigBuf := make([]byte, 51)
 	_, err := rand.Read(bigBuf)
 	if err != nil {
@@ -82,7 +81,6 @@ func TestBadBufFails(t *testing.T) {
 
 	_, err = p.UpdateDeblindedWithToken(res1, bigBuf)
 	assert.Error(t, err)
-
 }
 
 func TestBlindEvalDeblind(t *testing.T) {
@@ -119,7 +117,6 @@ func TestBlindEvalDeblind(t *testing.T) {
 }
 
 func TestFullProto(t *testing.T) {
-
 	sk, pk, err := p.ComputeTransformationKeypair([]byte(domain1), []byte(msk1), []byte(sss1))
 	assert.NoError(t, err)
 
@@ -132,7 +129,6 @@ func TestFullProto(t *testing.T) {
 }
 
 func TestUpdateWithToken(t *testing.T) {
-
 	sk, pk, err := p.ComputeTransformationKeypair([]byte(domain1), []byte(msk1), []byte(sss1))
 	assert.NoError(t, err)
 
@@ -176,7 +172,6 @@ func simpleProto(password, userName string, privateKey []byte) (blinded []byte, 
 }
 
 func BenchmarkBlind(b *testing.B) {
-
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _, err := p.Blind([]byte(password))
@@ -184,7 +179,6 @@ func BenchmarkBlind(b *testing.B) {
 			panic(err)
 		}
 	}
-
 }
 
 func BenchmarkEval(b *testing.B) {
@@ -205,7 +199,6 @@ func BenchmarkEval(b *testing.B) {
 			panic(err)
 		}
 	}
-
 }
 func BenchmarkBlindCpp(b *testing.B) {
 	vp := cryptocgo.NewVirgilPythia()
@@ -219,7 +212,6 @@ func BenchmarkBlindCpp(b *testing.B) {
 }
 
 func BenchmarkEvalCpp(b *testing.B) {
-
 	cppp := cryptocgo.NewVirgilPythia()
 	defer cryptocgo.DeleteVirgilPythia(cppp)
 	pwd := cryptocgo.ToVirgilByteArray([]byte(password))
@@ -253,7 +245,6 @@ func BenchmarkEvalCpp(b *testing.B) {
 }
 
 func BenchmarkDeblind(b *testing.B) {
-
 	blinded, secret, err := p.Blind([]byte(password))
 	if err != nil {
 		panic(err)
@@ -274,11 +265,9 @@ func BenchmarkDeblind(b *testing.B) {
 			panic(err)
 		}
 	}
-
 }
 
 func BenchmarkProve(b *testing.B) {
-
 	blinded, _, err := p.Blind([]byte(password))
 	if err != nil {
 		panic(err)
@@ -296,11 +285,9 @@ func BenchmarkProve(b *testing.B) {
 		_, _, err := p.Prove(y, blinded, tTilde, sk, pk)
 		assert.NoError(b, err)
 	}
-
 }
 
 func BenchmarkVerify(b *testing.B) {
-
 	blinded, _, err := p.Blind([]byte(password))
 	if err != nil {
 		panic(err)
@@ -323,11 +310,9 @@ func BenchmarkVerify(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		assert.Nil(b, p.Verify(y, blinded, []byte(username), pk, c, u))
 	}
-
 }
 
 func BenchmarkGetToken(b *testing.B) {
-
 	sk1, _, err := p.ComputeTransformationKeypair([]byte(domain1), []byte(msk1), []byte(sss1))
 	if err != nil {
 		panic(err)
@@ -345,7 +330,6 @@ func BenchmarkGetToken(b *testing.B) {
 }
 
 func BenchmarkUpdateWithToken(b *testing.B) {
-
 	sk1, _, err := p.ComputeTransformationKeypair([]byte(domain1), []byte(msk1), []byte(sss1))
 	if err != nil {
 		panic(err)

@@ -43,7 +43,6 @@ import (
 )
 
 func TestPFS(t *testing.T) {
-
 	c := &VirgilCrypto{}
 
 	//ICa, EKa, ICb, LTCb, OTCb
@@ -122,7 +121,6 @@ func TestPFS(t *testing.T) {
 }
 
 func TestPFSNoOTC(t *testing.T) {
-
 	c := &VirgilCrypto{}
 
 	//ICa, EKa, ICb, LTCb, OTCb

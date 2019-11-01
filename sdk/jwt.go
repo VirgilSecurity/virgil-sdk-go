@@ -87,7 +87,6 @@ func NewJwt(header *JwtHeaderContent, body *JwtBodyContent, signature []byte) (*
 		jwt.StringContents += "." + jwt.SignatureBase64()
 	}
 	return jwt, nil
-
 }
 
 func JwtFromString(token string) (*Jwt, error) {
@@ -142,7 +141,6 @@ func (j *Jwt) String() string {
 }
 
 func (j *Jwt) Identity() (string, error) {
-
 	if j.BodyContent == nil {
 		return "", errors.New("header content is empty")
 	}
@@ -151,7 +149,6 @@ func (j *Jwt) Identity() (string, error) {
 }
 
 func (j *Jwt) IsExpired() error {
-
 	return j.IsExpiredDelta(0)
 }
 

@@ -58,7 +58,6 @@ func (e *externalKeypair) PrivateKey() crypto.PrivateKey {
 }
 
 func unwrapKey(key []byte) []byte {
-
 	block, _ := pem.Decode(key)
 	if block != nil {
 		return block.Bytes

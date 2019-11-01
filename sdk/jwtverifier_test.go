@@ -46,7 +46,6 @@ import (
 )
 
 func TestJwtVerifier_VerifyToken(t *testing.T) {
-
 	pub, err := cryptogo.NewVirgilCrypto().ImportPublicKey([]byte("MCowBQYDK2VwAyEAiWNcK5Ipp27VXciJNsG1ZxESEq5xWniendU/8yo5318="))
 	assert.NoError(t, err)
 

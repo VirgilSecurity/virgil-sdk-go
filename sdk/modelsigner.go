@@ -73,7 +73,6 @@ func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryp
 }
 
 func (m *ModelSigner) SignRaw(model *RawSignedModel, signer string, privateKey crypto.PrivateKey, extraFieldsSnapshot []byte) (err error) {
-
 	return m.signInternal(model, &SignParams{
 		SignerPrivateKey: privateKey,
 		Signer:           signer,
@@ -134,12 +133,10 @@ func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, ex
 }
 
 func (m *ModelSigner) CheckSignatureExists(model *RawSignedModel, params *SignParams) error {
-
 	for _, s := range model.Signatures {
 		if s.Signer == params.Signer {
 			return errors.New(fmt.Sprintf("duplicate signer %s", s.Signer))
 		}
 	}
 	return nil
-
 }

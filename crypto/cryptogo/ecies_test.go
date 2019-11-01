@@ -46,7 +46,6 @@ import (
 )
 
 func TestECIES(t *testing.T) {
-
 	kp, err := NewKeypair()
 	if err != nil {
 		t.Fatal(err)

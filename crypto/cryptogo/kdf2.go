@@ -66,7 +66,7 @@ func kdf2(key []byte, length int, h func() hash.Hash) []byte {
 		digest := kdfHash.Sum(nil)
 
 		if length > outLen {
-			copy(res[outOff:], digest[:])
+			copy(res[outOff:], digest)
 			outOff += outLen
 			length -= outLen
 		} else {
@@ -75,5 +75,4 @@ func kdf2(key []byte, length int, h func() hash.Hash) []byte {
 		kdfHash.Reset()
 	}
 	return res
-
 }

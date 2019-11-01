@@ -44,7 +44,6 @@ func unsupported(msg string) error {
 func (envelope *Envelope) Validate() error {
 	if envelope.Version != 0 {
 		return unsupported("envelope version")
-
 	}
 
 	if !envelope.Data.ContentType.Equal(oidEnvelopedData) {
@@ -63,7 +62,6 @@ func (envelope *Envelope) Validate() error {
 }
 
 func (content *envelopedData) Validate() error {
-
 	if content.Version != 2 {
 		return unsupported("content version")
 	}
@@ -72,12 +70,10 @@ func (content *envelopedData) Validate() error {
 
 	if !info.ContentType.Equal(oidData) {
 		return unsupported("encrypted data type")
-
 	}
 
 	if !info.ContentType.Equal(oidData) {
 		return unsupported("encrypted data type")
-
 	}
 
 	if !info.ContentEncryptionAlgorithm.Algorithm.Equal(oidAesGCM) {
@@ -143,7 +139,7 @@ func (key *encryptedKeyWithPublicKey) Validate() error {
 	if (!encryptedKey.CipherParams.Algorithm.Equal(oidAES256CBC) ||
 		len(encryptedKey.CipherParams.Parameters) != 16) ||
 		len(encryptedKey.Value) != 48 {
-		return unsupported("key encryption algoritms or its parameters")
+		return unsupported("key encryption algorithms or its parameters")
 	}
 
 	return nil
@@ -166,7 +162,6 @@ func (info *passwordRecipientInfo) Validate() error {
 	return nil
 }
 func (p *pbeS2Parameters) Validate() error {
-
 	scheme := p.EncryptionScheme
 	kdf := p.KeyDerivationFunc
 
@@ -188,7 +183,6 @@ func (p *pbeS2Parameters) Validate() error {
 	return nil
 }
 func (p *pkdf2Params) Validate() error {
-
 	if p.IterationsCount < 3072 || p.IterationsCount > 8192 {
 		return unsupported("iterations count")
 	}

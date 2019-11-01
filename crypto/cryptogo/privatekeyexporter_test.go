@@ -43,7 +43,6 @@ import (
 )
 
 func TestPrivateKeyExporter(t *testing.T) {
-
 	p := NewPrivateKeyExporter("P@ssw)rd")
 
 	crypto := NewVirgilCrypto()

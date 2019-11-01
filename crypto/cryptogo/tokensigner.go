@@ -53,13 +53,10 @@ func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
 
 func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
 	return t.Crypto.Sign(data, privateKey.(*ed25519PrivateKey))
-
 }
 func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
-
 	hash := sha512.Sum512(data)
 	return t.Crypto.VerifyHashSignature(hash[:], signature, publicKey.(*ed25519PublicKey))
-
 }
 func (t *VirgilAccessTokenSigner) GetAlgorithm() string {
 	return "VEDS512"

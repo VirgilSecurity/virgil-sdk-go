@@ -72,7 +72,6 @@ func (s *ed25519Signer) Sign(data []byte, signer *ed25519PrivateKey) ([]byte, er
 	}
 	hash := Hash.Sum(data)
 	return signInternal(hash, signer)
-
 }
 
 func (s *ed25519Signer) SignHash(hash []byte, signer *ed25519PrivateKey) ([]byte, error) {
@@ -80,7 +79,6 @@ func (s *ed25519Signer) SignHash(hash []byte, signer *ed25519PrivateKey) ([]byte
 		return nil, errors.New("key is nil")
 	}
 	return signInternal(hash, signer)
-
 }
 
 func (s *ed25519Verifier) Verify(data []byte, key *ed25519PublicKey, signature []byte) error {
@@ -127,7 +125,7 @@ func signInternal(hash []byte, key *ed25519PrivateKey) ([]byte, error) {
 	private := new([ed25519.PrivateKeySize]byte)
 	copy(private[:], key.contents())
 
-	sign := ed25519.Sign(private, hash[:])
+	sign := ed25519.Sign(private, hash)
 
 	sBytes, err := makeSignature(sign[:], len(hash))
 
@@ -155,16 +153,17 @@ func verifyInternal(data []byte, key *ed25519PublicKey, signature []byte, doNotH
 	if doNotHash {
 		hash = data
 	} else {
-		if algo.Equal(OidSha256) {
+		switch {
+		case algo.Equal(OidSha256):
 			tmp := sha256.Sum256(data)
 			hash = tmp[:]
-		} else if algo.Equal(OidSha384) {
+		case algo.Equal(OidSha384):
 			tmp := sha512.Sum384(data)
 			hash = tmp[:]
-		} else if algo.Equal(OidSha512) {
+		case algo.Equal(OidSha512):
 			tmp := sha512.Sum512(data)
 			hash = tmp[:]
-		} else {
+		default:
 			return cryptoError(errors.New("unsupported signature hash"), algo.String())
 		}
 	}

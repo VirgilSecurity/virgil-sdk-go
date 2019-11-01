@@ -55,7 +55,6 @@ func (v *VirgilPrivateKeyExporter) ExportPrivateKey(key interface {
 	IsPrivate() bool
 	Identifier() []byte
 }) ([]byte, error) {
-
 	if v.Crypto == nil {
 		return nil, errors.New("Crypto is not set")
 	}
@@ -71,11 +70,9 @@ func (v *VirgilPrivateKeyExporter) ImportPrivateKey(data []byte) (interface {
 	IsPrivate() bool
 	Identifier() []byte
 }, error) {
-
 	if v.Crypto == nil {
 		return nil, errors.New("Crypto is not set")
 	}
 
 	return v.Crypto.ImportPrivateKey(data, v.Password)
-
 }

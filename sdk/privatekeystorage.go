@@ -48,7 +48,6 @@ type VirgilPrivateKeyStorage struct {
 }
 
 func NewVirgilPrivateKeyStorage(privateKeyExporter crypto.PrivateKeyExporter, path string) crypto.PrivateKeyStorage {
-
 	return &VirgilPrivateKeyStorage{
 		PrivateKeyExporter: privateKeyExporter,
 		KeyStorage: &FileKeyStorage{
@@ -58,7 +57,6 @@ func NewVirgilPrivateKeyStorage(privateKeyExporter crypto.PrivateKeyExporter, pa
 }
 
 func (v *VirgilPrivateKeyStorage) Store(privateKey crypto.PrivateKey, name string, meta map[string]string) error {
-
 	if v.PrivateKeyExporter == nil {
 		return errors.New("PrivateKeyExporter is not set")
 	}
@@ -78,7 +76,6 @@ func (v *VirgilPrivateKeyStorage) Store(privateKey crypto.PrivateKey, name strin
 		Data: exported,
 		Meta: meta,
 	})
-
 }
 
 func (v *VirgilPrivateKeyStorage) Load(name string) (privateKey crypto.PrivateKey, meta map[string]string, err error) {

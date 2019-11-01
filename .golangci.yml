@@ -216,6 +216,23 @@ linters:
     - goimports
     - nakedret
     - dupl
+    - interfacer
+    - misspell
+    - gosec
+    - deadcode 
+    - ineffassign
+    - structcheck
+    - unparam
+    - unused
+    - varcheck
+    - prealloc
+    - gocritic
+    - depguard
+    - stylecheck
+
+    # - wsl
+    # - gocognit
+    # - whitespace - remove signatures
     # - funlen    -- how many statements in a function
   enable-all: false
   disable:
@@ -252,7 +269,13 @@ issues:
       text: "should have (comment|name)"
     - linters:
         - golint
-      text: "returns unexported type"     
+      text: "returns unexported type"
+    - linters:
+        - gocritic
+      text: "should not be capitalized"
+    - linters:
+        - stylecheck
+      text: "^(ST1003|ST1012|ST1005|ST1000)"
   # Independently from option `exclude` we use default exclude patterns,
   # it can be disabled by this option. To list all
   # excluded by default patterns execute `golangci-lint run --help`.

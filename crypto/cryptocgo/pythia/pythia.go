@@ -78,7 +78,6 @@ func (p *Pythia) Blind(password []byte) (blindedPassword, blindingSecret []byte,
 
 // Deblind unmasks value y with previously returned secret from Blind()
 func (p *Pythia) Deblind(transformedPassword []byte, blindingSecret []byte) (deblindedPassword []byte, err error) {
-
 	defer deferRecover(&err)
 
 	transformedPasswordBuf := NewBufWithData(transformedPassword)
@@ -112,7 +111,6 @@ func (p *Pythia) ComputeTransformationKeypair(
 	pythiaSecret []byte,
 	pythiaScopeSecret []byte,
 ) (privateKey, publicKey []byte, err error) {
-
 	defer deferRecover(&err)
 
 	transformationKeyIDBuf := NewBufWithData(transformationKeyID)

@@ -58,7 +58,6 @@ func TestSignEncrypt(t *testing.T) {
 	if plaintext, err := crypto.DecryptThenVerify(cipherText, keypair.PrivateKey(), keypair.PublicKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
-
 }
 
 func BenchmarkSign(b *testing.B) {
@@ -84,7 +83,6 @@ func BenchmarkSign(b *testing.B) {
 }
 
 func BenchmarkSignThenEncrypt(b *testing.B) {
-
 	crypto := &ExternalCrypto{}
 
 	//make random data
@@ -106,7 +104,6 @@ func BenchmarkSignThenEncrypt(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
-
 }
 
 func TestStreamCipher(t *testing.T) {
@@ -219,11 +216,9 @@ func TestNativeCrypto_ExportImportPrivateKey(t *testing.T) {
 	if plaintext, err := crypto.DecryptThenVerify(cipherText, priv, pub, pub); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
-
 }
 
 func TestExternalCrypto_GenerateKeypairFromKeyMaterial(t *testing.T) {
-
 	seed := make([]byte, 384)
 	for i := range seed {
 		seed[i] = byte(i)
@@ -243,7 +238,7 @@ func TestExternalCrypto_GenerateKeypairFromKeyMaterial(t *testing.T) {
 		assert.Equal(t, priv1, priv2)
 	}
 
-	seed[383] = seed[383] + 1
+	seed[383]++
 	pub3, priv3, err := GenKeysFromSeed(seed)
 	assert.NoError(t, err)
 	assert.NotEqual(t, pub1, pub3)

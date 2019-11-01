@@ -66,5 +66,4 @@ func TestSignEncrypt(t *testing.T) {
 	if plaintext, err := crypto.DecryptThenVerify(cipherText, keypair.PrivateKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
-
 }

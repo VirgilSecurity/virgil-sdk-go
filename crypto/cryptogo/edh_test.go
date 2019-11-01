@@ -43,7 +43,6 @@ import (
 )
 
 func TestX3DH(t *testing.T) {
-
 	ICa, err := NewKeypair()
 	assert.NoError(t, err)
 
@@ -75,5 +74,4 @@ func TestX3DH(t *testing.T) {
 	sk1, err = EDHInit(ICa.PrivateKey(), EKa.PrivateKey(), ICb.PublicKey(), LTCb.PublicKey(), nil)
 	assert.NoError(t, err)
 	assert.Equal(t, sk1, sk2)
-
 }

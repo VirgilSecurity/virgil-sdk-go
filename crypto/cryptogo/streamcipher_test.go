@@ -59,7 +59,6 @@ func TestStream(t *testing.T) {
 	readRandom(t, ad)
 
 	for i := 0; i < 40; i++ {
-
 		in := bytes.NewBuffer(plain)
 		out := &bytes.Buffer{}
 		err := sc.Encrypt(symmetricKey, nonce, ad, in, out)

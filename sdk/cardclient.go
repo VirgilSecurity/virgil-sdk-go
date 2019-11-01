@@ -81,7 +81,6 @@ func (c *CardClient) RevokeCard(cardID string, token string) error {
 }
 
 func (c *CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool, error) {
-
 	const (
 		SupersededCardIDHTTPHeader      = "X-Virgil-Is-Superseeded"
 		SupersededCardIDHTTPHeaderValue = "true"
@@ -109,7 +108,6 @@ func (c *CardClient) send(
 	payload interface{},
 	respObj interface{},
 ) (headers http.Header, err error) {
-
 	client := c.getVirgilClient()
 	headers, httpCode, err := client.Send(method, url, token, payload, respObj)
 	if err != nil {
@@ -136,7 +134,6 @@ func (c *CardClient) getHttpClient() common.HttpClient {
 }
 
 func (c *CardClient) getVirgilClient() *common.VirgilHttpClient {
-
 	c.once.Do(func() {
 		if c.VirgilHttpClient == nil {
 			c.VirgilHttpClient = &common.VirgilHttpClient{

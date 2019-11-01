@@ -120,11 +120,9 @@ func TestWhitelist(t *testing.T) {
 	err, ok = ToCardVerifierError(err)
 	assert.Error(t, err)
 	assert.True(t, ok)
-
 }
 
 func addRawSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
-
 	modelSigner := &ModelSigner{Crypto: cardCrypto}
 
 	snapshot := make([]byte, 129)
@@ -136,7 +134,6 @@ func addRawSign(t *testing.T, model *RawSignedModel, credentials *testCredential
 }
 
 func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
-
 	modelSigner := &ModelSigner{Crypto: cardCrypto}
 
 	err := modelSigner.Sign(model, credentials.Signer, credentials.PrivateKey, map[string]string{
@@ -150,7 +147,6 @@ func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) 
 }
 
 func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
-
 	twl := &Whitelist{}
 
 	for _, cred := range creds {

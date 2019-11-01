@@ -49,7 +49,6 @@ import (
 // EDHInit init EDH
 // nolint: dupl
 func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]byte, error) {
-
 	dh1, err := dhED25519(ICa, LTCb)
 	if err != nil {
 		return nil, err
@@ -86,13 +85,11 @@ func EDHInit(ICa, EKa *ed25519PrivateKey, ICb, LTCb, OTCb *ed25519PublicKey) ([]
 		return nil, err
 	}
 	return res, nil
-
 }
 
 // EDHRespond respond EDH
 // nolint: dupl
 func EDHRespond(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey) ([]byte, error) {
-
 	dh1, err := dhED25519(LTCb, ICa)
 	if err != nil {
 		return nil, err
@@ -129,11 +126,9 @@ func EDHRespond(ICa, EKa *ed25519PublicKey, ICb, LTCb, OTCb *ed25519PrivateKey) 
 		return nil, err
 	}
 	return res, nil
-
 }
 
 func dhED25519(priv *ed25519PrivateKey, pub *ed25519PublicKey) ([]byte, error) {
-
 	edPub := new([ed25519.PublicKeySize]byte)
 	edPriv := new([ed25519.PrivateKeySize]byte)
 

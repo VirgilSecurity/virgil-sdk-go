@@ -79,7 +79,6 @@ func NewGCM(cipher cipher.Block) (*gcm, error) {
 // cryptosystem that uses non-standard nonce lengths. All other users should use
 // NewGCM, which is faster and more resistant to misuse.
 func newGCMWithNonceSize(cipher cipher.Block, size int) (*gcm, error) {
-
 	if cipher.BlockSize() != gcmBlockSize {
 		return nil, GCMBlockSizeIncorrectErr
 	}
@@ -123,7 +122,6 @@ func (*gcm) Overhead() int {
 }
 
 func (g *gcm) SealStream(nonce, data []byte, plain io.Reader, ciph io.Writer) error {
-
 	if len(nonce) != g.nonceSize {
 		return GCMNonceLengthIncorrectErr
 	}
@@ -204,6 +202,8 @@ func (g *gcm) OpenStream(nonce, data []byte, ciphertext io.Reader, plaintext io.
 		//we need to deal with the last chunk part. Either keep it for the future, use it as tag or treat it as data
 		buf := make([]byte, n)
 		copy(buf, inBuf[:n])
+		// ask Scratch-net
+		//nolint: gocritic
 		if lastTagPart == nil { // we're sure that we have the tag
 			if n <= gcmTagSize {
 				if len(previousTagPart) == 0 {
@@ -211,11 +211,12 @@ func (g *gcm) OpenStream(nonce, data []byte, ciphertext io.Reader, plaintext io.
 				} else {
 					buf = previousTagPart[:n]
 				}
-
 			} else {
 				buf = append(previousTagPart, buf[:n-gcmTagSize]...)
 			}
 		} else if n < gcmTagSize { //a part of tag belongs to previous data chunk stored in tagPart
+			// ask Scratch-net
+			//nolint: gocritic
 			expectedTag = append(previousTagPart[gcmTagSize-n:], lastTagPart...)
 			buf = previousTagPart[:n]
 		} else {
@@ -255,8 +256,8 @@ func (g *gcm) OpenStream(nonce, data []byte, ciphertext io.Reader, plaintext io.
 		return errors.New("Tags don't match, discard the stream")
 	}
 	return nil
-
 }
+
 func processTag(buf []byte, tagPart []byte, readBytes int) (lastTagPart, expectedTag []byte, err error) {
 	if readBytes == len(buf) { // we can't be sure the last part of the chunk is the tag, so save it for the future use
 		lastTagPart = buf[len(buf)-gcmTagSize:]
@@ -270,6 +271,8 @@ func processTag(buf []byte, tagPart []byte, readBytes int) (lastTagPart, expecte
 			return nil, expectedTag, err
 		}
 		if readBytes < gcmTagSize && len(tagPart) == gcmTagSize { //tag was split between previous chunk & last chunk
+			// ask Scratch-net
+			//nolint: gocritic
 			expectedTag = append(tagPart[readBytes:], buf[:readBytes]...)
 			return nil, expectedTag, nil
 		}
@@ -398,7 +401,6 @@ func (g *gcm) counterCrypt(out, in []byte, counter *[gcmBlockSize]byte) {
 		xorWords(out, in, mask[:])
 		out = out[gcmBlockSize:]
 		in = in[gcmBlockSize:]
-
 	}
 
 	if len(in) > 0 {
@@ -406,7 +408,6 @@ func (g *gcm) counterCrypt(out, in []byte, counter *[gcmBlockSize]byte) {
 		gcmInc32(counter)
 		XorBytes(out, in, mask[:])
 	}
-
 }
 
 // deriveCounter computes the initial GCM counter state from the given nonce.

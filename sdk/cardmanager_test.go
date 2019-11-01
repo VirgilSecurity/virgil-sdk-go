@@ -105,7 +105,6 @@ func initCardManager() (*CardManager, error) {
 }
 
 func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
-
 	manager, err := initCardManager()
 	assert.NoError(t, err)
 
@@ -131,7 +130,6 @@ func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 }
 
 func TestCardManager_Integration_Publish_Replace(t *testing.T) {
-
 	manager, err := initCardManager()
 	assert.NoError(t, err)
 
@@ -149,7 +147,6 @@ func TestCardManager_Integration_Publish_Replace(t *testing.T) {
 }
 
 func TestCardManager_Integration_Publish_Revoke(t *testing.T) {
-
 	manager, err := initCardManager()
 	assert.NoError(t, err)
 
@@ -168,7 +165,6 @@ func TestCardManager_Integration_Publish_Revoke(t *testing.T) {
 }
 
 func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
-
 	manager, err := initCardManager()
 	assert.NoError(t, err)
 
@@ -197,7 +193,6 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 			current = current.PreviousCard
 		}
 	}
-
 }
 
 func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardID string) (*Card, error) {

@@ -114,7 +114,6 @@ func encodePrivateKey(privateKey *ed25519PrivateKey, encodeToPem bool) ([]byte, 
 	return pem.EncodeToMemory(block), nil
 }
 func encodePrivateKeyEncrypted(privateKey *ed25519PrivateKey, password []byte, encodeToPem bool) ([]byte, error) {
-
 	serializedKey, err := encodePrivateKey(privateKey, false)
 
 	if err != nil {
@@ -151,7 +150,6 @@ func encodePrivateKeyEncrypted(privateKey *ed25519PrivateKey, password []byte, e
 	return pem.EncodeToMemory(block), nil
 }
 func loadPlainPrivateKey(keyBytes []byte) (*ed25519PrivateKey, error) {
-
 	key := &privateKeyAsn{}
 	_, err := asn1.Unmarshal(keyBytes, key)
 	if err != nil {

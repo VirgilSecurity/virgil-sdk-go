@@ -68,7 +68,6 @@ func (c *VirgilCrypto) StartPFSSession(
 	EKa *ed25519PrivateKey,
 	additionalData []byte,
 ) (sess *PFSSession, err error) {
-
 	sk, err := EDHInit(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
 		return
@@ -85,14 +84,12 @@ func (c *VirgilCrypto) ReceivePFCSession(
 	OTCb *ed25519PrivateKey,
 	additionalData []byte,
 ) (sess *PFSSession, err error) {
-
 	sk, err := EDHRespond(ICa, EKa, ICb, LTCb, OTCb)
 	if err != nil {
 		return nil, err
 	}
 
 	return c.makeSession(sk, additionalData, false), nil
-
 }
 
 func (c *VirgilCrypto) makeSession(sk []byte, additionalData []byte, initiator bool) *PFSSession {
@@ -152,7 +149,6 @@ func (s *PFSSession) Encrypt(plaintext []byte) (salt, ciphertext []byte) {
 }
 
 func (s *PFSSession) Decrypt(salt, ciphertext []byte) ([]byte, error) {
-
 	keyAndNonce := make([]byte, 44)
 
 	sk := s.SKb

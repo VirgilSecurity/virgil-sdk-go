@@ -79,7 +79,6 @@ func NewVirgilCardVerifier(
 	verifyVirgilSignature bool,
 	whitelists ...*Whitelist,
 ) (*VirgilCardVerifier, error) {
-
 	verifier := &VirgilCardVerifier{
 		Crypto:                crypto,
 		Whitelists:            whitelists,
@@ -139,7 +138,6 @@ func (v *VirgilCardVerifier) verifyCardByWhitelist(card *Card) error {
 	hasNonNil := false
 
 	for _, whitelist := range v.Whitelists {
-
 		hasNil = hasNil || whitelist == nil
 		hasNonNil = hasNonNil || whitelist != nil
 		if hasNil && hasNonNil {

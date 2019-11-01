@@ -65,7 +65,6 @@ func NewJwtBodyContent(
 	expiresAt time.Time,
 	data map[string]interface{},
 ) (*JwtBodyContent, error) {
-
 	if err := ValidateJwtBodyParams(appID, identity, issuedAt, expiresAt); err != nil {
 		return nil, err
 	}

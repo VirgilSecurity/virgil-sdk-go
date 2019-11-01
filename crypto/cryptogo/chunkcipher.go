@@ -59,7 +59,6 @@ const (
 )
 
 func (c *aesGCMChunkStreamCipher) Encrypt(key, nonce, ad []byte, chunkSize int, in io.Reader, out io.Writer) error {
-
 	if chunkSize < 1 {
 		return CryptoError("chunk size too small")
 	}

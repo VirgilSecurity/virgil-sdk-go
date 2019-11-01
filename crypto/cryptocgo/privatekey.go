@@ -47,7 +47,6 @@ func (k *externalPrivateKey) Identifier() []byte {
 
 func (k *externalPrivateKey) Encode(password []byte) ([]byte, error) {
 	if len(password) == 0 {
-
 		vkey := ToVirgilByteArray(k.key)
 		defer DeleteVirgilByteArray(vkey)
 		venc := VirgilKeyPairPrivateKeyToDER(vkey)

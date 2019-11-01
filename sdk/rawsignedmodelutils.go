@@ -51,7 +51,6 @@ const (
 )
 
 func GenerateRawCard(crypto crypto.CardCrypto, cardParams *CardParams, createdAt time.Time) (*RawSignedModel, error) {
-
 	if crypto == nil {
 		return nil, errors.New("crypto is mandatory")
 	}
@@ -82,7 +81,6 @@ func GenerateRawCard(crypto crypto.CardCrypto, cardParams *CardParams, createdAt
 }
 
 func GenerateRawSignedModelFromString(str string) (*RawSignedModel, error) {
-
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
 		return nil, err
@@ -104,14 +102,13 @@ func ParseCard(crypto crypto.CardCrypto, card *Card) (*RawSignedModel, error) {
 		return nil, errors.New("card is mandatory")
 	}
 
-	var signatures []*RawCardSignature
-
-	for _, s := range card.Signatures {
-		signatures = append(signatures, &RawCardSignature{
+	signatures := make([]*RawCardSignature, len(card.Signatures))
+	for i, s := range card.Signatures {
+		signatures[i] = &RawCardSignature{
 			Signer:    s.Signer,
 			Signature: s.Signature,
 			Snapshot:  s.Snapshot,
-		})
+		}
 	}
 
 	return &RawSignedModel{

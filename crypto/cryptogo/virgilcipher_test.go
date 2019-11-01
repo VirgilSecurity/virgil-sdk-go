@@ -42,7 +42,6 @@ import (
 )
 
 func testEncryptWithKey(data []byte, key *ed25519PublicKey) {
-
 	cipher := NewCipher()
 	err := cipher.AddKeyRecipient(key)
 	if err != nil {
@@ -54,7 +53,6 @@ func testEncryptWithKey(data []byte, key *ed25519PublicKey) {
 	}
 }
 func BenchmarkEncrypt(b *testing.B) {
-
 	data := make([]byte, 257)
 	readRandom(b, data)
 
@@ -69,14 +67,12 @@ func BenchmarkEncrypt(b *testing.B) {
 	}
 }
 func testDecryptWithKey(data []byte, key *ed25519PrivateKey) {
-
 	_, err := NewCipher().DecryptWithPrivateKey(data, key)
 	if err != nil {
 		panic(err)
 	}
 }
 func BenchmarkDecrypt(b *testing.B) {
-
 	data := make([]byte, 257)
 	readRandom(b, data)
 
@@ -101,7 +97,6 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 }
 func BenchmarkSign(b *testing.B) {
-
 	data := make([]byte, 257)
 	readRandom(b, data)
 
@@ -190,7 +185,6 @@ func TestCMS(t *testing.T) {
 	if plaintext, err = NewCipher().DecryptThenVerify(cipherText, keypair.PrivateKey(), keypair.PublicKey(), signerKeypair.PublicKey()); err != nil || !bytes.Equal(plaintext, data) {
 		t.Fatal(err)
 	}
-
 }
 func TestStreamCipher(t *testing.T) {
 	keypair, err := NewKeypair()
@@ -256,5 +250,4 @@ func TestStreamCipher(t *testing.T) {
 	if err == nil {
 		t.Fatal("decrypt must fail but didn't")
 	}
-
 }

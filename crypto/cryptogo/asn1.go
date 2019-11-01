@@ -185,7 +185,6 @@ type envelopeKey struct {
 }
 
 func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte, keyIv []byte) (*asn1.RawValue, error) {
-
 	encryptedKey := encryptedData{
 		CipherParams: algorithmIdentifier{
 			Algorithm:  oidAES256CBC,
@@ -240,10 +239,8 @@ func makePublicKeyRecipient(id []byte, publicKey []byte, mac []byte, key []byte,
 	return &asn1.RawValue{
 		FullBytes: raw,
 	}, nil
-
 }
 func makePasswordRecipient(kdfIv []byte, iterations int, key, keyIv []byte) (*asn1.RawValue, error) {
-
 	keyEncryptionAlgorithm, err := encodeKeyEncryptionAlgorithm(kdfIv, iterations, keyIv)
 
 	if err != nil {
@@ -269,7 +266,6 @@ func makePasswordRecipient(kdfIv []byte, iterations int, key, keyIv []byte) (*as
 	return res, nil
 }
 func makeSignature(sign []byte, hashSize int) ([]byte, error) {
-
 	var algo asn1.ObjectIdentifier
 
 	switch hashSize {
@@ -291,30 +287,28 @@ func makeSignature(sign []byte, hashSize int) ([]byte, error) {
 	return sBytes, nil
 }
 func decodeSignature(signatureBytes []byte) ([]byte, *asn1.ObjectIdentifier, error) {
-
 	signature := &signature{}
 
 	_, err := asn1.Unmarshal(signatureBytes, signature)
 	if err != nil {
 		return nil, nil, cryptoError(err, "")
-
 	}
 
 	parsedAlgo := signature.O.Algorithm
 	var algo *asn1.ObjectIdentifier
 
-	if parsedAlgo.Equal(OidSha384) {
+	switch {
+	case parsedAlgo.Equal(OidSha384):
 		algo = &OidSha384
-	} else if parsedAlgo.Equal(OidSha512) {
+	case parsedAlgo.Equal(OidSha512):
 		algo = &OidSha512
-	} else {
+	default:
 		return nil, nil, cryptoError(errors.New("unsupported signature hash"), "")
 	}
 
 	return signature.S, algo, nil
 }
 func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams map[string]interface{}) ([]byte, error) {
-
 	ciphertextInfo := encryptedContentInfo{
 		ContentType: oidData,
 		ContentEncryptionAlgorithm: algorithmIdentifier{
@@ -323,6 +317,7 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 		},
 	}
 
+	// nolint: prealloc
 	var serializedRecipients []byte
 	for _, r := range recipients {
 		serializedRecipient, err := asn1.Marshal(*r)
@@ -330,7 +325,6 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 			return nil, cryptoError(err, "")
 		}
 		serializedRecipients = append(serializedRecipients, serializedRecipient...)
-
 	}
 
 	rawRecipients := asn1.RawValue{
@@ -355,7 +349,6 @@ func composeCMSMessage(nonce []byte, recipients []*asn1.RawValue, customParams m
 	}
 
 	if len(customParams) > 0 {
-
 		params := make([]CustomParam, 0)
 		for k, v := range customParams {
 			param, err := makeParam(k, v)
@@ -393,10 +386,8 @@ func makeParam(key string, v interface{}) (CustomParam, error) {
 		Value: asn1.RawValue{Bytes: asnValue, Tag: tag, IsCompound: true, Class: 2},
 	}
 	return param, nil
-
 }
 func decodeCMSMessage(data []byte) (customParams map[string]interface{}, ciphertext, nonce []byte, recipients []recipient, err error) {
-
 	envelope := &Envelope{}
 	if ciphertext, err = asn1.Unmarshal(data, envelope); err != nil {
 		return customParams, ciphertext, nonce, recipients, err
@@ -420,13 +411,13 @@ func decodeCMSMessage(data []byte) (customParams map[string]interface{}, ciphert
 
 	if len(envelope.CustomParams) > 0 {
 		customParams = make(map[string]interface{})
-		for _, e := range envelope.CustomParams {
-			value, er := decodeParam(e.Value)
+		for i := range envelope.CustomParams {
+			value, er := decodeParam(envelope.CustomParams[i].Value)
 			if er != nil {
 				err = er
 				return customParams, ciphertext, nonce, recipients, err
 			}
-			customParams[e.Key] = value
+			customParams[envelope.CustomParams[i].Key] = value
 		}
 	}
 
@@ -434,7 +425,6 @@ func decodeCMSMessage(data []byte) (customParams map[string]interface{}, ciphert
 }
 
 func decodeParam(value asn1.RawValue) (interface{}, error) {
-
 	_, er := asn1.Unmarshal(value.Bytes, &value)
 	if er != nil {
 		return nil, er
@@ -449,7 +439,6 @@ func decodeParam(value asn1.RawValue) (interface{}, error) {
 	case asn1.TagOctetString:
 		var tmp []byte
 		v = &tmp
-
 	}
 
 	_, err := asn1.Unmarshal(value.FullBytes, v)
@@ -484,7 +473,6 @@ func decodeRecipients(value *asn1.RawValue) (models []recipient, err error) {
 	}
 
 	for _, v := range values {
-
 		var r recipient
 		switch v.Tag {
 		case 3:

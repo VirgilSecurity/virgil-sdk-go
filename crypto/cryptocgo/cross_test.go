@@ -42,7 +42,6 @@ import (
 )
 
 func TestCrossTestCrypto(t *testing.T) {
-
 	c1 := &cryptogo.VirgilCrypto{}
 	c2 := &ExternalCrypto{}
 
@@ -73,7 +72,6 @@ func TestCrossTestCrypto(t *testing.T) {
 	decrypted, err := c2.DecryptThenVerify(ciphertext, kp2.PrivateKey(), kp1pub)
 	assert.NoError(t, err)
 	assert.Equal(t, decrypted, data)
-
 }
 
 func TestTokenSigner(t *testing.T) {
@@ -106,7 +104,6 @@ func TestTokenSigner(t *testing.T) {
 }
 
 func BenchmarkVirgilAccessTokenSigner_VerifyTokenSignature(b *testing.B) {
-
 	c1 := &ExternalCrypto{}
 	kp1, err := c1.GenerateKeypair()
 	assert.NoError(b, err)
@@ -124,7 +121,6 @@ func BenchmarkVirgilAccessTokenSigner_VerifyTokenSignature(b *testing.B) {
 }
 
 func BenchmarkInternalVirgilAccessTokenSigner_VerifyTokenSignature(b *testing.B) {
-
 	c1 := &cryptogo.VirgilCrypto{}
 	kp1, err := c1.GenerateKeypair()
 	assert.NoError(b, err)

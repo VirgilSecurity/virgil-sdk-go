@@ -54,7 +54,6 @@ func NewGeneratorJwtProvider(generator *JwtGenerator, additionalData map[string]
 }
 
 func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-
 	if g.JwtGenerator == nil {
 		return nil, errors.New("JwtGenerator is not set")
 	}

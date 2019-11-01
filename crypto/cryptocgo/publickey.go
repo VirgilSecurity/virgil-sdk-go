@@ -46,7 +46,6 @@ func (k *externalPublicKey) Identifier() []byte {
 }
 
 func (k *externalPublicKey) Encode() ([]byte, error) {
-
 	derPub := make([]byte, len(k.key))
 	copy(derPub, k.key)
 	/*vkey := ToVirgilByteArray(k.key)

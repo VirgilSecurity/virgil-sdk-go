@@ -69,7 +69,6 @@ func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) 
 }
 
 func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-
 	if context == nil {
 		return nil, errors.New("context is mandatory")
 	}
@@ -87,7 +86,6 @@ func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error
 			token, err := c.RenewTokenCallback(context)
 			if err != nil {
 				return nil, err
-
 			}
 			c.Jwt = token
 		}

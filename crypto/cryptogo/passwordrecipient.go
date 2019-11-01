@@ -68,7 +68,6 @@ func (p *passwordRecipient) decryptKey(id []byte, password []byte) ([]byte, erro
 	return decryptKeyWithPassword(p.encryptedKey, p.keyIv, p.kdfIv, p.iterations, password)
 }
 func encryptKeyWithPassword(randomKey, password []byte) (kdfIv []byte, iterations int, keyIv, encryptedKey []byte, err error) {
-
 	kdfIv = make([]byte, 16)
 	keyIv = make([]byte, 16)
 
@@ -96,7 +95,6 @@ func encryptKeyWithPassword(randomKey, password []byte) (kdfIv []byte, iteration
 	return
 }
 func decryptKeyWithPassword(encryptedKey, keyIv, kdfIv []byte, iterations int, password []byte) ([]byte, error) {
-
 	keyEncryptionKey := pbkdf2.Key(password, kdfIv, iterations, 32, Hash.New)
 
 	ciph, _ := aes.NewCipher(keyEncryptionKey)

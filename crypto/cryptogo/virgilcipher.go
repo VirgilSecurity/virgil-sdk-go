@@ -83,7 +83,6 @@ type recipient interface {
 }
 
 func (c *defaultCipher) AddKeyRecipient(key *ed25519PublicKey) error {
-
 	if key == nil || key.Empty() {
 		return CryptoError("no public key provided")
 	}
@@ -107,16 +106,15 @@ func (c *defaultCipher) Encrypt(data []byte) ([]byte, error) {
 		return nil, CryptoError("No recipients specified")
 	}
 
-	var models []*asn1.RawValue
-
 	ciphertext, symmetricKey, nonce := encryptData(data)
 
-	for _, r := range c.recipients {
+	models := make([]*asn1.RawValue, len(c.recipients))
+	for i, r := range c.recipients {
 		model, err := r.encryptKey(symmetricKey)
 		if err != nil {
 			return nil, err
 		}
-		models = append(models, model)
+		models[i] = model
 	}
 
 	envelope, err := composeCMSMessage(nonce, models, nil)
@@ -173,7 +171,6 @@ func (c *defaultCipher) DecryptWithPassword(data []byte, password []byte) ([]byt
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong password?")
 }
 func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKey) ([]byte, error) {
-
 	if key == nil || len(key.contents()) == 0 {
 		return nil, CryptoError("no keypair provided")
 	}
@@ -187,7 +184,6 @@ func (c *defaultCipher) DecryptWithPrivateKey(data []byte, key *ed25519PrivateKe
 		if err == nil {
 			return decryptData(ciphertext, key, nonce)
 		}
-
 	}
 	return nil, CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }
@@ -197,7 +193,6 @@ func (c *defaultCipher) DecryptThenVerify(
 	decryptionKey *ed25519PrivateKey,
 	verifierPublicKeys ...*ed25519PublicKey,
 ) ([]byte, error) {
-
 	if decryptionKey == nil || decryptionKey.Empty() {
 		return nil, CryptoError("no keypair provided")
 	}
@@ -298,7 +293,6 @@ func (c *defaultCipher) EncryptStream(in io.Reader, out io.Writer) error {
 	return c.chunkCipher.Encrypt(symmetricKey, nonce, nil, DefaultChunkSize, in, out)
 }
 func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519PrivateKey) error {
-
 	if key == nil || len(key.contents()) == 0 {
 		return CryptoError("no keypair provided")
 	}
@@ -332,7 +326,6 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519P
 			} else {
 				return CryptoError("got chunkSize but could not decode")
 			}
-
 		}
 	}
 
@@ -345,14 +338,12 @@ func (c *defaultCipher) DecryptStream(in io.Reader, out io.Writer, key *ed25519P
 	for _, r := range recipients {
 		key, err := r.decryptKey(key.Identifier(), key.contents())
 		if err == nil {
-
 			if chunkSize > 0 {
 				return c.chunkCipher.Decrypt(key, nonce, nil, chunkSize, in, out)
 			}
 
 			return c.streamCipher.Decrypt(key, nonce, nil, in, out)
 		}
-
 	}
 	return CryptoError("Could not decrypt the symmetric key. Wrong private key?")
 }

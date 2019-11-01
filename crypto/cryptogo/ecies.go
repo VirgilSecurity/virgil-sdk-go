@@ -55,7 +55,6 @@ const Curve25519PublicKeySize = 32
 const Curve25519SharedKeySize = 32
 
 func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privateKey []byte) ([]byte, error) {
-
 	if len(ephPub) != ed25519.PublicKeySize {
 		return nil, CryptoError("invalid ed25519 public key size")
 	}
@@ -118,7 +117,6 @@ func decryptSymmetricKeyWithECIES(encryptedSymmetricKey, tag, ephPub, iv, privat
 }
 
 func encryptSymmetricKeyWithECIES(publicKey, symmetricKey []byte) (encryptedSymmetricKey, tag, ephPub, iv []byte, err error) {
-
 	if len(publicKey) != ed25519.PublicKeySize {
 		err = CryptoError(fmt.Sprintf("invalid ed25519 key size %d", len(publicKey)))
 		return

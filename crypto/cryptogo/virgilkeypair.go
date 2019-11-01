@@ -103,7 +103,6 @@ func (e *ed25519Keypair) PrivateKey() *ed25519PrivateKey {
 }
 
 func unwrapKey(key []byte) ([]byte, string, error) {
-
 	if len(key) < MINIMAL_KEY_LENGTH {
 		return nil, "", CryptoError("key length is too small")
 	}

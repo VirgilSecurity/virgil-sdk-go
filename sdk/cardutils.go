@@ -47,7 +47,6 @@ import (
 )
 
 func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
-
 	if crypto == nil {
 		return nil, errors.New("crypto is mandatory")
 	}
@@ -61,21 +60,20 @@ func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bo
 		return nil, err
 	}
 
-	var signatures []*CardSignature
-	for _, signature := range model.Signatures {
-
+	signatures := make([]*CardSignature, len(model.Signatures))
+	for i, signature := range model.Signatures {
 		var extraFields map[string]string
 		if len(signature.Snapshot) > 0 {
 			if nil != ParseSnapshot(signature.Snapshot, &extraFields) {
 				extraFields = nil
 			}
 		}
-		signatures = append(signatures, &CardSignature{
+		signatures[i] = &CardSignature{
 			Snapshot:    signature.Snapshot,
 			Signer:      signature.Signer,
 			Signature:   signature.Signature,
 			ExtraFields: extraFields,
-		})
+		}
 	}
 
 	id, err := GenerateCardId(crypto, model.ContentSnapshot)
@@ -110,7 +108,6 @@ func GenerateCardId(crypto crypto.CardCrypto, data []byte) (string, error) {
 }
 
 func ParseRawCards(crypto crypto.CardCrypto, models ...*RawSignedModel) ([]*Card, error) {
-
 	if crypto == nil {
 		return nil, errors.New("crypto is mandatory")
 	}
@@ -118,23 +115,21 @@ func ParseRawCards(crypto crypto.CardCrypto, models ...*RawSignedModel) ([]*Card
 		return nil, errors.New("model is mandatory")
 	}
 
-	var cards []*Card
+	cards := make([]*Card, len(models))
 
-	for _, model := range models {
-
+	for i, model := range models {
 		card, err := ParseRawCard(crypto, model, false)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, card)
-
+		cards[i] = card
 	}
 	return cards, nil
 }
 
 func LinkCards(cards ...*Card) []*Card {
 	unsortedCards := make(map[string]*Card)
-	var result []*Card
+
 	for _, card := range cards {
 		unsortedCards[card.Id] = card
 	}
@@ -150,6 +145,7 @@ func LinkCards(cards ...*Card) []*Card {
 		}
 	}
 
+	result := make([]*Card, 0, len(unsortedCards))
 	for _, card := range unsortedCards {
 		result = append(result, card)
 	}

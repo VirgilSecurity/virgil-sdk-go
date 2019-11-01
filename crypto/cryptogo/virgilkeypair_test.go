@@ -45,7 +45,6 @@ import (
 )
 
 func TestKeys(t *testing.T) {
-
 	keypair, err := NewKeypair()
 	if err != nil {
 		t.Fatal(err)

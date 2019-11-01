@@ -59,7 +59,6 @@ func NewJwtGenerator(
 	appID string,
 	ttl time.Duration,
 ) *JwtGenerator {
-
 	return &JwtGenerator{
 		AppId:                  appID,
 		AccessTokenSigner:      signer,
@@ -70,7 +69,6 @@ func NewJwtGenerator(
 }
 
 func (j *JwtGenerator) GenerateToken(identity string, additionalData map[string]interface{}) (*Jwt, error) {
-
 	if j.ApiKey == nil {
 		return nil, errors.New("Api private key is not set")
 	}

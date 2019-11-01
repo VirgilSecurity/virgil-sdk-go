@@ -66,7 +66,6 @@ func (c *VirgilCrypto) SetKeyType(keyType crypto.KeyType) error {
 }
 
 func (c *VirgilCrypto) GenerateKeypair() (*ed25519Keypair, error) {
-
 	keypair, err := NewKeypair()
 	return keypair, err
 }
@@ -125,7 +124,6 @@ func (c *VirgilCrypto) Encrypt(data []byte, recipients ...interface {
 		if err := cipher.AddKeyRecipient(k.(*ed25519PublicKey)); err != nil {
 			return nil, err
 		}
-
 	}
 	return cipher.Encrypt(data)
 }
@@ -249,7 +247,6 @@ func (c *VirgilCrypto) SignThenEncrypt(data []byte, signerKey interface {
 	IsPublic() bool
 	Identifier() []byte
 }) ([]byte, error) {
-
 	if signerKey == nil {
 		return nil, errors.New("key is nil")
 	}
@@ -283,7 +280,6 @@ func (c *VirgilCrypto) DecryptThenVerify(data []byte, decryptionKey interface {
 		} else {
 			return nil, errors.New("key type is not supported")
 		}
-
 	}
 
 	return c.getCipher().DecryptThenVerify(data, decryptionKey.(*ed25519PrivateKey), verifiers...)

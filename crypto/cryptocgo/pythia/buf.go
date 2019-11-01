@@ -43,7 +43,6 @@ type Buf struct {
 
 // NewBuf allocates memory block of predefined size
 func NewBuf(size int) *Buf {
-
 	p := make([]byte, size)
 	buf := C.pythia_buf_new()
 	C.pythia_buf_setup(buf, (*C.uint8_t)(&p[0]), C.size_t(size), C.size_t(0))
@@ -55,7 +54,6 @@ func NewBuf(size int) *Buf {
 
 // NewBufWithData allocates new buffer and sets it memory to data
 func NewBufWithData(data []byte) *Buf {
-
 	buf := C.pythia_buf_new()
 	C.pythia_buf_setup(buf, (*C.uint8_t)(&data[0]), C.size_t(len(data)), C.size_t(len(data)))
 	return &Buf{

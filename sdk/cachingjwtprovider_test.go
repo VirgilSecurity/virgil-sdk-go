@@ -39,7 +39,6 @@ package sdk
 
 import (
 	"encoding/hex"
-	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -50,7 +49,6 @@ import (
 )
 
 func TestCachingJwtProvider(t *testing.T) {
-
 	crypto := cryptogo.NewVirgilCrypto()
 
 	pk, err := crypto.GenerateKeypair()
@@ -63,7 +61,6 @@ func TestCachingJwtProvider(t *testing.T) {
 	genCount := 0
 
 	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
-
 		genCount++
 
 		issuedAt := time.Now().UTC().Truncate(time.Second)
@@ -90,7 +87,6 @@ func TestCachingJwtProvider(t *testing.T) {
 		}
 
 		return NewJwt(jwtHeader, jwtBody, jwtSignature)
-
 	})
 
 	routines := 100
@@ -102,9 +98,7 @@ func TestCachingJwtProvider(t *testing.T) {
 
 	total := 0
 	for i := 0; i < routines; i++ {
-
 		go func() {
-
 			for time.Since(start) < (time.Second * 5) {
 				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
 				assert.NotNil(t, token)
@@ -114,10 +108,8 @@ func TestCachingJwtProvider(t *testing.T) {
 
 			wg.Done()
 		}()
-
 	}
 	wg.Wait()
 	assert.Equal(t, 6, genCount)
-	fmt.Println("total", total)
-
+	t.Log("total", total)
 }

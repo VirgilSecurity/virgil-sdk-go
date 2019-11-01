@@ -50,7 +50,6 @@ func NewPrivateKeyExporter(password string) *VirgilPrivateKeyExporter {
 }
 
 func (v *VirgilPrivateKeyExporter) ExportPrivateKey(privateKey crypto.PrivateKey) ([]byte, error) {
-
 	if v.Crypto == nil {
 		return nil, errors.New("Crypto is not set")
 	}
@@ -63,7 +62,6 @@ func (v *VirgilPrivateKeyExporter) ExportPrivateKey(privateKey crypto.PrivateKey
 }
 
 func (v *VirgilPrivateKeyExporter) ImportPrivateKey(data []byte) (crypto.PrivateKey, error) {
-
 	if v.Crypto == nil {
 		return nil, errors.New("Crypto is not set")
 	}

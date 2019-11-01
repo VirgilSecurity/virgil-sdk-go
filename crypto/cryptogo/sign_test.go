@@ -158,7 +158,6 @@ func TestStreamSignatures(t *testing.T) {
 	if err == nil {
 		t.Fatal("read must fail")
 	}
-
 }
 
 func BenchmarkEd25519Signer_Sign(b *testing.B) {
