@@ -32,22 +32,52 @@
 
 package cryptocgo
 
-import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
+import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo/internal/foundation"
+)
 
-var KeyTypeMap = map[crypto.KeyType]interface{}{
-	crypto.Default:         VirgilKeyPairType_FAST_EC_ED25519,
-	crypto.RSA_2048:        VirgilKeyPairType_RSA_2048,
-	crypto.RSA_3072:        VirgilKeyPairType_RSA_3072,
-	crypto.RSA_4096:        VirgilKeyPairType_RSA_4096,
-	crypto.RSA_8192:        VirgilKeyPairType_RSA_8192,
-	crypto.EC_SECP256R1:    VirgilKeyPairType_EC_SECP256R1,
-	crypto.EC_SECP384R1:    VirgilKeyPairType_EC_SECP384R1,
-	crypto.EC_SECP521R1:    VirgilKeyPairType_EC_SECP521R1,
-	crypto.EC_BP256R1:      VirgilKeyPairType_EC_BP256R1,
-	crypto.EC_BP384R1:      VirgilKeyPairType_EC_BP384R1,
-	crypto.EC_BP512R1:      VirgilKeyPairType_EC_BP512R1,
-	crypto.EC_SECP256K1:    VirgilKeyPairType_EC_SECP256K1,
-	crypto.EC_CURVE25519:   VirgilKeyPairType_EC_CURVE25519,
-	crypto.FAST_EC_X25519:  VirgilKeyPairType_FAST_EC_X25519,
-	crypto.FAST_EC_ED25519: VirgilKeyPairType_FAST_EC_ED25519,
+var keyTypeMap = map[crypto.KeyType]keyAlg{
+	crypto.Default:         keyType(foundation.AlgIdEd25519),
+	crypto.RSA_2048:        rsaKeyType{foundation.AlgIdRsa, 2048},
+	crypto.RSA_3072:        rsaKeyType{foundation.AlgIdRsa, 3072},
+	crypto.RSA_4096:        rsaKeyType{foundation.AlgIdRsa, 4096},
+	crypto.RSA_8192:        rsaKeyType{foundation.AlgIdRsa, 8192},
+	crypto.EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
+	crypto.EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
+	crypto.FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
+	//  crypto.EC_SECP384R1:    foundation.algID_SEC VirgilKeyPairType_EC_SECP384R1,
+	//  crypto.EC_SECP521R1:    foundation.ALg_ID_512 VirgilKeyPairType_EC_SECP521R1,
+	//  crypto.EC_BP256R1:      foundation.alg_idb VirgilKeyPairType_EC_BP256R1,
+	//  crypto.EC_BP384R1:      VirgilKeyPairType_EC_BP384R1,
+	//  crypto.EC_BP512R1:      VirgilKeyPairType_EC_BP512R1,
+	//  crypto.EC_SECP256K1:    foundation.secp VirgilKeyPairType_EC_SECP256K1,
+	//  crypto.FAST_EC_X25519:  VirgilKeyPairType_FAST_EC_X25519,
+}
+
+type keyAlg interface {
+	AlgID() foundation.AlgId
+}
+
+type keyType foundation.AlgId
+
+func (t keyType) AlgID() foundation.AlgId {
+	return foundation.AlgId(t)
+}
+
+type rsaKeyAlg interface {
+	keyAlg
+	Len() uint32
+}
+
+type rsaKeyType struct {
+	t   foundation.AlgId
+	len uint32
+}
+
+func (t rsaKeyType) AlgID() foundation.AlgId {
+	return t.t
+}
+func (t rsaKeyType) Len() uint32 {
+	return t.len
 }

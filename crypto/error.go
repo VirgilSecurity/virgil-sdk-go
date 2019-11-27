@@ -40,5 +40,5 @@ package crypto
 import "errors"
 
 var (
-	UnsupportedKeyErr = errors.New("key unsupported")
+	ErrUnsupportedKeyType = errors.New("unsupported key types")
 )

@@ -1,9 +1,33 @@
 package cryptocgo
 
+import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo/internal/foundation"
+)
+
 type HashType int
 
-var (
-	SHA256 = HashType(VirgilHashAlgorithm_SHA256)
-	SHA384 = HashType(VirgilHashAlgorithm_SHA384)
-	SHA512 = HashType(VirgilHashAlgorithm_SHA512)
+const (
+	Default HashType = iota
+	Sha224
+	Sha256
+	Sha384
+	Sha512
 )
+
+var hashMap = map[HashType]func() foundation.Hash{
+	Default: func() foundation.Hash {
+		return foundation.NewSha512()
+	},
+	Sha224: func() foundation.Hash {
+		return foundation.NewSha224()
+	},
+	Sha256: func() foundation.Hash {
+		return foundation.NewSha256()
+	},
+	Sha384: func() foundation.Hash {
+		return foundation.NewSha384()
+	},
+	Sha512: func() foundation.Hash {
+		return foundation.NewSha512()
+	},
+}

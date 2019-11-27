@@ -1,8 +1,4 @@
 language: go
-go:
-  - stable
-  - "1.12.x"
-  - "1.x"
 
 cache:
   directories:
@@ -11,6 +7,18 @@ cache:
 matrix:
   include:
     ##########################################################################
+    # Go versions
+    ##########################################################################
+    - os: linux
+      go: stable
+      env:
+        - LINT_ENABLE=ON
+    - os: linux
+      go: "1.x"
+    - os: linux
+      go: "1.12.x"
+
+    ##########################################################################
     # Clang on OSX
     # Travis seems to take longer to start OSX instances,
     # so leave this first for the overall build to be faster
@@ -18,18 +26,18 @@ matrix:
     - os: osx
       osx_image: xcode11
       compiler: clang
+      go: stable
     - os: osx
       osx_image: xcode8.3
       compiler: clang
-    - os: osx
-      osx_image: xcode6.4
-      compiler: clang
+      go: stable
 
     ##########################################################################
     # GCC on Linux
     ##########################################################################
     - os: linux
       dist: precise
+      go: stable
       addons:
         apt:
           sources:
@@ -42,6 +50,7 @@ matrix:
         - LEGACY="true"
     - os: linux
       dist: trusty
+      go: stable
       addons:
         apt:
           sources:
@@ -54,6 +63,7 @@ matrix:
         - LEGACY="true"
     - os: linux
       dist: xenial
+      go: stable
       addons:
         apt:
           sources:
@@ -65,6 +75,7 @@ matrix:
         - CXX=g++-4.9
         - LEGACY="true"
     - os: linux
+      go: stable
       addons:
         apt:
           sources:
@@ -76,6 +87,7 @@ matrix:
         - CXX=g++-5
     # works on Precise and Trusty
     - os: linux
+      go: stable
       addons:
         apt:
           sources:
@@ -87,6 +99,7 @@ matrix:
         - CXX=g++-6
     # works on Precise and Trusty
     - os: linux
+      go: stable
       addons:
         apt:
           sources:
@@ -97,6 +110,7 @@ matrix:
         - CC=gcc-7
         - CXX=g++-7
     - os: linux
+      go: stable
       addons:
         apt:
           sources:
@@ -107,6 +121,7 @@ matrix:
         - CC=gcc-8
         - CXX=g++-8
     - os: linux
+      go: stable
       addons:
         apt:
           sources:
@@ -122,6 +137,7 @@ matrix:
     ##########################################################################
     - os: linux
       dist: precise
+      go: stable
       addons:
         apt:
           sources:
@@ -135,6 +151,7 @@ matrix:
         - LEGACY="true"
     - os: linux
       dist: trusty
+      go: stable
       addons:
         apt:
           sources:
@@ -147,6 +164,7 @@ matrix:
         - LEGACY="true"
     - os: linux
       dist: trusty
+      go: stable
       addons:
         apt:
           sources:
@@ -159,6 +177,7 @@ matrix:
         - LEGACY="true"
     - os: linux
       dist: trusty
+      go: stable
       addons:
         apt:
           sources:
@@ -174,6 +193,7 @@ matrix:
         - LEGACY="true"
     - os: linux
       dist: xenial
+      go: stable
       addons:
         apt:
           sources:
@@ -186,6 +206,7 @@ matrix:
         - CXX=clang++-7
     - os: linux
       dist: xenial
+      go: stable
       addons:
         apt:
           sources:
@@ -201,6 +222,7 @@ matrix:
         - CXX=clang++-8
     - os: linux
       dist: xenial
+      go: stable
       addons:
         apt:
           sources:
@@ -213,6 +235,12 @@ matrix:
         - CC=clang-9
         - CXX=clang++-9
 
+    ##########################################################################
+    # Windows
+    ##########################################################################
+    - os: windows
+      go: stable
+
 env:
   global:
     - GO111MODULE=on
@@ -220,11 +248,11 @@ env:
 install:
   - go mod download
 
-before_script:
-  - go install github.com/golangci/golangci-lint/cmd/golangci-lint
-
 script:
-  - golangci-lint run
+  - "if [[ $LINT_ENABLE ]]; then
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint;
+    golangci-lint run;
+    fi"
   - 'if [[ $LEGACY ]]; then
     go test -tags "legacy_os integration" -mod=readonly -count 1 ./... ;
     else
