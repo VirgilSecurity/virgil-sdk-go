@@ -22,15 +22,14 @@ func unwrapKey(key []byte) []byte {
 	block, _ := pem.Decode(key)
 	if block != nil {
 		return block.Bytes
-	} else {
-		buf := make([]byte, base64.StdEncoding.DecodedLen(len(key)))
-
-		read, err := base64.StdEncoding.Decode(buf, key)
-
-		if err == nil {
-			return buf[:read]
-		}
-
-		return key //already DER
 	}
+	buf := make([]byte, base64.StdEncoding.DecodedLen(len(key)))
+
+	read, err := base64.StdEncoding.Decode(buf, key)
+
+	if err == nil {
+		return buf[:read]
+	}
+
+	return key //already DER
 }
