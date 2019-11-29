@@ -65,7 +65,7 @@ func initCardManager() (*CardManager, error) {
 	if apiKeySource == "" {
 		return nil, errors.New("TEST_API_KEY is required")
 	}
-	apiKey, err := cryptoNative.ImportPrivateKey([]byte(apiKeySource), "")
+	apiKey, err := cryptoNative.ImportPrivateKey([]byte(apiKeySource))
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot import API private key: ")
 	}
