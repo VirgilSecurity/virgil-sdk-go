@@ -142,6 +142,8 @@ func (c *cryptoCgo) Random(len int) ([]byte, error) {
 }
 
 func (c *cryptoCgo) ImportPrivateKey(data []byte) (crypto.PrivateKey, error) {
+	data = unwrapKey(data)
+
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
@@ -169,6 +171,8 @@ func (c *cryptoCgo) ImportPrivateKey(data []byte) (crypto.PrivateKey, error) {
 }
 
 func (c *cryptoCgo) ImportPublicKey(data []byte) (crypto.PublicKey, error) {
+	data = unwrapKey(data)
+
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
