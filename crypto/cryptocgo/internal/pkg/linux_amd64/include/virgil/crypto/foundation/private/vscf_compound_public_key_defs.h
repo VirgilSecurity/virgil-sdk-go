@@ -47,25 +47,28 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Types of the 'secp256r1 public key' implementation.
+//  Types of the 'compound public key' implementation.
 //  This types SHOULD NOT be used directly.
 //  The only purpose of including this module is to place implementation
 //  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_SECP256R1_PUBLIC_KEY_DEFS_H_INCLUDED
-#define VSCF_SECP256R1_PUBLIC_KEY_DEFS_H_INCLUDED
+#ifndef VSCF_COMPOUND_PUBLIC_KEY_DEFS_H_INCLUDED
+#define VSCF_COMPOUND_PUBLIC_KEY_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_impl_private.h"
-#include "vscf_secp256r1_public_key.h"
+#include "vscf_compound_public_key.h"
 #include "vscf_atomic.h"
 #include "vscf_impl.h"
-#include "vscf_ecies.h"
 
-#include <mbedtls/ecp.h>
-#include <mbedtls/ecdh.h>
-#include <mbedtls/ecdsa.h>
+#if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <virgil/crypto/common/vsc_buffer.h>
+#endif
+
+#if VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <VSCCommon/vsc_buffer.h>
+#endif
 
 // clang-format on
 //  @end
@@ -85,7 +88,7 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-struct vscf_secp256r1_public_key_t {
+struct vscf_compound_public_key_t {
     //
     //  Compile-time known information about this implementation.
     //
@@ -95,21 +98,21 @@ struct vscf_secp256r1_public_key_t {
     //
     VSCF_ATOMIC size_t refcnt;
     //
-    //  Dependency to the interface 'random'.
+    //  Implementation specific context.
     //
-    vscf_impl_t *random;
-    //
-    //  Dependency to the implementation 'ecies'.
-    //
-    vscf_ecies_t *ecies;
+    vscf_impl_t *alg_info;
     //
     //  Implementation specific context.
     //
-    mbedtls_ecp_group ecp_group;
+    vscf_impl_t *cipher_key;
     //
     //  Implementation specific context.
     //
-    mbedtls_ecp_point ecp;
+    vscf_impl_t *signer_key;
+    //
+    //  Implementation specific context.
+    //
+    vsc_buffer_t *signature;
 };
 
 
@@ -126,5 +129,5 @@ struct vscf_secp256r1_public_key_t {
 
 
 //  @footer
-#endif // VSCF_SECP256R1_PUBLIC_KEY_DEFS_H_INCLUDED
+#endif // VSCF_COMPOUND_PUBLIC_KEY_DEFS_H_INCLUDED
 //  @end
