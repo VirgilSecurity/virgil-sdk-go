@@ -47,18 +47,19 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  This module contains 'secp256r1 public key' implementation.
+//  This module contains 'falcon' implementation.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_SECP256R1_PUBLIC_KEY_H_INCLUDED
-#define VSCF_SECP256R1_PUBLIC_KEY_H_INCLUDED
+#ifndef VSCF_FALCON_H_INCLUDED
+#define VSCF_FALCON_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_ecies.h"
 #include "vscf_error.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
 #include "vscf_alg_id.h"
+#include "vscf_raw_public_key.h"
+#include "vscf_raw_private_key.h"
 
 #if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
 #   include <virgil/crypto/common/vsc_data.h>
@@ -92,197 +93,220 @@ enum {
     //
     //  Defines whether a public key can be imported or not.
     //
-    vscf_secp256r1_public_key_CAN_IMPORT_PUBLIC_KEY = true,
+    vscf_falcon_CAN_IMPORT_PUBLIC_KEY = true,
     //
     //  Define whether a public key can be exported or not.
     //
-    vscf_secp256r1_public_key_CAN_EXPORT_PUBLIC_KEY = true
+    vscf_falcon_CAN_EXPORT_PUBLIC_KEY = true,
+    //
+    //  Define whether a private key can be imported or not.
+    //
+    vscf_falcon_CAN_IMPORT_PRIVATE_KEY = true,
+    //
+    //  Define whether a private key can be exported or not.
+    //
+    vscf_falcon_CAN_EXPORT_PRIVATE_KEY = true
 };
 
 //
 //  Handles implementation details.
 //
-typedef struct vscf_secp256r1_public_key_t vscf_secp256r1_public_key_t;
+typedef struct vscf_falcon_t vscf_falcon_t;
 
 //
-//  Return size of 'vscf_secp256r1_public_key_t' type.
+//  Return size of 'vscf_falcon_t' type.
 //
 VSCF_PUBLIC size_t
-vscf_secp256r1_public_key_impl_size(void);
+vscf_falcon_impl_size(void);
 
 //
 //  Cast to the 'vscf_impl_t' type.
 //
 VSCF_PUBLIC vscf_impl_t *
-vscf_secp256r1_public_key_impl(vscf_secp256r1_public_key_t *self);
+vscf_falcon_impl(vscf_falcon_t *self);
+
+//
+//  Cast to the const 'vscf_impl_t' type.
+//
+VSCF_PUBLIC const vscf_impl_t *
+vscf_falcon_impl_const(const vscf_falcon_t *self);
 
 //
 //  Perform initialization of preallocated implementation context.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_init(vscf_secp256r1_public_key_t *self);
+vscf_falcon_init(vscf_falcon_t *self);
 
 //
 //  Cleanup implementation context and release dependencies.
-//  This is a reverse action of the function 'vscf_secp256r1_public_key_init()'.
+//  This is a reverse action of the function 'vscf_falcon_init()'.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_cleanup(vscf_secp256r1_public_key_t *self);
+vscf_falcon_cleanup(vscf_falcon_t *self);
 
 //
 //  Allocate implementation context and perform it's initialization.
 //  Postcondition: check memory allocation result.
 //
-VSCF_PUBLIC vscf_secp256r1_public_key_t *
-vscf_secp256r1_public_key_new(void);
+VSCF_PUBLIC vscf_falcon_t *
+vscf_falcon_new(void);
 
 //
 //  Delete given implementation context and it's dependencies.
-//  This is a reverse action of the function 'vscf_secp256r1_public_key_new()'.
+//  This is a reverse action of the function 'vscf_falcon_new()'.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_delete(vscf_secp256r1_public_key_t *self);
+vscf_falcon_delete(vscf_falcon_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
-//  This is a reverse action of the function 'vscf_secp256r1_public_key_new()'.
+//  This is a reverse action of the function 'vscf_falcon_new()'.
 //  Given reference is nullified.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_destroy(vscf_secp256r1_public_key_t **self_ref);
+vscf_falcon_destroy(vscf_falcon_t **self_ref);
 
 //
 //  Copy given implementation context by increasing reference counter.
-//  If deep copy is required interface 'clonable' can be used.
 //
-VSCF_PUBLIC vscf_secp256r1_public_key_t *
-vscf_secp256r1_public_key_shallow_copy(vscf_secp256r1_public_key_t *self);
+VSCF_PUBLIC vscf_falcon_t *
+vscf_falcon_shallow_copy(vscf_falcon_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_use_random(vscf_secp256r1_public_key_t *self, vscf_impl_t *random);
+vscf_falcon_use_random(vscf_falcon_t *self, vscf_impl_t *random);
 
 //
 //  Setup dependency to the interface 'random' and transfer ownership.
 //  Note, transfer ownership does not mean that object is uniquely owned by the target object.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_take_random(vscf_secp256r1_public_key_t *self, vscf_impl_t *random);
+vscf_falcon_take_random(vscf_falcon_t *self, vscf_impl_t *random);
 
 //
 //  Release dependency to the interface 'random'.
 //
 VSCF_PUBLIC void
-vscf_secp256r1_public_key_release_random(vscf_secp256r1_public_key_t *self);
-
-//
-//  Setup dependency to the implementation 'ecies' with shared ownership.
-//
-VSCF_PUBLIC void
-vscf_secp256r1_public_key_use_ecies(vscf_secp256r1_public_key_t *self, vscf_ecies_t *ecies);
-
-//
-//  Setup dependency to the implementation 'ecies' and transfer ownership.
-//  Note, transfer ownership does not mean that object is uniquely owned by the target object.
-//
-VSCF_PUBLIC void
-vscf_secp256r1_public_key_take_ecies(vscf_secp256r1_public_key_t *self, vscf_ecies_t *ecies);
-
-//
-//  Release dependency to the implementation 'ecies'.
-//
-VSCF_PUBLIC void
-vscf_secp256r1_public_key_release_ecies(vscf_secp256r1_public_key_t *self);
+vscf_falcon_release_random(vscf_falcon_t *self);
 
 //
 //  Setup predefined values to the uninitialized class dependencies.
 //
 VSCF_PUBLIC vscf_status_t
-vscf_secp256r1_public_key_setup_defaults(vscf_secp256r1_public_key_t *self) VSCF_NODISCARD;
+vscf_falcon_setup_defaults(vscf_falcon_t *self) VSCF_NODISCARD;
+
+//
+//  Generate new private key.
+//  Note, this operation might be slow.
+//
+VSCF_PUBLIC vscf_impl_t *
+vscf_falcon_generate_key(const vscf_falcon_t *self, vscf_error_t *error);
 
 //
 //  Provide algorithm identificator.
 //
 VSCF_PUBLIC vscf_alg_id_t
-vscf_secp256r1_public_key_alg_id(const vscf_secp256r1_public_key_t *self);
+vscf_falcon_alg_id(const vscf_falcon_t *self);
 
 //
 //  Produce object with algorithm information and configuration parameters.
 //
 VSCF_PUBLIC vscf_impl_t *
-vscf_secp256r1_public_key_produce_alg_info(const vscf_secp256r1_public_key_t *self);
+vscf_falcon_produce_alg_info(const vscf_falcon_t *self);
 
 //
 //  Restore algorithm configuration from the given object.
 //
 VSCF_PUBLIC vscf_status_t
-vscf_secp256r1_public_key_restore_alg_info(vscf_secp256r1_public_key_t *self,
-        const vscf_impl_t *alg_info) VSCF_NODISCARD;
+vscf_falcon_restore_alg_info(vscf_falcon_t *self, const vscf_impl_t *alg_info) VSCF_NODISCARD;
 
 //
-//  Length of the key in bytes.
+//  Generate ephemeral private key of the same type.
+//  Note, this operation might be slow.
 //
-VSCF_PUBLIC size_t
-vscf_secp256r1_public_key_key_len(const vscf_secp256r1_public_key_t *self);
+VSCF_PUBLIC vscf_impl_t *
+vscf_falcon_generate_ephemeral_key(const vscf_falcon_t *self, const vscf_impl_t *key, vscf_error_t *error);
 
 //
-//  Length of the key in bits.
+//  Import public key from the raw binary format.
 //
-VSCF_PUBLIC size_t
-vscf_secp256r1_public_key_key_bitlen(const vscf_secp256r1_public_key_t *self);
-
-//
-//  Encrypt given data.
-//
-VSCF_PUBLIC vscf_status_t
-vscf_secp256r1_public_key_encrypt(vscf_secp256r1_public_key_t *self, vsc_data_t data, vsc_buffer_t *out) VSCF_NODISCARD;
-
-//
-//  Calculate required buffer length to hold the encrypted data.
-//
-VSCF_PUBLIC size_t
-vscf_secp256r1_public_key_encrypted_len(vscf_secp256r1_public_key_t *self, size_t data_len);
-
-//
-//  Verify data with given public key and signature.
-//
-VSCF_PUBLIC bool
-vscf_secp256r1_public_key_verify_hash(vscf_secp256r1_public_key_t *self, vsc_data_t hash_digest, vscf_alg_id_t hash_id,
-        vsc_data_t signature);
-
-//
-//  Export public key in the binary format.
-//
-//  Binary format must be defined in the key specification.
-//  For instance, RSA public key must be exported in format defined in
-//  RFC 3447 Appendix A.1.1.
-//
-VSCF_PUBLIC vscf_status_t
-vscf_secp256r1_public_key_export_public_key(const vscf_secp256r1_public_key_t *self, vsc_buffer_t *out) VSCF_NODISCARD;
-
-//
-//  Return length in bytes required to hold exported public key.
-//
-VSCF_PUBLIC size_t
-vscf_secp256r1_public_key_exported_public_key_len(const vscf_secp256r1_public_key_t *self);
-
-//
-//  Import public key from the binary format.
+//  Return public key that is adopted and optimized to be used
+//  with this particular algorithm.
 //
 //  Binary format must be defined in the key specification.
 //  For instance, RSA public key must be imported from the format defined in
 //  RFC 3447 Appendix A.1.1.
 //
-VSCF_PUBLIC vscf_status_t
-vscf_secp256r1_public_key_import_public_key(vscf_secp256r1_public_key_t *self, vsc_data_t data) VSCF_NODISCARD;
+VSCF_PUBLIC vscf_impl_t *
+vscf_falcon_import_public_key(const vscf_falcon_t *self, const vscf_raw_public_key_t *raw_key, vscf_error_t *error);
 
 //
-//  Generate ephemeral private key of the same type.
+//  Export public key to the raw binary format.
+//
+//  Binary format must be defined in the key specification.
+//  For instance, RSA public key must be exported in format defined in
+//  RFC 3447 Appendix A.1.1.
+//
+VSCF_PUBLIC vscf_raw_public_key_t *
+vscf_falcon_export_public_key(const vscf_falcon_t *self, const vscf_impl_t *public_key, vscf_error_t *error);
+
+//
+//  Import private key from the raw binary format.
+//
+//  Return private key that is adopted and optimized to be used
+//  with this particular algorithm.
+//
+//  Binary format must be defined in the key specification.
+//  For instance, RSA private key must be imported from the format defined in
+//  RFC 3447 Appendix A.1.2.
 //
 VSCF_PUBLIC vscf_impl_t *
-vscf_secp256r1_public_key_generate_ephemeral_key(vscf_secp256r1_public_key_t *self, vscf_error_t *error);
+vscf_falcon_import_private_key(const vscf_falcon_t *self, const vscf_raw_private_key_t *raw_key, vscf_error_t *error);
+
+//
+//  Export private key in the raw binary format.
+//
+//  Binary format must be defined in the key specification.
+//  For instance, RSA private key must be exported in format defined in
+//  RFC 3447 Appendix A.1.2.
+//
+VSCF_PUBLIC vscf_raw_private_key_t *
+vscf_falcon_export_private_key(const vscf_falcon_t *self, const vscf_impl_t *private_key, vscf_error_t *error);
+
+//
+//  Check if algorithm can sign data digest with a given key.
+//
+VSCF_PUBLIC bool
+vscf_falcon_can_sign(const vscf_falcon_t *self, const vscf_impl_t *private_key);
+
+//
+//  Return length in bytes required to hold signature.
+//  Return zero if a given private key can not produce signatures.
+//
+VSCF_PUBLIC size_t
+vscf_falcon_signature_len(const vscf_falcon_t *self, const vscf_impl_t *private_key);
+
+//
+//  Sign data digest with a given private key.
+//
+VSCF_PUBLIC vscf_status_t
+vscf_falcon_sign_hash(const vscf_falcon_t *self, const vscf_impl_t *private_key, vscf_alg_id_t hash_id,
+        vsc_data_t digest, vsc_buffer_t *signature) VSCF_NODISCARD;
+
+//
+//  Check if algorithm can verify data digest with a given key.
+//
+VSCF_PUBLIC bool
+vscf_falcon_can_verify(const vscf_falcon_t *self, const vscf_impl_t *public_key);
+
+//
+//  Verify data digest with a given public key and signature.
+//
+VSCF_PUBLIC bool
+vscf_falcon_verify_hash(const vscf_falcon_t *self, const vscf_impl_t *public_key, vscf_alg_id_t hash_id,
+        vsc_data_t digest, vsc_data_t signature);
 
 
 // --------------------------------------------------------------------------
@@ -298,5 +322,5 @@ vscf_secp256r1_public_key_generate_ephemeral_key(vscf_secp256r1_public_key_t *se
 
 
 //  @footer
-#endif // VSCF_SECP256R1_PUBLIC_KEY_H_INCLUDED
+#endif // VSCF_FALCON_H_INCLUDED
 //  @end

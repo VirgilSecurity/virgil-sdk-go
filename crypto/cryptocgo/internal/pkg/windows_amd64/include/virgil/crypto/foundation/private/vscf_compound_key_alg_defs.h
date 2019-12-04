@@ -47,25 +47,20 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Types of the 'secp256r1 public key' implementation.
+//  Types of the 'compound key alg' implementation.
 //  This types SHOULD NOT be used directly.
 //  The only purpose of including this module is to place implementation
 //  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_SECP256R1_PUBLIC_KEY_DEFS_H_INCLUDED
-#define VSCF_SECP256R1_PUBLIC_KEY_DEFS_H_INCLUDED
+#ifndef VSCF_COMPOUND_KEY_ALG_DEFS_H_INCLUDED
+#define VSCF_COMPOUND_KEY_ALG_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_impl_private.h"
-#include "vscf_secp256r1_public_key.h"
+#include "vscf_compound_key_alg.h"
 #include "vscf_atomic.h"
 #include "vscf_impl.h"
-#include "vscf_ecies.h"
-
-#include <mbedtls/ecp.h>
-#include <mbedtls/ecdh.h>
-#include <mbedtls/ecdsa.h>
 
 // clang-format on
 //  @end
@@ -85,7 +80,7 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-struct vscf_secp256r1_public_key_t {
+struct vscf_compound_key_alg_t {
     //
     //  Compile-time known information about this implementation.
     //
@@ -99,17 +94,9 @@ struct vscf_secp256r1_public_key_t {
     //
     vscf_impl_t *random;
     //
-    //  Dependency to the implementation 'ecies'.
+    //  Dependency to the interface 'hash'.
     //
-    vscf_ecies_t *ecies;
-    //
-    //  Implementation specific context.
-    //
-    mbedtls_ecp_group ecp_group;
-    //
-    //  Implementation specific context.
-    //
-    mbedtls_ecp_point ecp;
+    vscf_impl_t *hash;
 };
 
 
@@ -126,5 +113,5 @@ struct vscf_secp256r1_public_key_t {
 
 
 //  @footer
-#endif // VSCF_SECP256R1_PUBLIC_KEY_DEFS_H_INCLUDED
+#endif // VSCF_COMPOUND_KEY_ALG_DEFS_H_INCLUDED
 //  @end

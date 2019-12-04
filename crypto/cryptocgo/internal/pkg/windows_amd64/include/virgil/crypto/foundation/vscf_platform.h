@@ -86,6 +86,10 @@ extern "C" {
 #define VSCF_MULTI_THREADING 1
 #endif
 
+#ifndef VSCF_POST_QUANTUM
+#define VSCF_POST_QUANTUM 1
+#endif
+
 #ifndef VSCF_CIPHER
 #define VSCF_CIPHER 1
 #endif
@@ -340,6 +344,46 @@ extern "C" {
 
 #ifndef VSCF_CURVE25519
 #define VSCF_CURVE25519 1
+#endif
+
+#ifndef VSCF_FALCON
+#define VSCF_FALCON 1
+#endif
+
+#ifndef VSCF_ROUND5
+#define VSCF_ROUND5 1
+#endif
+
+#ifndef VSCF_COMPOUND_KEY_ALG_INFO
+#define VSCF_COMPOUND_KEY_ALG_INFO 1
+#endif
+
+#ifndef VSCF_COMPOUND_PUBLIC_KEY
+#define VSCF_COMPOUND_PUBLIC_KEY 1
+#endif
+
+#ifndef VSCF_COMPOUND_PRIVATE_KEY
+#define VSCF_COMPOUND_PRIVATE_KEY 1
+#endif
+
+#ifndef VSCF_COMPOUND_KEY_ALG
+#define VSCF_COMPOUND_KEY_ALG 1
+#endif
+
+#ifndef VSCF_CHAINED_KEY_ALG_INFO
+#define VSCF_CHAINED_KEY_ALG_INFO 1
+#endif
+
+#ifndef VSCF_CHAINED_PUBLIC_KEY
+#define VSCF_CHAINED_PUBLIC_KEY 1
+#endif
+
+#ifndef VSCF_CHAINED_PRIVATE_KEY
+#define VSCF_CHAINED_PRIVATE_KEY 1
+#endif
+
+#ifndef VSCF_CHAINED_KEY_ALG
+#define VSCF_CHAINED_KEY_ALG 1
 #endif
 
 #ifndef VSCF_SIMPLE_ALG_INFO
