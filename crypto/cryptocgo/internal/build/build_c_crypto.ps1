@@ -31,6 +31,7 @@ $result=$(git clone -b $branch https://github.com/VirgilSecurity/virgil-crypto-c
             -DENABLE_TESTING=OFF `
             -DVIRGIL_C_TESTING=OFF `
             -DCMAKE_BUILD_TYPE=Release `
+            -DVIRGIL_POST_QUANTUM=ON `
             -DED25519_REF10=ON `
             -DED25519_AMD64_RADIX_64_24K=OFF `
             -DCMAKE_INSTALL_PREFIX="..\wrappers\go\binaries" .. | Out-Host;$?
