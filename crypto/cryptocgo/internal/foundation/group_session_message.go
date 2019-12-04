@@ -2,6 +2,7 @@ package foundation
 
 // #include <virgil/crypto/foundation/vscf_foundation_public.h>
 import "C"
+import unsafe "unsafe"
 import "runtime"
 
 
@@ -23,8 +24,8 @@ const (
 )
 
 /* Handle underlying C context. */
-func (obj *GroupSessionMessage) ctx() *C.vscf_impl_t {
-    return (*C.vscf_impl_t)(obj.cCtx)
+func (obj *GroupSessionMessage) Ctx() uintptr {
+    return uintptr(unsafe.Pointer(obj.cCtx))
 }
 
 func NewGroupSessionMessage() *GroupSessionMessage {
@@ -32,7 +33,6 @@ func NewGroupSessionMessage() *GroupSessionMessage {
     obj := &GroupSessionMessage {
         cCtx: ctx,
     }
-    //runtime.SetFinalizer(obj, func (o *GroupSessionMessage) {o.Delete()})
     runtime.SetFinalizer(obj, (*GroupSessionMessage).Delete)
     return obj
 }
@@ -44,7 +44,6 @@ func newGroupSessionMessageWithCtx(ctx *C.vscf_group_session_message_t /*ct2*/) 
     obj := &GroupSessionMessage {
         cCtx: ctx,
     }
-    //runtime.SetFinalizer(obj, func (o *GroupSessionMessage) {o.Delete()})
     runtime.SetFinalizer(obj, (*GroupSessionMessage).Delete)
     return obj
 }
@@ -56,7 +55,6 @@ func newGroupSessionMessageCopy(ctx *C.vscf_group_session_message_t /*ct2*/) *Gr
     obj := &GroupSessionMessage {
         cCtx: C.vscf_group_session_message_shallow_copy(ctx),
     }
-    //runtime.SetFinalizer(obj, func (o *GroupSessionMessage) {o.Delete()})
     runtime.SetFinalizer(obj, (*GroupSessionMessage).Delete)
     return obj
 }
@@ -156,8 +154,6 @@ func GroupSessionMessageDeserialize(input []byte) (*GroupSessionMessage, error) 
     if err != nil {
         return nil, err
     }
-
-    runtime.KeepAlive(error)
 
     return newGroupSessionMessageWithCtx(proxyResult) /* r6 */, nil
 }

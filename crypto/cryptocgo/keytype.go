@@ -46,6 +46,7 @@ var keyTypeMap = map[crypto.KeyType]keyAlg{
 	crypto.EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
 	crypto.EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
 	crypto.FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
+	crypto.PQC:             keyType(foundation.AlgIdPostQuantum),
 	//  crypto.EC_SECP384R1:    foundation.algID_SEC VirgilKeyPairType_EC_SECP384R1,
 	//  crypto.EC_SECP521R1:    foundation.ALg_ID_512 VirgilKeyPairType_EC_SECP521R1,
 	//  crypto.EC_BP256R1:      foundation.alg_idb VirgilKeyPairType_EC_BP256R1,

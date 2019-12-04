@@ -2,6 +2,7 @@ package foundation
 
 // #include <virgil/crypto/foundation/vscf_foundation_public.h>
 import "C"
+import unsafe "unsafe"
 import "runtime"
 
 
@@ -14,7 +15,7 @@ type Curve25519 struct {
 
 func (obj *Curve25519) SetRandom(random Random) {
     C.vscf_curve25519_release_random(obj.cCtx)
-    C.vscf_curve25519_use_random(obj.cCtx, (*C.vscf_impl_t)(random.ctx()))
+    C.vscf_curve25519_use_random(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(random.Ctx())))
 
     runtime.KeepAlive(random)
     runtime.KeepAlive(obj)
@@ -22,7 +23,7 @@ func (obj *Curve25519) SetRandom(random Random) {
 
 func (obj *Curve25519) SetEcies(ecies Ecies) {
     C.vscf_curve25519_release_ecies(obj.cCtx)
-    C.vscf_curve25519_use_ecies(obj.cCtx, (*C.vscf_ecies_t)(ecies.ctx()))
+    C.vscf_curve25519_use_ecies(obj.cCtx, (*C.vscf_ecies_t)(unsafe.Pointer(ecies.Ctx())))
 
     runtime.KeepAlive(ecies)
     runtime.KeepAlive(obj)
@@ -61,14 +62,12 @@ func (obj *Curve25519) GenerateKey() (PrivateKey, error) {
 
     runtime.KeepAlive(obj)
 
-    runtime.KeepAlive(error)
-
     return FoundationImplementationWrapPrivateKey(proxyResult) /* r4 */
 }
 
 /* Handle underlying C context. */
-func (obj *Curve25519) ctx() *C.vscf_impl_t {
-    return (*C.vscf_impl_t)(obj.cCtx)
+func (obj *Curve25519) Ctx() uintptr {
+    return uintptr(unsafe.Pointer(obj.cCtx))
 }
 
 func NewCurve25519() *Curve25519 {
@@ -76,7 +75,6 @@ func NewCurve25519() *Curve25519 {
     obj := &Curve25519 {
         cCtx: ctx,
     }
-    //runtime.SetFinalizer(obj, func (o *Curve25519) {o.Delete()})
     runtime.SetFinalizer(obj, (*Curve25519).Delete)
     return obj
 }
@@ -88,7 +86,6 @@ func newCurve25519WithCtx(ctx *C.vscf_curve25519_t /*ct10*/) *Curve25519 {
     obj := &Curve25519 {
         cCtx: ctx,
     }
-    //runtime.SetFinalizer(obj, func (o *Curve25519) {o.Delete()})
     runtime.SetFinalizer(obj, (*Curve25519).Delete)
     return obj
 }
@@ -100,7 +97,6 @@ func newCurve25519Copy(ctx *C.vscf_curve25519_t /*ct10*/) *Curve25519 {
     obj := &Curve25519 {
         cCtx: C.vscf_curve25519_shallow_copy(ctx),
     }
-    //runtime.SetFinalizer(obj, func (o *Curve25519) {o.Delete()})
     runtime.SetFinalizer(obj, (*Curve25519).Delete)
     return obj
 }
@@ -149,7 +145,7 @@ func (obj *Curve25519) ProduceAlgInfo() (AlgInfo, error) {
 * Restore algorithm configuration from the given object.
 */
 func (obj *Curve25519) RestoreAlgInfo(algInfo AlgInfo) error {
-    proxyResult := /*pr4*/C.vscf_curve25519_restore_alg_info(obj.cCtx, (*C.vscf_impl_t)(algInfo.ctx()))
+    proxyResult := /*pr4*/C.vscf_curve25519_restore_alg_info(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(algInfo.Ctx())))
 
     err := FoundationErrorHandleStatus(proxyResult)
     if err != nil {
@@ -199,7 +195,7 @@ func (obj *Curve25519) GenerateEphemeralKey(key Key) (PrivateKey, error) {
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_generate_ephemeral_key(obj.cCtx, (*C.vscf_impl_t)(key.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_curve25519_generate_ephemeral_key(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(key.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -209,8 +205,6 @@ func (obj *Curve25519) GenerateEphemeralKey(key Key) (PrivateKey, error) {
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(key)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapPrivateKey(proxyResult) /* r4 */
 }
@@ -229,7 +223,7 @@ func (obj *Curve25519) ImportPublicKey(rawKey *RawPublicKey) (PublicKey, error) 
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_import_public_key(obj.cCtx, (*C.vscf_raw_public_key_t)(rawKey.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_curve25519_import_public_key(obj.cCtx, (*C.vscf_raw_public_key_t)(unsafe.Pointer(rawKey.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -239,8 +233,6 @@ func (obj *Curve25519) ImportPublicKey(rawKey *RawPublicKey) (PublicKey, error) 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(rawKey)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapPublicKey(proxyResult) /* r4 */
 }
@@ -256,7 +248,7 @@ func (obj *Curve25519) ExportPublicKey(publicKey PublicKey) (*RawPublicKey, erro
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_export_public_key(obj.cCtx, (*C.vscf_impl_t)(publicKey.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_curve25519_export_public_key(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -266,8 +258,6 @@ func (obj *Curve25519) ExportPublicKey(publicKey PublicKey) (*RawPublicKey, erro
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(publicKey)
-
-    runtime.KeepAlive(error)
 
     return newRawPublicKeyWithCtx(proxyResult) /* r6 */, nil
 }
@@ -286,7 +276,7 @@ func (obj *Curve25519) ImportPrivateKey(rawKey *RawPrivateKey) (PrivateKey, erro
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_import_private_key(obj.cCtx, (*C.vscf_raw_private_key_t)(rawKey.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_curve25519_import_private_key(obj.cCtx, (*C.vscf_raw_private_key_t)(unsafe.Pointer(rawKey.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -296,8 +286,6 @@ func (obj *Curve25519) ImportPrivateKey(rawKey *RawPrivateKey) (PrivateKey, erro
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(rawKey)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapPrivateKey(proxyResult) /* r4 */
 }
@@ -313,7 +301,7 @@ func (obj *Curve25519) ExportPrivateKey(privateKey PrivateKey) (*RawPrivateKey, 
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_export_private_key(obj.cCtx, (*C.vscf_impl_t)(privateKey.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_curve25519_export_private_key(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -324,8 +312,6 @@ func (obj *Curve25519) ExportPrivateKey(privateKey PrivateKey) (*RawPrivateKey, 
 
     runtime.KeepAlive(privateKey)
 
-    runtime.KeepAlive(error)
-
     return newRawPrivateKeyWithCtx(proxyResult) /* r6 */, nil
 }
 
@@ -333,7 +319,7 @@ func (obj *Curve25519) ExportPrivateKey(privateKey PrivateKey) (*RawPrivateKey, 
 * Check if algorithm can encrypt data with a given key.
 */
 func (obj *Curve25519) CanEncrypt(publicKey PublicKey, dataLen uint32) bool {
-    proxyResult := /*pr4*/C.vscf_curve25519_can_encrypt(obj.cCtx, (*C.vscf_impl_t)(publicKey.ctx()), (C.size_t)(dataLen)/*pa10*/)
+    proxyResult := /*pr4*/C.vscf_curve25519_can_encrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
@@ -346,7 +332,7 @@ func (obj *Curve25519) CanEncrypt(publicKey PublicKey, dataLen uint32) bool {
 * Calculate required buffer length to hold the encrypted data.
 */
 func (obj *Curve25519) EncryptedLen(publicKey PublicKey, dataLen uint32) uint32 {
-    proxyResult := /*pr4*/C.vscf_curve25519_encrypted_len(obj.cCtx, (*C.vscf_impl_t)(publicKey.ctx()), (C.size_t)(dataLen)/*pa10*/)
+    proxyResult := /*pr4*/C.vscf_curve25519_encrypted_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
@@ -366,7 +352,7 @@ func (obj *Curve25519) Encrypt(publicKey PublicKey, data []byte) ([]byte, error)
     defer outBuf.Delete()
     dataData := helperWrapData (data)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_encrypt(obj.cCtx, (*C.vscf_impl_t)(publicKey.ctx()), dataData, outBuf.ctx)
+    proxyResult := /*pr4*/C.vscf_curve25519_encrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), dataData, outBuf.ctx)
 
     err := FoundationErrorHandleStatus(proxyResult)
     if err != nil {
@@ -385,7 +371,7 @@ func (obj *Curve25519) Encrypt(publicKey PublicKey, data []byte) ([]byte, error)
 * However, success result of decryption is not guaranteed.
 */
 func (obj *Curve25519) CanDecrypt(privateKey PrivateKey, dataLen uint32) bool {
-    proxyResult := /*pr4*/C.vscf_curve25519_can_decrypt(obj.cCtx, (*C.vscf_impl_t)(privateKey.ctx()), (C.size_t)(dataLen)/*pa10*/)
+    proxyResult := /*pr4*/C.vscf_curve25519_can_decrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
@@ -398,7 +384,7 @@ func (obj *Curve25519) CanDecrypt(privateKey PrivateKey, dataLen uint32) bool {
 * Calculate required buffer length to hold the decrypted data.
 */
 func (obj *Curve25519) DecryptedLen(privateKey PrivateKey, dataLen uint32) uint32 {
-    proxyResult := /*pr4*/C.vscf_curve25519_decrypted_len(obj.cCtx, (*C.vscf_impl_t)(privateKey.ctx()), (C.size_t)(dataLen)/*pa10*/)
+    proxyResult := /*pr4*/C.vscf_curve25519_decrypted_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
@@ -418,7 +404,7 @@ func (obj *Curve25519) Decrypt(privateKey PrivateKey, data []byte) ([]byte, erro
     defer outBuf.Delete()
     dataData := helperWrapData (data)
 
-    proxyResult := /*pr4*/C.vscf_curve25519_decrypt(obj.cCtx, (*C.vscf_impl_t)(privateKey.ctx()), dataData, outBuf.ctx)
+    proxyResult := /*pr4*/C.vscf_curve25519_decrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), dataData, outBuf.ctx)
 
     err := FoundationErrorHandleStatus(proxyResult)
     if err != nil {
@@ -444,7 +430,7 @@ func (obj *Curve25519) ComputeSharedKey(publicKey PublicKey, privateKey PrivateK
     defer sharedKeyBuf.Delete()
 
 
-    proxyResult := /*pr4*/C.vscf_curve25519_compute_shared_key(obj.cCtx, (*C.vscf_impl_t)(publicKey.ctx()), (*C.vscf_impl_t)(privateKey.ctx()), sharedKeyBuf.ctx)
+    proxyResult := /*pr4*/C.vscf_curve25519_compute_shared_key(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), sharedKeyBuf.ctx)
 
     err := FoundationErrorHandleStatus(proxyResult)
     if err != nil {
@@ -465,7 +451,7 @@ func (obj *Curve25519) ComputeSharedKey(publicKey PublicKey, privateKey PrivateK
 * Expect Public Key or Private Key.
 */
 func (obj *Curve25519) SharedKeyLen(key Key) uint32 {
-    proxyResult := /*pr4*/C.vscf_curve25519_shared_key_len(obj.cCtx, (*C.vscf_impl_t)(key.ctx()))
+    proxyResult := /*pr4*/C.vscf_curve25519_shared_key_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(key.Ctx())))
 
     runtime.KeepAlive(obj)
 

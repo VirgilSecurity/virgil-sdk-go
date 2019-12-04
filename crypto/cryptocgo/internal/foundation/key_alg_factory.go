@@ -3,6 +3,7 @@ package foundation
 // #include <virgil/crypto/foundation/vscf_foundation_public.h>
 import "C"
 import "runtime"
+import unsafe "unsafe"
 
 
 /*
@@ -18,7 +19,7 @@ func KeyAlgFactoryCreateFromAlgId(algId AlgId, random Random) (KeyAlg, error) {
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_alg_id(C.vscf_alg_id_t(algId) /*pa7*/, (*C.vscf_impl_t)(random.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_alg_id(C.vscf_alg_id_t(algId) /*pa7*/, (*C.vscf_impl_t)(unsafe.Pointer(random.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -26,8 +27,6 @@ func KeyAlgFactoryCreateFromAlgId(algId AlgId, random Random) (KeyAlg, error) {
     }
 
     runtime.KeepAlive(random)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapKeyAlg(proxyResult) /* r4 */
 }
@@ -39,7 +38,7 @@ func KeyAlgFactoryCreateFromKey(key Key, random Random) (KeyAlg, error) {
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_key((*C.vscf_impl_t)(key.ctx()), (*C.vscf_impl_t)(random.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_key((*C.vscf_impl_t)(unsafe.Pointer(key.Ctx())), (*C.vscf_impl_t)(unsafe.Pointer(random.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -49,8 +48,6 @@ func KeyAlgFactoryCreateFromKey(key Key, random Random) (KeyAlg, error) {
     runtime.KeepAlive(key)
 
     runtime.KeepAlive(random)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapKeyAlg(proxyResult) /* r4 */
 }
@@ -62,7 +59,7 @@ func KeyAlgFactoryCreateFromRawPublicKey(publicKey *RawPublicKey, random Random)
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_raw_public_key((*C.vscf_raw_public_key_t)(publicKey.ctx()), (*C.vscf_impl_t)(random.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_raw_public_key((*C.vscf_raw_public_key_t)(unsafe.Pointer(publicKey.Ctx())), (*C.vscf_impl_t)(unsafe.Pointer(random.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -72,8 +69,6 @@ func KeyAlgFactoryCreateFromRawPublicKey(publicKey *RawPublicKey, random Random)
     runtime.KeepAlive(publicKey)
 
     runtime.KeepAlive(random)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapKeyAlg(proxyResult) /* r4 */
 }
@@ -85,7 +80,7 @@ func KeyAlgFactoryCreateFromRawPrivateKey(privateKey *RawPrivateKey, random Rand
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
-    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_raw_private_key((*C.vscf_raw_private_key_t)(privateKey.ctx()), (*C.vscf_impl_t)(random.ctx()), &error)
+    proxyResult := /*pr4*/C.vscf_key_alg_factory_create_from_raw_private_key((*C.vscf_raw_private_key_t)(unsafe.Pointer(privateKey.Ctx())), (*C.vscf_impl_t)(unsafe.Pointer(random.Ctx())), &error)
 
     err := FoundationErrorHandleStatus(error.status)
     if err != nil {
@@ -95,8 +90,6 @@ func KeyAlgFactoryCreateFromRawPrivateKey(privateKey *RawPrivateKey, random Rand
     runtime.KeepAlive(privateKey)
 
     runtime.KeepAlive(random)
-
-    runtime.KeepAlive(error)
 
     return FoundationImplementationWrapKeyAlg(proxyResult) /* r4 */
 }
