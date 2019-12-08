@@ -57,15 +57,10 @@ type PrivateKeyExporter interface {
 }
 
 type PrivateKey interface {
-	IsPrivate() bool
 	Identifier() []byte
+	PublicKey() PublicKey
 }
 type PublicKey interface {
-	IsPublic() bool
+	Export() ([]byte, error)
 	Identifier() []byte
-}
-
-type Keypair interface {
-	PublicKey() PublicKey
-	PrivateKey() PrivateKey
 }

@@ -59,14 +59,8 @@ type Card struct {
 
 type Cards []*Card
 
-func (c Cards) ExtractPublicKeys() []interface {
-	IsPublic() bool
-	Identifier() []byte
-} {
-	var publicKeys []interface {
-		IsPublic() bool
-		Identifier() []byte
-	}
+func (c Cards) ExtractPublicKeys() []crypto.PublicKey {
+	var publicKeys []crypto.PublicKey
 	for _, card := range c {
 		if !card.IsOutdated {
 			publicKeys = append(publicKeys, card.PublicKey)

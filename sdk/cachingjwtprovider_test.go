@@ -45,18 +45,18 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptogo"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 )
 
 func TestCachingJwtProvider(t *testing.T) {
-	crypto := cryptogo.NewVirgilCrypto()
+	crypto := cryptocgo.NewVirgilCrypto()
 
-	pk, err := crypto.GenerateKeypair()
+	key, err := crypto.GenerateKeypair()
 	if err != nil {
 		panic(err)
 	}
 
-	signer := cryptogo.NewVirgilAccessTokenSigner()
+	signer := cryptocgo.NewVirgilAccessTokenSigner()
 
 	genCount := 0
 
@@ -71,7 +71,7 @@ func TestCachingJwtProvider(t *testing.T) {
 			return nil, err
 		}
 
-		jwtHeader, err := NewJwtHeaderContent(signer.GetAlgorithm(), hex.EncodeToString(pk.PrivateKey().Identifier()))
+		jwtHeader, err := NewJwtHeaderContent(signer.GetAlgorithm(), hex.EncodeToString(key.Identifier()))
 
 		if err != nil {
 			return nil, err
@@ -81,7 +81,7 @@ func TestCachingJwtProvider(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
-		jwtSignature, err := signer.GenerateTokenSignature(unsignedJwt.Unsigned(), pk.PrivateKey())
+		jwtSignature, err := signer.GenerateTokenSignature(unsignedJwt.Unsigned(), key)
 		if err != nil {
 			return nil, err
 		}

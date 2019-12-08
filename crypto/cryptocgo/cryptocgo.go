@@ -65,7 +65,7 @@ func (c *cryptoCgo) SetKeyType(keyType crypto.KeyType) error {
 	return nil
 }
 
-func (c *cryptoCgo) generateKeypair(t keyAlg, rnd foundation.Random) (crypto.Keypair, error) {
+func (c *cryptoCgo) generateKeypair(t keyAlg, rnd foundation.Random) (crypto.PrivateKey, error) {
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
@@ -97,13 +97,10 @@ func (c *cryptoCgo) generateKeypair(t keyAlg, rnd foundation.Random) (crypto.Key
 		return nil, err
 	}
 
-	return &keypair{
-		privateKey: privateKey{receiverID: id, key: sk},
-		publicKey:  publicKey{receiverID: id, key: pk},
-	}, nil
+	return privateKey{receiverID: id, key: sk}, nil
 }
 
-func (c *cryptoCgo) GenerateKeypairForType(t crypto.KeyType) (crypto.Keypair, error) {
+func (c *cryptoCgo) GenerateKeypairForType(t crypto.KeyType) (crypto.PrivateKey, error) {
 	keyType, ok := keyTypeMap[t]
 	if !ok {
 		return nil, ErrUnsupportedKeyType
@@ -111,11 +108,11 @@ func (c *cryptoCgo) GenerateKeypairForType(t crypto.KeyType) (crypto.Keypair, er
 	return c.generateKeypair(keyType, random)
 }
 
-func (c *cryptoCgo) GenerateKeypair() (crypto.Keypair, error) {
+func (c *cryptoCgo) GenerateKeypair() (crypto.PrivateKey, error) {
 	return c.GenerateKeypairForType(c.keyType)
 }
 
-func (c *cryptoCgo) GenerateKeypairFromKeyMaterialForType(t crypto.KeyType, keyMaterial []byte) (crypto.Keypair, error) {
+func (c *cryptoCgo) GenerateKeypairFromKeyMaterialForType(t crypto.KeyType, keyMaterial []byte) (crypto.PrivateKey, error) {
 	l := uint32(len(keyMaterial))
 	if l < foundation.KeyMaterialRngKeyMaterialLenMin || l > foundation.KeyMaterialRngKeyMaterialLenMax {
 		return nil, ErrInvalidSeedSize
@@ -133,7 +130,7 @@ func (c *cryptoCgo) GenerateKeypairFromKeyMaterialForType(t crypto.KeyType, keyM
 	return c.generateKeypair(keyType, rnd)
 }
 
-func (c *cryptoCgo) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (crypto.Keypair, error) {
+func (c *cryptoCgo) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (crypto.PrivateKey, error) {
 	return c.GenerateKeypairFromKeyMaterialForType(c.keyType, keyMaterial)
 }
 
@@ -213,15 +210,7 @@ func (c *cryptoCgo) ExportPublicKey(key crypto.PublicKey) ([]byte, error) {
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
-	kp := foundation.NewKeyProvider()
-	defer delete(kp)
-
-	kp.SetRandom(random)
-	if err := kp.SetupDefaults(); err != nil {
-		return nil, err
-	}
-
-	return kp.ExportPublicKey(pk.key)
+	return pk.Export()
 }
 
 func (c *cryptoCgo) calculateFingerprint(key foundation.PublicKey) ([]byte, error) {
@@ -644,12 +633,7 @@ func (c *cryptoCgo) ExtractPublicKey(key crypto.PrivateKey) (crypto.PublicKey, e
 		return nil, ErrUnsupportedParameter
 	}
 
-	pk, err := sk.key.ExtractPublicKey()
-	if err != nil {
-		return nil, err
-	}
-
-	return publicKey{sk.Identifier(), pk}, nil
+	return sk.PublicKey(), nil
 }
 
 func (c *cryptoCgo) Hash(data []byte, t HashType) ([]byte, error) {

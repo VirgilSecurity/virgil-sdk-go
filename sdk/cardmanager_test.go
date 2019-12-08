@@ -57,9 +57,9 @@ import (
 
 func initCardManager() (*CardManager, error) {
 	apiURL := os.Getenv("TEST_ADDRESS")
-	accID := os.Getenv("TEST_ACC_ID")
+	accID := os.Getenv("TEST_API_KEY_ID")
 	if accID == "" {
-		return nil, errors.New("TEST_ACC_ID is required")
+		return nil, errors.New("TEST_API_KEY_ID is required")
 	}
 	apiKeySource := os.Getenv("TEST_API_KEY")
 	if apiKeySource == "" {
@@ -196,12 +196,12 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 }
 
 func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardID string) (*Card, error) {
-	kp, err := cryptoNative.GenerateKeypair()
+	key, err := cryptoNative.GenerateKeypair()
 	assert.NoError(t, err)
 
 	cardParams := &CardParams{
-		PublicKey:      kp.PublicKey(),
-		PrivateKey:     kp.PrivateKey(),
+		PublicKey:      key.PublicKey(),
+		PrivateKey:     key,
 		Identity:       identity,
 		PreviousCardId: previousCardID,
 		ExtraFields:    map[string]string{"key": "value"},

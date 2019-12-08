@@ -13,6 +13,14 @@ func (k publicKey) Identifier() []byte {
 	return k.receiverID
 }
 
-func (k publicKey) IsPublic() bool {
-	return true
+func (k publicKey) Export() ([]byte, error) {
+	kp := foundation.NewKeyProvider()
+	defer delete(kp)
+
+	kp.SetRandom(random)
+	if err := kp.SetupDefaults(); err != nil {
+		return nil, err
+	}
+
+	return kp.ExportPublicKey(k.key)
 }

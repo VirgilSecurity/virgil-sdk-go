@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo/internal/foundation"
 )
 
 // crypto errors
 var (
-	ErrUnsupportedKeyType  = crypto.ErrUnsupportedKeyType
+	ErrUnsupportedKeyType  = errors.New("unsupported key types")
 	ErrUnsupportedHashType = errors.New("unsupported hash types")
 	ErrStreamSizeIncorrect = errors.New("stream size should be greater 0")
 	ErrInvalidSeedSize     = fmt.Errorf("invalid seed size (expected %d < x < %d)",

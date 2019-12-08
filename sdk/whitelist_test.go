@@ -158,7 +158,7 @@ func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
 }
 
 func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {
-	kp, err := cryptoNative.GenerateKeypair()
+	key, err := cryptoNative.GenerateKeypair()
 	if err != nil {
 		panic(err)
 	}
@@ -169,8 +169,8 @@ func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {
 		panic(err)
 	}
 
-	return kp.PrivateKey(), &VerifierCredentials{
+	return key, &VerifierCredentials{
 		Signer:    hex.EncodeToString(id),
-		PublicKey: kp.PublicKey(),
+		PublicKey: key.PublicKey(),
 	}
 }

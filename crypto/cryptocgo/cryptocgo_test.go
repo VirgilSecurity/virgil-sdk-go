@@ -20,13 +20,13 @@ func TestSignVerify(t *testing.T) {
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	signerKeypair, err := crypto.GenerateKeypair()
+	signerKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
-	sign, err := crypto.Sign(data, signerKeypair.PrivateKey())
+	sign, err := crypto.Sign(data, signerKey)
 	require.NoError(t, err)
 
-	err = crypto.VerifySignature(data, sign, signerKeypair.PublicKey())
+	err = crypto.VerifySignature(data, sign, signerKey.PublicKey())
 	assert.NoError(t, err)
 }
 
@@ -37,20 +37,20 @@ func TestEncryptDecrypt(t *testing.T) {
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	keypair, err := crypto.GenerateKeypair()
+	encryptKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
-	cipherText, err := crypto.Encrypt(data, keypair.PublicKey())
+	cipherText, err := crypto.Encrypt(data, encryptKey.PublicKey())
 	require.NoError(t, err)
 
-	actualData, err := crypto.Decrypt(cipherText, keypair.PrivateKey())
+	actualData, err := crypto.Decrypt(cipherText, encryptKey)
 	assert.NoError(t, err)
 	assert.Equal(t, data, actualData)
 }
 
 func TestStreamCipher(t *testing.T) {
 	crypto := cryptocgo.NewVirgilCrypto()
-	keypair, err := crypto.GenerateKeypair()
+	key, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
 	plainBuf := make([]byte, 102301)
@@ -58,7 +58,7 @@ func TestStreamCipher(t *testing.T) {
 
 	plain := bytes.NewReader(plainBuf)
 	cipheredStream := bytes.NewBuffer(nil)
-	err = crypto.EncryptStream(plain, cipheredStream, keypair.PublicKey())
+	err = crypto.EncryptStream(plain, cipheredStream, key.PublicKey())
 	require.NoError(t, err)
 
 	t.Logf("encrypted data: %s", base64.StdEncoding.EncodeToString(cipheredStream.Bytes()))
@@ -66,60 +66,61 @@ func TestStreamCipher(t *testing.T) {
 	//decrypt with key
 	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer := bytes.NewBuffer(nil)
-	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey())
+	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
 	assert.NoError(t, err, "decrypt with correct key")
 	assert.Equal(t, plainBuf, plainOutBuffer.Bytes(), "decrypt with correct key: plain & decrypted buffers do not match")
 
 	//decrypt with wrong id must fail
-	keypair, err = crypto.GenerateKeypair()
+	wrongKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
+
 	cipheredInputStream = bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer = bytes.NewBuffer(nil)
 
-	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, keypair.PrivateKey())
+	err = crypto.DecryptStream(cipheredInputStream, plainOutBuffer, wrongKey)
 	assert.Error(t, err, "decrypt with incorrect key")
 }
 
 func TestStreamSigner(t *testing.T) {
 	crypto := cryptocgo.NewVirgilCrypto()
-	keypair, err := crypto.GenerateKeypair()
+	key, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
 	plainBuf := make([]byte, 1023)
 	rand.Read(plainBuf)
 	plain := bytes.NewBuffer(plainBuf)
-	sign, err := crypto.SignStream(plain, keypair.PrivateKey())
+	sign, err := crypto.SignStream(plain, key)
 	require.NoError(t, err)
 
 	//verify signature
 	plain = bytes.NewBuffer(plainBuf)
-	err = crypto.VerifyStream(plain, sign, keypair.PublicKey())
+	err = crypto.VerifyStream(plain, sign, key.PublicKey())
 	assert.NoError(t, err)
 
 	//verify with wrong key must fail
-	keypair, err = crypto.GenerateKeypair()
+	wrongKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
-	err = crypto.VerifyStream(plain, sign, keypair.PublicKey())
+	err = crypto.VerifyStream(plain, sign, wrongKey.PublicKey())
 	assert.Error(t, cryptocgo.ErrSignVerification, err)
 
 	//verify with wrong signature must fail
 	plain = bytes.NewBuffer(plainBuf)
 	sign[len(sign)-1] = ^sign[len(sign)-1] //invert last byte
 
-	err = crypto.VerifyStream(plain, sign, keypair.PublicKey())
+	err = crypto.VerifyStream(plain, sign, wrongKey.PublicKey())
 	assert.Equal(t, cryptocgo.ErrSignVerification, err)
 }
 
 func TestExportImportKeys(t *testing.T) {
 	crypto := cryptocgo.NewVirgilCrypto()
-	keypair, err := crypto.GenerateKeypair()
+	key, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
-	pubb, err := crypto.ExportPublicKey(keypair.PublicKey())
+	pubb, err := crypto.ExportPublicKey(key.PublicKey())
 	assert.NoError(t, err)
 
-	privb, err := crypto.ExportPrivateKey(keypair.PrivateKey())
+	privb, err := crypto.ExportPrivateKey(key)
 	assert.NoError(t, err)
 
 	pub, err := crypto.ImportPublicKey(pubb)
@@ -133,7 +134,7 @@ func TestExportImportKeys(t *testing.T) {
 
 	// check that import keys was correct
 	{
-		cipherText, err := crypto.SignThenEncrypt(data, keypair.PrivateKey(), keypair.PublicKey())
+		cipherText, err := crypto.SignThenEncrypt(data, key, key.PublicKey())
 		require.NoError(t, err)
 
 		plaintext, err := crypto.DecryptThenVerify(cipherText, priv, pub)
@@ -145,19 +146,19 @@ func TestExportImportKeys(t *testing.T) {
 func TestSignAndEncryptAndDecryptAndVerify(t *testing.T) {
 	crypto := cryptocgo.NewVirgilCrypto()
 
-	keypair1, err := crypto.GenerateKeypair()
+	signKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
-	keypair2, err := crypto.GenerateKeypair()
+	encryptKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	cipherText, err := crypto.SignAndEncrypt(data, keypair1.PrivateKey(), keypair2.PublicKey())
+	cipherText, err := crypto.SignAndEncrypt(data, signKey, encryptKey.PublicKey())
 	require.NoError(t, err)
 
-	plaintext, err := crypto.DecryptAndVerify(cipherText, keypair2.PrivateKey(), keypair1.PublicKey(), keypair2.PublicKey())
+	plaintext, err := crypto.DecryptAndVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
 	require.NoError(t, err)
 	require.Equal(t, data, plaintext)
 }
@@ -165,19 +166,19 @@ func TestSignAndEncryptAndDecryptAndVerify(t *testing.T) {
 func TestSignThenEncryptAndDecryptThenVerify(t *testing.T) {
 	crypto := cryptocgo.NewVirgilCrypto()
 
-	keypair1, err := crypto.GenerateKeypair()
+	signKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
-	keypair2, err := crypto.GenerateKeypair()
+	encryptKey, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
 
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	cipherText, err := crypto.SignThenEncrypt(data, keypair1.PrivateKey(), keypair2.PublicKey())
+	cipherText, err := crypto.SignThenEncrypt(data, signKey, encryptKey.PublicKey())
 	require.NoError(t, err)
 
-	plaintext, err := crypto.DecryptThenVerify(cipherText, keypair2.PrivateKey(), keypair1.PublicKey(), keypair2.PublicKey())
+	plaintext, err := crypto.DecryptThenVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
 	require.NoError(t, err)
 	require.Equal(t, data, plaintext)
 }
@@ -207,13 +208,13 @@ func TestGenerateKeypairFromKeyMaterial(t *testing.T) {
 
 func GenKeysFromSeed(t *testing.T, seed []byte) (publicKey []byte, privateKey []byte) {
 	crypto := cryptocgo.NewVirgilCrypto()
-	keypair, err := crypto.GenerateKeypairFromKeyMaterial(seed)
+	key, err := crypto.GenerateKeypairFromKeyMaterial(seed)
 	require.NoError(t, err)
 
-	publicKey, err = crypto.ExportPublicKey(keypair.PublicKey())
+	publicKey, err = crypto.ExportPublicKey(key.PublicKey())
 	require.NoError(t, err)
 
-	privateKey, err = crypto.ExportPrivateKey(keypair.PrivateKey())
+	privateKey, err = crypto.ExportPrivateKey(key)
 	require.NoError(t, err)
 
 	return publicKey, privateKey
@@ -255,7 +256,7 @@ func TestKeyTypes(t *testing.T) {
 		{crypto.EC_SECP256R1, nil},
 		{crypto.EC_CURVE25519, nil},
 		{crypto.FAST_EC_ED25519, nil},
-		{crypto.KeyType(100), crypto.ErrUnsupportedKeyType},
+		{crypto.KeyType(100), cryptocgo.ErrUnsupportedKeyType},
 	}
 
 	fs := []func(kt crypto.KeyType) error{
