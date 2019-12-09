@@ -44,6 +44,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 )
@@ -52,41 +53,21 @@ func TestCachingJwtProvider(t *testing.T) {
 	crypto := cryptocgo.NewVirgilCrypto()
 
 	key, err := crypto.GenerateKeypair()
-	if err != nil {
-		panic(err)
-	}
-
-	signer := cryptocgo.NewVirgilAccessTokenSigner()
+	require.NoError(t, err)
 
 	genCount := 0
 
+	jwtGenerator := JwtGenerator{
+		ApiKey:                 key,
+		ApiPublicKeyIdentifier: hex.EncodeToString(key.Identifier()),
+		TTL:                    6 * time.Second,
+		AccessTokenSigner:      cryptocgo.NewVirgilAccessTokenSigner(),
+		AppID:                  "app_id",
+	}
+
 	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
 		genCount++
-
-		issuedAt := time.Now().UTC().Truncate(time.Second)
-		expiresAt := issuedAt.Add(time.Second * 6)
-
-		jwtBody, err := NewJwtBodyContent("app_id", "identity", issuedAt, expiresAt, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		jwtHeader, err := NewJwtHeaderContent(signer.GetAlgorithm(), hex.EncodeToString(key.Identifier()))
-
-		if err != nil {
-			return nil, err
-		}
-
-		unsignedJwt, err := NewJwt(jwtHeader, jwtBody, nil)
-		if err != nil {
-			return nil, err
-		}
-		jwtSignature, err := signer.GenerateTokenSignature(unsignedJwt.Unsigned(), key)
-		if err != nil {
-			return nil, err
-		}
-
-		return NewJwt(jwtHeader, jwtBody, jwtSignature)
+		return jwtGenerator.GenerateToken(context.Identity, nil)
 	})
 
 	routines := 100
@@ -96,20 +77,17 @@ func TestCachingJwtProvider(t *testing.T) {
 
 	start := time.Now()
 
-	total := 0
 	for i := 0; i < routines; i++ {
 		go func() {
+			defer wg.Done()
+
 			for time.Since(start) < (time.Second * 5) {
 				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
 				assert.NotNil(t, token)
 				assert.NoError(t, err)
-				total++
 			}
-
-			wg.Done()
 		}()
 	}
 	wg.Wait()
 	assert.Equal(t, 6, genCount)
-	t.Log("total", total)
 }

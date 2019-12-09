@@ -38,31 +38,25 @@
 package sdk
 
 import (
+	"strings"
+
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type CardParams struct {
 	Identity       string
-	PublicKey      crypto.PublicKey
 	PrivateKey     crypto.PrivateKey
 	PreviousCardId string
 	ExtraFields    map[string]string
 }
 
-func (c *CardParams) Validate(validateIdentity bool) error {
-	if c == nil {
-		return errors.New("cardParams is nil")
-	}
-	if validateIdentity && SpaceMap(c.Identity) == "" {
-		return errors.New("identity is mandatory")
-	}
-	if c.PublicKey == nil {
-		return errors.New("PublicKey is mandatory")
+func (c CardParams) Validate() error {
+	if strings.Replace(c.Identity, " ", "", -1) == "" {
+		return ErrIdentityIsMandatory
 	}
 
 	if c.PrivateKey == nil {
-		return errors.New("PrivateKey is mandatory")
+		return ErrPrivateKeyIsMandatory
 	}
 	return nil
 }

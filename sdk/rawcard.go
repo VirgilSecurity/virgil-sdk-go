@@ -38,12 +38,11 @@
 package sdk
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"time"
 
-	"encoding/base64"
-
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 const (
@@ -52,25 +51,23 @@ const (
 
 func GenerateRawCard(crypto crypto.CardCrypto, cardParams *CardParams, createdAt time.Time) (*RawSignedModel, error) {
 	if crypto == nil {
-		return nil, errors.New("crypto is mandatory")
+		return nil, ErrCryptoIsMandatory
 	}
 
-	if err := cardParams.Validate(true); err != nil {
+	if err := cardParams.Validate(); err != nil {
 		return nil, err
 	}
-	publicKey, err := crypto.ExportPublicKey(cardParams.PublicKey)
+	publicKey, err := crypto.ExportPublicKey(cardParams.PrivateKey.PublicKey())
 	if err != nil {
 		return nil, err
 	}
-	details := &RawCardContent{
+	snapshot, err := TakeSnapshot(RawCardContent{
 		Identity:       cardParams.Identity,
 		PublicKey:      publicKey,
 		CreatedAt:      createdAt.UTC().Unix(),
 		PreviousCardId: cardParams.PreviousCardId,
 		Version:        CardVersion,
-	}
-	snapshot, err := TakeSnapshot(details)
-
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +93,10 @@ func GenerateRawSignedModelFromJson(json string) (*RawSignedModel, error) {
 
 func ParseCard(crypto crypto.CardCrypto, card *Card) (*RawSignedModel, error) {
 	if crypto == nil {
-		return nil, errors.New("crypto is mandatory")
+		return nil, ErrCryptoIsMandatory
 	}
 	if card == nil {
-		return nil, errors.New("card is mandatory")
+		return nil, ErrCardIsMandatory
 	}
 
 	signatures := make([]*RawCardSignature, len(card.Signatures))
@@ -115,4 +112,41 @@ func ParseCard(crypto crypto.CardCrypto, card *Card) (*RawSignedModel, error) {
 		ContentSnapshot: card.ContentSnapshot,
 		Signatures:      signatures,
 	}, nil
+}
+
+type RawCardContent struct {
+	Identity       string `json:"identity"`
+	PublicKey      []byte `json:"public_key"`
+	Version        string `json:"version"`
+	CreatedAt      int64  `json:"created_at"`
+	PreviousCardId string `json:"previous_card_id,omitempty"`
+}
+
+type RawCardSignature struct {
+	Signer    string `json:"signer,omitempty"`
+	Signature []byte `json:"signature,omitempty"`
+	Snapshot  []byte `json:"snapshot,omitempty"`
+}
+
+type RawSignedModel struct {
+	ContentSnapshot []byte              `json:"content_snapshot"`
+	Signatures      []*RawCardSignature `json:"signatures,omitempty"`
+}
+
+func (r *RawSignedModel) ExportAsBase64EncodedString() (string, error) {
+	raw, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(raw), nil
+}
+
+func (r *RawSignedModel) ExportAsJson() (string, error) {
+	raw, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return string(raw), nil
 }

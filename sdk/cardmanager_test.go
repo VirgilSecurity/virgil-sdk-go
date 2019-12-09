@@ -39,79 +39,73 @@
 package sdk
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/xerrors"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/common"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 func initCardManager() (*CardManager, error) {
-	apiURL := os.Getenv("TEST_ADDRESS")
-	accID := os.Getenv("TEST_API_KEY_ID")
-	if accID == "" {
-		return nil, errors.New("TEST_API_KEY_ID is required")
+	return initCardManagerWithIdentityName("default_identity")
+}
+func initCardManagerWithIdentityName(identityName string) (*CardManager, error) {
+	apiKeyID := os.Getenv("TEST_API_KEY_ID")
+	if apiKeyID == "" {
+		return nil, xerrors.New("TEST_API_KEY_ID is required")
 	}
 	apiKeySource := os.Getenv("TEST_API_KEY")
 	if apiKeySource == "" {
-		return nil, errors.New("TEST_API_KEY is required")
+		return nil, xerrors.New("TEST_API_KEY is required")
 	}
 	apiKey, err := cryptoNative.ImportPrivateKey([]byte(apiKeySource))
 	if err != nil {
-		return nil, errors.Wrap(err, "Cannot import API private key: ")
+		return nil, xerrors.Errorf("Cannot import API private key: %w", err)
 	}
 
 	appID := os.Getenv("TEST_APP_ID")
 	if appID == "" {
-		return nil, errors.New("TEST_APP_ID is required")
+		return nil, xerrors.New("TEST_APP_ID is required")
 	}
 
-	verifier, err := NewVirgilCardVerifier(cardCrypto, true, true)
-
-	if err != nil {
-		panic(err)
+	var virgilCardVerifierOptions []VirgilCardVerifierOption
+	if serviceKey := os.Getenv("TEST_SERVICE_KEY"); serviceKey != "" {
+		virgilCardVerifierOptions = append(virgilCardVerifierOptions, VirgilCardVerifierSetCardsServicePublicKey(serviceKey))
 	}
 
-	serviceKey := os.Getenv("TEST_SERVICE_KEY")
-	if serviceKey != "" {
-		err = verifier.ReplaceVirgilPublicKey(serviceKey)
-		if err != nil {
-			panic(err)
-		}
+	cardClientOptions := []CardClientOption{}
+	if os.Getenv("TEST_ADDRESS") != "" {
+		cardClientOptions = append(cardClientOptions, SetCardClientURL(os.Getenv("TEST_ADDRESS")))
 	}
 
-	generator := NewJwtGenerator(apiKey, accID, tokenSigner, appID, time.Minute*1)
-	cardsClient := NewCardsClient(apiURL)
-	if os.Getenv("TEST_DEBUG_OUTPUT") == "true" {
-		cardsClient.HttpClient = &DebugClient{}
+	generator := JwtGenerator{
+		ApiKey:                 apiKey,
+		ApiPublicKeyIdentifier: apiKeyID,
+		AppID:                  appID,
+		AccessTokenSigner:      tokenSigner,
+		TTL:                    time.Minute,
 	}
-	params := &CardManagerParams{
-		Crypto:              cardCrypto,
-		CardVerifier:        verifier,
-		ModelSigner:         NewModelSigner(cardCrypto),
-		AccessTokenProvider: NewGeneratorJwtProvider(generator, nil, "default_identity"),
-		CardClient:          cardsClient,
-	}
-	return NewCardManager(params)
+
+	return NewCardManager(NewGeneratorJwtProvider(generator, nil, identityName),
+		CardManagerSetCardClient(NewCardsClient(cardClientOptions...)),
+		CardManagerSetCardVerifier(NewVirgilCardVerifier(virgilCardVerifierOptions...)),
+	), nil
 }
 
 func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
+	var expectedError = errors.VirgilAPIError{Code: 10001, Message: "Requested card entity not found."}
+
 	manager, err := initCardManager()
 	assert.NoError(t, err)
 
 	card, err := manager.GetCard(randomString())
 	assert.Nil(t, card)
-	assert.Error(t, err)
-	assert.Equal(t, 404, err.(errors.SDKError).HTTPErrorCode())
+	assert.True(t, xerrors.Is(err, expectedError), err.Error())
 
 	card, err = PublishCard(t, manager, "Alice-"+randomString(), "")
 	assert.NoError(t, err)
@@ -159,7 +153,9 @@ func TestCardManager_Integration_Publish_Revoke(t *testing.T) {
 	assert.NotNil(t, card)
 	assert.False(t, card.IsOutdated)
 
-	manager.AccessTokenProvider.(*GeneratorJwtProvider).DefaultIdentity = card.Identity
+	manager, err = initCardManagerWithIdentityName(card.Identity)
+	assert.NoError(t, err)
+
 	err = manager.RevokeCard(card.Id)
 	assert.NoError(t, err)
 }
@@ -200,7 +196,6 @@ func PublishCard(t *testing.T, manager *CardManager, identity string, previousCa
 	assert.NoError(t, err)
 
 	cardParams := &CardParams{
-		PublicKey:      key.PublicKey(),
 		PrivateKey:     key,
 		Identity:       identity,
 		PreviousCardId: previousCardID,
@@ -213,60 +208,8 @@ func PublishCard(t *testing.T, manager *CardManager, identity string, previousCa
 	return card, err
 }
 
-type DebugClient struct {
-	Client common.HttpClient
-}
-
-func (c *DebugClient) Do(req *http.Request) (*http.Response, error) {
-	var (
-		body []byte
-		err  error
-	)
-	fmt.Println("Request:", req.Method, req.URL.String())
-
-	if len(req.Header) > 0 {
-		fmt.Println("Header:")
-		for key := range req.Header {
-			fmt.Println("\t", key, ":", req.Header.Get(key))
-		}
-		fmt.Println("")
-	}
-	if req.Body != nil {
-		body, err = ioutil.ReadAll(req.Body)
-		req.Body.Close()
-		if err != nil {
-			return nil, fmt.Errorf("Cannot read body request: %v", err)
-		}
-		fmt.Println("Body:", string(body))
-		req.Body = ioutil.NopCloser(bytes.NewReader(body))
-	}
-
-	resp, err := c.getClient().Do(req)
-	if err != nil {
-		return resp, err
-	}
-	fmt.Println("Response:", resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, fmt.Errorf("Cannot read body request: %v", err)
-	}
-	fmt.Println("Body:", string(body))
-	resp.Body = ioutil.NopCloser(bytes.NewReader(body))
-
-	fmt.Println("")
-	return resp, nil
-}
-
-func (c *DebugClient) getClient() common.HttpClient {
-	if c.Client == nil {
-		return http.DefaultClient
-	}
-	return c.Client
-}
-
 func randomString() string {
-	buf := make([]byte, 32)
-	rand.Read(buf)
-	return hex.EncodeToString(buf)
+	var buf [32]byte
+	rand.Read(buf[:])
+	return hex.EncodeToString(buf[:])
 }

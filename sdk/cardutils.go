@@ -38,23 +38,25 @@
 package sdk
 
 import (
+	"bytes"
+	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 
 	"time"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
 	if crypto == nil {
-		return nil, errors.New("crypto is mandatory")
+		return nil, ErrCryptoIsMandatory
 	}
 	if model == nil {
-		return nil, errors.New("model is mandatory")
+		return nil, ErrRawSignedModelIsMandatory
 	}
 
-	var content *RawCardContent
+	var content RawCardContent
 	err := ParseSnapshot(model.ContentSnapshot, &content)
 	if err != nil {
 		return nil, err
@@ -76,18 +78,13 @@ func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bo
 		}
 	}
 
-	id, err := GenerateCardId(crypto, model.ContentSnapshot)
-	if err != nil {
-		return nil, err
-	}
-
 	publicKey, err := crypto.ImportPublicKey(content.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Card{
-		Id:              id,
+		Id:              GenerateCardID(model.ContentSnapshot),
 		ContentSnapshot: model.ContentSnapshot,
 		Signatures:      signatures,
 		Version:         content.Version,
@@ -99,24 +96,13 @@ func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bo
 	}, nil
 }
 
-func GenerateCardId(crypto crypto.CardCrypto, data []byte) (string, error) {
-	if crypto == nil {
-		return "", errors.New("crypto is mandatory")
-	}
-
-	return hex.EncodeToString(crypto.GenerateSHA512(data)[:32]), nil
+func GenerateCardID(data []byte) string {
+	h := sha512.Sum512(data)
+	return hex.EncodeToString(h[:32])
 }
 
 func ParseRawCards(crypto crypto.CardCrypto, models ...*RawSignedModel) ([]*Card, error) {
-	if crypto == nil {
-		return nil, errors.New("crypto is mandatory")
-	}
-	if models == nil {
-		return nil, errors.New("model is mandatory")
-	}
-
 	cards := make([]*Card, len(models))
-
 	for i, model := range models {
 		card, err := ParseRawCard(crypto, model, false)
 		if err != nil {
@@ -150,4 +136,14 @@ func LinkCards(cards ...*Card) []*Card {
 		result = append(result, card)
 	}
 	return result
+}
+
+func TakeSnapshot(obj interface{}) ([]byte, error) {
+	return json.Marshal(obj)
+}
+
+func ParseSnapshot(data []byte, obj interface{}) error {
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(obj)
 }

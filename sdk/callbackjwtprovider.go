@@ -43,30 +43,31 @@ type CallbackJwtProvider struct {
 	GetTokenCallback func(context *TokenContext) (*Jwt, error)
 }
 
-func NewCallbackJwtProvider(callback func(context *TokenContext) (*Jwt, error)) AccessTokenProvider {
+func NewCallbackJwtProvider(callback func(context *TokenContext) (*Jwt, error)) *CallbackJwtProvider {
+	if callback == nil {
+		panic("callback is mandatory")
+	}
 	return &CallbackJwtProvider{
 		GetTokenCallback: callback,
 	}
 }
 
 func NewCallbackStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CallbackJwtProvider {
-	return &CallbackJwtProvider{
-		GetTokenCallback: func(context *TokenContext) (*Jwt, error) {
-			token, err := renewTokenCallback(context)
-			if err != nil {
-				return nil, err
-			}
-			return JwtFromString(token)
-		},
+	if renewTokenCallback == nil {
+		panic("callback is mandatory")
 	}
+	return NewCallbackJwtProvider(func(context *TokenContext) (*Jwt, error) {
+		token, err := renewTokenCallback(context)
+		if err != nil {
+			return nil, err
+		}
+		return JwtFromString(token)
+	})
 }
 
 func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-	if c.GetTokenCallback == nil {
-		return nil, errors.New("GetTokenCallback must be set")
-	}
 	if context == nil {
-		return nil, errors.New("context is mandatory")
+		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "CallbackJwtProvider.GetToken")
 	}
 
 	return c.GetTokenCallback(context)

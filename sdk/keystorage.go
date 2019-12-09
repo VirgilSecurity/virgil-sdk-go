@@ -46,7 +46,7 @@ import (
 
 	"os/user"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+	"github.com/pkg/errors"
 )
 
 type KeyStorage interface {

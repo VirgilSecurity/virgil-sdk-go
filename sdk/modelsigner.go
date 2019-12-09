@@ -38,9 +38,8 @@
 package sdk
 
 import (
-	"fmt"
-
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
@@ -49,12 +48,10 @@ const (
 	VirgilSigner = "virgil"
 )
 
+var defaultCardCrypto crypto.CardCrypto = cryptocgo.NewVirgilCardCrypto()
+
 type ModelSigner struct {
 	Crypto crypto.CardCrypto
-}
-
-func NewModelSigner(crypto crypto.CardCrypto) *ModelSigner {
-	return &ModelSigner{Crypto: crypto}
 }
 
 func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey crypto.PrivateKey, extraFields map[string]string) (err error) {
@@ -62,21 +59,17 @@ func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey cryp
 	if extraFields != nil {
 		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
 		if err != nil {
-			return err
+			return errors.NewSDKError(err, "action", "ModelSigner.Sign")
 		}
 	}
 
-	return m.signInternal(model, &SignParams{
-		SignerPrivateKey: privateKey,
-		Signer:           signer,
-	}, extraFieldsSnapshot)
+	err = m.signInternal(model, signParams{signerKey: privateKey, signer: signer}, extraFieldsSnapshot)
+	return errors.NewSDKError(err, "action", "ModelSigner.Sign", "signer", signer)
 }
 
 func (m *ModelSigner) SignRaw(model *RawSignedModel, signer string, privateKey crypto.PrivateKey, extraFieldsSnapshot []byte) (err error) {
-	return m.signInternal(model, &SignParams{
-		SignerPrivateKey: privateKey,
-		Signer:           signer,
-	}, extraFieldsSnapshot)
+	err = m.signInternal(model, signParams{signerKey: privateKey, signer: signer}, extraFieldsSnapshot)
+	return errors.NewSDKError(err, "action", "ModelSigner.SignRaw", "signer", signer)
 }
 
 func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey crypto.PrivateKey, extraFields map[string]string) (err error) {
@@ -84,59 +77,59 @@ func (m *ModelSigner) SelfSign(model *RawSignedModel, privateKey crypto.PrivateK
 	if extraFields != nil {
 		extraFieldsSnapshot, err = TakeSnapshot(extraFields)
 		if err != nil {
-			return err
+			return errors.NewSDKError(err, "action", "ModelSigner.SelfSign")
 		}
 	}
 
-	return m.signInternal(model, &SignParams{
-		SignerPrivateKey: privateKey,
-		Signer:           SelfSigner,
-	}, extraFieldsSnapshot)
+	err = m.signInternal(model, signParams{signerKey: privateKey, signer: SelfSigner}, extraFieldsSnapshot)
+	return errors.NewSDKError(err, "action", "ModelSigner.SelfSign")
 }
 
 func (m *ModelSigner) SelfSignRaw(model *RawSignedModel, privateKey crypto.PrivateKey, extraFieldsSnapshot []byte) (err error) {
-	return m.signInternal(model, &SignParams{
-		SignerPrivateKey: privateKey,
-		Signer:           SelfSigner,
-	}, extraFieldsSnapshot)
+	err = m.signInternal(model, signParams{signerKey: privateKey, signer: SelfSigner}, extraFieldsSnapshot)
+	return errors.NewSDKError(err, "action", "ModelSigner.SelfSignRaw")
 }
 
-func (m *ModelSigner) signInternal(model *RawSignedModel, params *SignParams, extraFieldsSnapshot []byte) error {
+func (m *ModelSigner) signInternal(model *RawSignedModel, params signParams, extraFieldsSnapshot []byte) error {
 	if model == nil {
-		return errors.New("model is mandatory")
-	}
-	if m.Crypto == nil {
-		return errors.New("crypto is mandatory")
-	}
-	var err error
-	if err = params.Validate(); err != nil {
-		return err
+		return ErrRawSignedModelIsMandatory
 	}
 
-	err = m.CheckSignatureExists(model, params)
-	if err != nil {
+	if err := m.CheckSignatureExists(model, params.signer); err != nil {
 		return err
 	}
 
 	resultSnapshot := append(model.ContentSnapshot, extraFieldsSnapshot...)
-	signature, err := m.Crypto.GenerateSignature(resultSnapshot, params.SignerPrivateKey)
+	signature, err := m.getCrypto().GenerateSignature(resultSnapshot, params.signerKey)
 	if err != nil {
 		return err
 	}
 
 	model.Signatures = append(model.Signatures, &RawCardSignature{
-		Signer:    params.Signer,
+		Signer:    params.signer,
 		Snapshot:  extraFieldsSnapshot,
 		Signature: signature,
 	})
 	return nil
 }
 
-func (m *ModelSigner) CheckSignatureExists(model *RawSignedModel, params *SignParams) error {
+func (m *ModelSigner) CheckSignatureExists(model *RawSignedModel, signer string) error {
 	for _, s := range model.Signatures {
-		if s.Signer == params.Signer {
-			return errors.New(fmt.Sprintf("duplicate signer %s", s.Signer))
+		if s.Signer == signer {
+			return errors.NewSDKError(ErrDuplicateSigner, "action", "ModelSigner.CheckSignatureExists")
 		}
 	}
 	return nil
+}
+
+func (m *ModelSigner) getCrypto() crypto.CardCrypto {
+	if m.Crypto == nil {
+		return defaultCardCrypto
+	}
+	return m.Crypto
+}
+
+type signParams struct {
+	signerKey crypto.PrivateKey
+	signer    string
 }

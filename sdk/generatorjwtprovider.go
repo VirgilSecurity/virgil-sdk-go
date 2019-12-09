@@ -40,30 +40,36 @@ package sdk
 import "github.com/VirgilSecurity/virgil-sdk-go/errors"
 
 type GeneratorJwtProvider struct {
-	JwtGenerator    *JwtGenerator
-	AdditionalData  map[string]interface{}
-	DefaultIdentity string
+	jwtGenerator    JwtGenerator
+	additionalData  map[string]interface{}
+	defaultIdentity string
 }
 
-func NewGeneratorJwtProvider(generator *JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
+func NewGeneratorJwtProvider(generator JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
+	if err := generator.Validate(); err != nil {
+		panic(err)
+	}
+
 	return &GeneratorJwtProvider{
-		JwtGenerator:    generator,
-		AdditionalData:  additionalData,
-		DefaultIdentity: defaultIdentity,
+		jwtGenerator:    generator,
+		additionalData:  additionalData,
+		defaultIdentity: defaultIdentity,
 	}
 }
 
 func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-	if g.JwtGenerator == nil {
-		return nil, errors.New("JwtGenerator is not set")
-	}
 
 	if context == nil {
-		return nil, errors.New("context is mandatory")
+		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "GeneratorJwtProvider.GetToken")
 	}
 	identity := context.Identity
 	if identity == "" {
-		identity = g.DefaultIdentity
+		identity = g.defaultIdentity
 	}
-	return g.JwtGenerator.GenerateToken(identity, g.AdditionalData)
+
+	at, err := g.jwtGenerator.GenerateToken(identity, g.additionalData)
+	if err != nil {
+		return nil, errors.NewSDKError(err, "action", "GeneratorJwtProvider.GetToken")
+	}
+	return at, nil
 }

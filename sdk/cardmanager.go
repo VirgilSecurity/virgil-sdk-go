@@ -38,103 +38,102 @@
 package sdk
 
 import (
-	"sync"
-
 	"time"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
-type CardManager struct {
-	ModelSigner                                  *ModelSigner
-	Crypto                                       crypto.CardCrypto
-	AccessTokenProvider                          AccessTokenProvider
-	CardVerifier                                 CardVerifier
-	CardClient                                   *CardClient
-	SignCallback                                 func(model *RawSignedModel) (signedCard *RawSignedModel, err error)
-	onceClient, onceModelSigner, onceCheckParams sync.Once
-	paramsError                                  error
+type CardManagerOption func(c *CardManager)
+
+func CardManagerSetModelSigner(ms ModelSigner) CardManagerOption {
+	return func(c *CardManager) {
+		c.modelSigner = ms
+	}
 }
 
-func NewCardManager(params *CardManagerParams) (*CardManager, error) {
-	client := params.CardClient
+func CardManagerSetCrypto(cc crypto.CardCrypto) CardManagerOption {
+	return func(c *CardManager) {
+		c.crypto = cc
+	}
+}
 
-	if client == nil {
-		client = NewCardsClient(params.ApiUrl)
+func CardManagerSetCardVerifier(cv CardVerifier) CardManagerOption {
+	return func(c *CardManager) {
+		c.cardVerifier = cv
 	}
-	mgr := &CardManager{
-		Crypto:              params.Crypto,
-		ModelSigner:         NewModelSigner(params.Crypto),
-		SignCallback:        params.SignCallback,
-		AccessTokenProvider: params.AccessTokenProvider,
-		CardVerifier:        params.CardVerifier,
-		CardClient:          client,
+}
+
+func CardManagerSetCardClient(cc CardClient) CardManagerOption {
+	return func(c *CardManager) {
+		c.cardClient = cc
 	}
-	if err := mgr.selfCheck(); err != nil {
-		return nil, err
+}
+
+func CardManagerSetSignCallback(callback func(model *RawSignedModel) (signedCard *RawSignedModel, err error)) CardManagerOption {
+	return func(c *CardManager) {
+		c.signCallback = callback
 	}
-	return mgr, nil
+}
+
+type CardManager struct {
+	modelSigner         ModelSigner
+	crypto              crypto.CardCrypto
+	accessTokenProvider AccessTokenProvider
+	cardVerifier        CardVerifier
+	cardClient          CardClient
+	signCallback        func(model *RawSignedModel) (signedCard *RawSignedModel, err error)
+}
+
+func NewCardManager(accessTokenProvider AccessTokenProvider, options ...CardManagerOption) *CardManager {
+	cm := &CardManager{
+		crypto:              defaultCardCrypto,
+		accessTokenProvider: accessTokenProvider,
+		cardClient:          NewCardsClient(),
+	}
+
+	for _, opt := range options {
+		opt(cm)
+	}
+
+	return cm
 }
 
 func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, error) {
-	if err := c.selfCheck(); err != nil {
-		return nil, err
-	}
-	if err := cardParams.Validate(false); err != nil {
-		return nil, err
-	}
-	now := time.Now().UTC().Truncate(time.Second)
-
-	model, err := GenerateRawCard(c.Crypto, cardParams, now)
-
+	model, err := GenerateRawCard(c.crypto, cardParams, time.Now().UTC().Truncate(time.Second))
 	if err != nil {
 		return nil, err
 	}
-	err = c.getModelSigner().SelfSign(model, cardParams.PrivateKey, cardParams.ExtraFields)
 
+	err = c.modelSigner.SelfSign(model, cardParams.PrivateKey, cardParams.ExtraFields)
 	if err != nil {
 		return nil, err
 	}
 	return model, nil
 }
 
-//PublishRawSignedModel left for backwards compatibility
-func (c *CardManager) PublishRawSignedModel(
-	rawSignedModel *RawSignedModel,
-	tokenContext *TokenContext,
-	token AccessToken,
-) (card *Card, err error) {
-	return c.PublishRawCard(rawSignedModel)
-}
-
 func (c *CardManager) PublishRawCard(rawSignedModel *RawSignedModel) (card *Card, err error) {
-	if err = c.selfCheck(); err != nil {
-		return nil, err
-	}
-
 	model := &RawCardContent{}
 	if err = ParseSnapshot(rawSignedModel.ContentSnapshot, &model); err != nil {
 		return nil, err
 	}
 
 	tokenContext := &TokenContext{Service: "cards", Operation: "publish", Identity: model.Identity}
-	token, err := c.AccessTokenProvider.GetToken(tokenContext)
+	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.SignCallback != nil {
-		if rawSignedModel, err = c.SignCallback(rawSignedModel); err != nil {
+	if c.signCallback != nil {
+		if rawSignedModel, err = c.signCallback(rawSignedModel); err != nil {
 			return nil, err
 		}
 	}
-	rawCard, err := c.getClient().PublishCard(rawSignedModel, token.String())
+	rawCard, err := c.cardClient.PublishCard(rawSignedModel, token.String())
 	if err != nil {
 		return nil, err
 	}
-	card, err = ParseRawCard(c.Crypto, rawCard, false)
 
+	card, err = ParseRawCard(c.crypto, rawCard, false)
 	if err != nil {
 		return nil, err
 	}
@@ -146,20 +145,7 @@ func (c *CardManager) PublishRawCard(rawSignedModel *RawSignedModel) (card *Card
 }
 
 func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
-	if err := c.selfCheck(); err != nil {
-		return nil, err
-	}
-	if err := cardParams.Validate(false); err != nil {
-		return nil, err
-	}
-
-	rawSignedModel, err := c.GenerateRawCard(&CardParams{
-		Identity:       cardParams.Identity,
-		PrivateKey:     cardParams.PrivateKey,
-		PublicKey:      cardParams.PublicKey,
-		ExtraFields:    cardParams.ExtraFields,
-		PreviousCardId: cardParams.PreviousCardId,
-	})
+	rawSignedModel, err := c.GenerateRawCard(cardParams)
 	if err != nil {
 		return nil, err
 	}
@@ -167,21 +153,18 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 }
 
 func (c *CardManager) GetCard(cardID string) (*Card, error) {
-	if err := c.selfCheck(); err != nil {
-		return nil, err
-	}
 	tokenContext := &TokenContext{Identity: "my_default_identity", Operation: "get"}
-	token, err := c.AccessTokenProvider.GetToken(tokenContext)
+	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
 	}
 
-	rawCard, outdated, err := c.getClient().GetCard(cardID, token.String())
-
+	rawCard, outdated, err := c.cardClient.GetCard(cardID, token.String())
 	if err != nil {
 		return nil, err
 	}
-	card, err := ParseRawCard(c.Crypto, rawCard, outdated)
+
+	card, err := ParseRawCard(c.crypto, rawCard, outdated)
 	if err != nil {
 		return nil, err
 	}
@@ -193,34 +176,28 @@ func (c *CardManager) GetCard(cardID string) (*Card, error) {
 }
 
 func (c *CardManager) RevokeCard(cardID string) error {
-	if err := c.selfCheck(); err != nil {
-		return err
-	}
 	tokenContext := &TokenContext{Operation: "delete", Service: "cards"}
-	token, err := c.AccessTokenProvider.GetToken(tokenContext)
+	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return err
 	}
 
-	return c.getClient().RevokeCard(cardID, token.String())
+	return c.cardClient.RevokeCard(cardID, token.String())
 }
 
 func (c *CardManager) SearchCards(identity string) (Cards, error) {
-	if err := c.selfCheck(); err != nil {
-		return nil, err
-	}
 	tokenContext := &TokenContext{Identity: "my_default_identity", Operation: "search"}
-	token, err := c.AccessTokenProvider.GetToken(tokenContext)
+	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
 	}
 
-	rawCards, err := c.getClient().SearchCards(identity, token.String())
+	rawCards, err := c.cardClient.SearchCards(identity, token.String())
 	if err != nil {
 		return nil, err
 	}
 
-	cards, err := ParseRawCards(c.Crypto, rawCards...)
+	cards, err := ParseRawCards(c.crypto, rawCards...)
 	if err != nil {
 		return nil, err
 	}
@@ -232,11 +209,11 @@ func (c *CardManager) SearchCards(identity string) (Cards, error) {
 }
 
 func (c *CardManager) ExportCardAsRawCard(card *Card) (*RawSignedModel, error) {
-	return ParseCard(c.Crypto, card)
+	return ParseCard(c.crypto, card)
 }
 
 func (c *CardManager) ExportCardAsString(card *Card) (string, error) {
-	model, err := ParseCard(c.Crypto, card)
+	model, err := ParseCard(c.crypto, card)
 	if err != nil {
 		return "", err
 	}
@@ -244,7 +221,7 @@ func (c *CardManager) ExportCardAsString(card *Card) (string, error) {
 }
 
 func (c *CardManager) ExportCardAsJson(card *Card) (string, error) {
-	model, err := ParseCard(c.Crypto, card)
+	model, err := ParseCard(c.crypto, card)
 	if err != nil {
 		return "", err
 	}
@@ -270,60 +247,22 @@ func (c *CardManager) ImportCardFromJson(json string) (*Card, error) {
 }
 
 func (c *CardManager) ImportCard(model *RawSignedModel) (*Card, error) {
-	cards, err := ParseRawCards(c.Crypto, model)
+	cards, err := ParseRawCards(c.crypto, model)
 	if err != nil {
 		return nil, err
-	}
-	if len(cards) != 1 {
-		return nil, errors.New("there should be only one card after parsing")
 	}
 	return cards[0], nil
 }
 
 func (c *CardManager) verifyCards(cards ...*Card) error {
-	if c.CardVerifier == nil {
+	if c.cardVerifier == nil {
 		return nil
 	}
 
 	for _, card := range cards {
-		if err := c.CardVerifier.VerifyCard(card); err != nil {
+		if err := c.cardVerifier.VerifyCard(card); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (c *CardManager) getModelSigner() *ModelSigner {
-	c.onceModelSigner.Do(func() {
-		if c.ModelSigner == nil {
-			c.ModelSigner = &ModelSigner{Crypto: c.Crypto}
-		}
-	})
-
-	return c.ModelSigner
-}
-
-func (c *CardManager) getClient() *CardClient {
-	c.onceClient.Do(func() {
-		if c.CardClient == nil {
-			c.CardClient = &CardClient{}
-		}
-	})
-
-	return c.CardClient
-}
-
-func (c *CardManager) selfCheck() error {
-	c.onceCheckParams.Do(func() {
-		if c.Crypto == nil {
-			c.paramsError = errors.New("Crypto must be set")
-			return
-		}
-
-		if c.AccessTokenProvider == nil {
-			c.paramsError = errors.New("AccessTokenProvider must be set")
-			return
-		}
-	})
-	return c.paramsError
 }

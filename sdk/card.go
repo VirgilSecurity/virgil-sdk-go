@@ -57,6 +57,13 @@ type Card struct {
 	ContentSnapshot []byte
 }
 
+type CardSignature struct {
+	Signer      string
+	Signature   []byte
+	ExtraFields map[string]string
+	Snapshot    []byte
+}
+
 type Cards []*Card
 
 func (c Cards) ExtractPublicKeys() []crypto.PublicKey {

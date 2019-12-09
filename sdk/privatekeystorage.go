@@ -38,8 +38,9 @@
 package sdk
 
 import (
+	"errors"
+
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type VirgilPrivateKeyStorage struct {
@@ -66,7 +67,6 @@ func (v *VirgilPrivateKeyStorage) Store(privateKey crypto.PrivateKey, name strin
 	}
 
 	exported, err := v.PrivateKeyExporter.ExportPrivateKey(privateKey)
-
 	if err != nil {
 		return err
 	}

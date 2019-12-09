@@ -38,70 +38,64 @@
 package sdk
 
 import (
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type JwtGenerator struct {
 	ApiKey                 crypto.PrivateKey
 	ApiPublicKeyIdentifier string
 	AccessTokenSigner      crypto.AccessTokenSigner
-	AppId                  string
+	AppID                  string
 	TTL                    time.Duration
 }
 
-func NewJwtGenerator(
-	apiKey crypto.PrivateKey,
-	apiPublicKeyIdentifier string,
-	signer crypto.AccessTokenSigner,
-	appID string,
-	ttl time.Duration,
-) *JwtGenerator {
-	return &JwtGenerator{
-		AppId:                  appID,
-		AccessTokenSigner:      signer,
-		TTL:                    ttl,
-		ApiKey:                 apiKey,
-		ApiPublicKeyIdentifier: apiPublicKeyIdentifier,
+func (j JwtGenerator) Validate() error {
+	if j.ApiKey == nil {
+		return errors.New("JwtGenerator: api private key is not set")
 	}
+	if strings.Replace(j.ApiPublicKeyIdentifier, " ", "", -1) == "" {
+		return errors.New("JwtGenerator: api public key identifier is not set")
+	}
+	if j.AccessTokenSigner == nil {
+		return errors.New("JwtGenerator: access token signer is not set")
+	}
+	if strings.Replace(j.AccessTokenSigner.GetAlgorithm(), " ", "", -1) == "" {
+		return errors.New("JwtGenerator: access token signer is not set")
+	}
+	return nil
 }
 
-func (j *JwtGenerator) GenerateToken(identity string, additionalData map[string]interface{}) (*Jwt, error) {
-	if j.ApiKey == nil {
-		return nil, errors.New("Api private key is not set")
-	}
-
-	if j.AccessTokenSigner == nil {
-		return nil, errors.New("AccessTokenSigner is not set")
-	}
-
-	if SpaceMap(identity) == "" {
-		return nil, errors.New("identity is mandatory")
+func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]interface{}) (*Jwt, error) {
+	if strings.Replace(identity, " ", "", -1) == "" {
+		return nil, ErrIdentityIsMandatory
 	}
 
 	issuedAt := time.Now().UTC().Truncate(time.Second)
 	expiresAt := issuedAt.Add(j.TTL)
-	jwtBody, err := NewJwtBodyContent(j.AppId, identity, issuedAt, expiresAt, additionalData)
 
-	if err != nil {
+	h := JwtHeaderContent{
+		Algorithm:   j.AccessTokenSigner.GetAlgorithm(),
+		APIKeyID:    j.ApiPublicKeyIdentifier,
+		ContentType: VirgilContentType,
+		Type:        JwtType,
+	}
+	b := JwtBodyContent{
+		AppID:          j.AppID,
+		Identity:       identity,
+		Issuer:         IssuerPrefix + j.AppID,
+		Subject:        IdentityPrefix + identity,
+		IssuedAt:       issuedAt.UTC().Unix(),
+		ExpiresAt:      expiresAt.UTC().Unix(),
+		AdditionalData: additionalData,
+	}
+	jwt := NewJwt(h, b)
+	if err := jwt.Sign(j.AccessTokenSigner, j.ApiKey); err != nil {
 		return nil, err
 	}
 
-	jwtHeader, err := NewJwtHeaderContent(j.AccessTokenSigner.GetAlgorithm(), j.ApiPublicKeyIdentifier)
-	if err != nil {
-		return nil, err
-	}
-
-	unsignedJwt, err := NewJwt(jwtHeader, jwtBody, nil)
-	if err != nil {
-		return nil, err
-	}
-	jwtSignature, err := j.AccessTokenSigner.GenerateTokenSignature(unsignedJwt.Unsigned(), j.ApiKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewJwt(jwtHeader, jwtBody, jwtSignature)
+	return jwt, nil
 }

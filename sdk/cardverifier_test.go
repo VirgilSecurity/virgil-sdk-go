@@ -49,30 +49,26 @@ import (
 )
 
 type testCredentials struct {
-	*VerifierCredentials
+	VerifierCredentials
 	PrivateKey crypto.PrivateKey
 }
 
 func TestWhitelist(t *testing.T) {
-	var creds []*testCredentials
-	for i := 0; i < 5; i++ {
+	const credsCount = 5
+	creds := make([]testCredentials, 5)
+	for i := 0; i < credsCount; i++ {
 		pk, cred := makeRandomCredentials()
-		creds = append(creds, &testCredentials{VerifierCredentials: cred, PrivateKey: pk})
+		creds[i] = testCredentials{VerifierCredentials: cred, PrivateKey: pk}
 	}
-
-	var wl []*Whitelist
-	wl = addWhitelist(wl, creds[0], creds[1])
-	wl = addWhitelist(wl, creds[2])
 
 	pk, cardCreds := makeRandomCredentials()
 	model, err := GenerateRawCard(cardCrypto, &CardParams{
 		Identity:   cardCreds.Signer,
 		PrivateKey: pk,
-		PublicKey:  cardCreds.PublicKey,
 	}, time.Now())
 	assert.NoError(t, err)
 
-	modelSigner := NewModelSigner(cardCrypto)
+	var modelSigner ModelSigner // NewModelSigner(cardCrypto)
 	err = modelSigner.SelfSign(model, pk, map[string]string{
 		"a": "b",
 		"b": "c",
@@ -85,8 +81,12 @@ func TestWhitelist(t *testing.T) {
 	addRawSign(t, model, creds[1])
 	addRawSign(t, model, creds[2])
 
-	verifier, err := NewVirgilCardVerifier(cardCrypto, true, false, wl...)
-	assert.NoError(t, err)
+	verifier := NewVirgilCardVerifier(
+		VirgilCardVerifierSetCrypto(cardCrypto),
+		VirgilCardVerifierDisableVirgilSignature(),
+		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[0].VerifierCredentials, creds[1].VerifierCredentials)),
+		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[2].VerifierCredentials)),
+	)
 
 	card, err := ParseRawCard(cardCrypto, model, false)
 	assert.NoError(t, err)
@@ -96,33 +96,30 @@ func TestWhitelist(t *testing.T) {
 	assert.NoError(t, err)
 
 	//check that everything is ok if at least one signature in whitelist is valid
-	wl[0].VerifierCredentials[0] = creds[4].VerifierCredentials
+	// creds[4] doesn't exist
+	verifier = NewVirgilCardVerifier(
+		VirgilCardVerifierSetCrypto(cardCrypto),
+		VirgilCardVerifierDisableVirgilSignature(),
+		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[4].VerifierCredentials, creds[1].VerifierCredentials)),
+	)
 
 	err = verifier.VerifyCard(card)
 	assert.NoError(t, err)
 
 	//Check that verification fails if no signature exists for whitelist
-	wl = addWhitelist(wl, creds[3])
-	verifier.SetWhitelists(wl)
+	// creds[3] doesn't exist
+	verifier = NewVirgilCardVerifier(
+		VirgilCardVerifierSetCrypto(cardCrypto),
+		VirgilCardVerifierDisableVirgilSignature(),
+		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[2].VerifierCredentials)),
+		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[3].VerifierCredentials)),
+	)
 
 	err = verifier.VerifyCard(card)
 	assert.Error(t, err)
-
-	err, ok := ToCardVerifierError(err)
-	assert.Error(t, err)
-	assert.True(t, ok)
-
-	//empty whitelist must fail
-	verifier.SetWhitelists([]*Whitelist{{}})
-	err = verifier.VerifyCard(card)
-	assert.Error(t, err)
-
-	err, ok = ToCardVerifierError(err)
-	assert.Error(t, err)
-	assert.True(t, ok)
 }
 
-func addRawSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
+func addRawSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
 	modelSigner := &ModelSigner{Crypto: cardCrypto}
 
 	snapshot := make([]byte, 129)
@@ -133,7 +130,7 @@ func addRawSign(t *testing.T, model *RawSignedModel, credentials *testCredential
 	assert.NoError(t, err)
 }
 
-func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) {
+func addSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
 	modelSigner := &ModelSigner{Crypto: cardCrypto}
 
 	err := modelSigner.Sign(model, credentials.Signer, credentials.PrivateKey, map[string]string{
@@ -146,18 +143,7 @@ func addSign(t *testing.T, model *RawSignedModel, credentials *testCredentials) 
 	assert.NoError(t, err)
 }
 
-func addWhitelist(wl []*Whitelist, creds ...*testCredentials) []*Whitelist {
-	twl := &Whitelist{}
-
-	for _, cred := range creds {
-		twl.VerifierCredentials = append(twl.VerifierCredentials, cred.VerifierCredentials)
-	}
-
-	wl = append(wl, twl)
-	return wl
-}
-
-func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {
+func makeRandomCredentials() (crypto.PrivateKey, VerifierCredentials) {
 	key, err := cryptoNative.GenerateKeypair()
 	if err != nil {
 		panic(err)
@@ -169,7 +155,7 @@ func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {
 		panic(err)
 	}
 
-	return key, &VerifierCredentials{
+	return key, VerifierCredentials{
 		Signer:    hex.EncodeToString(id),
 		PublicKey: key.PublicKey(),
 	}
