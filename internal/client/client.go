@@ -3,9 +3,11 @@ package client
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/VirgilSecurity/virgil-sdk-go"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
@@ -66,7 +68,7 @@ func DefaultCodec(c Codec) Option {
 
 func NewClient(address string, opts ...Option) *Client {
 	options := &options{
-		httpClient:   &http.Client{},
+		httpClient:   DefaultHTTPClient,
 		errorHandler: DefaultErrorHandler,
 		defaultCodec: JSONCodec{},
 	}
@@ -142,6 +144,17 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 		panic("HTTP client error handler should return non nil error")
 	}
 	return nil, err
+}
+
+var DefaultHTTPClient = &http.Client{
+	Timeout: time.Second * 10,
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			ClientSessionCache: tls.NewLRUClientSessionCache(64),
+		},
+		TLSHandshakeTimeout: 5 * time.Second,
+		MaxIdleConnsPerHost: 64,
+	},
 }
 
 func DefaultErrorHandler(resp *Response) error {

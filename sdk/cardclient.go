@@ -73,7 +73,7 @@ type CardClient struct {
 func NewCardsClient(options ...CardClientOption) CardClient {
 	o := &cardClientOption{
 		serviceURL: "https://api.virgilsecurity.com",
-		httpClient: http.DefaultClient,
+		httpClient: client.DefaultHTTPClient,
 	}
 	for _, opt := range options {
 		opt(o)
