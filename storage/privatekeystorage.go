@@ -96,7 +96,7 @@ func (v *VirgilPrivateKeyStorage) Load(name string) (privateKey crypto.PrivateKe
 		return nil, nil, verrors.NewSDKError(err, "action", "VirgilPrivateKeyStorage.Load", "name", name)
 	}
 	var j storageKeyJSON
-	if err := json.Unmarshal(data, &j); err != nil {
+	if err = json.Unmarshal(data, &j); err != nil {
 		return nil, nil, verrors.NewSDKError(err, "action", "VirgilPrivateKeyStorage.Load", "name", name)
 	}
 

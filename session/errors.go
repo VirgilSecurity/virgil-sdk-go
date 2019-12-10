@@ -34,6 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
 package session
 
 import "errors"
