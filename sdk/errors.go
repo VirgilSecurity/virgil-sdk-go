@@ -42,7 +42,6 @@ import (
 )
 
 var (
-	ErrContextIsMandatory    = errors.New("token context is mandatory")
 	ErrInvalidCardID         = errors.New("invalid card id")
 	ErrIdentityIsMandatory   = errors.New("identity is mandatory")
 	ErrPrivateKeyIsMandatory = errors.New("private key is mandatory")
@@ -55,12 +54,6 @@ var (
 	CSRPublicKeyEmptyErr       = errors.New("Public key field in CSR is mandatory")
 	CSRSelfSignAlreadyExistErr = errors.New("The CSR already has a self signature")
 	CSRAppSignAlreadyExistErr  = errors.New("The CSR already has an application signature")
-
-	ErrJWTInvalid          = errors.New("jwt invalid")
-	ErrJWTTokenIsMandatory = errors.New("jwt token is mandatory")
-	ErrJWTExpired          = errors.New("jwt token is expired")
-	ErrJWTParseFailed      = errors.New("jwt parse failed")
-	ErrJWTIncorrect        = errors.New("jwt body does not contain virgil prefix")
 
 	ErrRawSignedModelIsMandatory = errors.New("raw signerd model is mandatory")
 	ErrDuplicateSigner           = errors.New("duplicate signer")

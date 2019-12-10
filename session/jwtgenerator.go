@@ -35,7 +35,7 @@
  *
  */
 
-package sdk
+package session
 
 import (
 	"errors"

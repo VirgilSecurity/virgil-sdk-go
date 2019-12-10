@@ -35,40 +35,18 @@
  *
  */
 
-package sdk
+package storage
 
-import "github.com/VirgilSecurity/virgil-sdk-go/errors"
+import "errors"
 
-type CallbackJwtProvider struct {
-	GetTokenCallback func(context *TokenContext) (*Jwt, error)
-}
+var (
+	ErrorKeyAlreadyExists = errors.New("key already exists")
+	ErrorKeyNotFound      = errors.New("key not found")
+)
 
-func NewCallbackJwtProvider(callback func(context *TokenContext) (*Jwt, error)) *CallbackJwtProvider {
-	if callback == nil {
-		panic("callback is mandatory")
-	}
-	return &CallbackJwtProvider{
-		GetTokenCallback: callback,
-	}
-}
-
-func NewCallbackStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CallbackJwtProvider {
-	if renewTokenCallback == nil {
-		panic("callback is mandatory")
-	}
-	return NewCallbackJwtProvider(func(context *TokenContext) (*Jwt, error) {
-		token, err := renewTokenCallback(context)
-		if err != nil {
-			return nil, err
-		}
-		return JwtFromString(token)
-	})
-}
-
-func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
-	if context == nil {
-		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "CallbackJwtProvider.GetToken")
-	}
-
-	return c.GetTokenCallback(context)
+type Storage interface {
+	Store(key string, val []byte) error
+	Load(key string) ([]byte, error)
+	Exists(key string) bool
+	Delete(key string) error
 }

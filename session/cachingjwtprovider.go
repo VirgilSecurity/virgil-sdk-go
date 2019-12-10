@@ -35,11 +35,64 @@
  *
  */
 
-package sdk
+package session
 
-type TokenContext struct {
-	Identity    string
-	Operation   string
-	Service     string
-	ForceReload bool
+import (
+	"sync"
+	"time"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+)
+
+type CachingJwtProvider struct {
+	RenewTokenCallback func(context *TokenContext) (*Jwt, error)
+	Jwt                *Jwt
+	lock               sync.RWMutex
+}
+
+func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (*Jwt, error)) *CachingJwtProvider {
+	if renewTokenCallback == nil {
+		panic("callback is mandatory")
+	}
+	return &CachingJwtProvider{
+		RenewTokenCallback: renewTokenCallback,
+	}
+}
+
+func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
+	if renewTokenCallback == nil {
+		panic("callback is mandatory")
+	}
+	return NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
+		token, err := renewTokenCallback(context)
+		if err != nil {
+			return nil, err
+		}
+		return JwtFromString(token)
+	})
+}
+
+func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
+	if context == nil {
+		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "CachingJwtProvider.GetToken")
+	}
+
+	// TODO: refactor
+	c.lock.RLock()
+	if c.Jwt != nil && c.Jwt.IsExpiredDelta(5*time.Second) == nil {
+		c.lock.RUnlock()
+		return c.Jwt, nil
+	}
+	c.lock.RUnlock()
+
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if c.Jwt == nil || c.Jwt.IsExpiredDelta(5*time.Second) != nil {
+		token, err := c.RenewTokenCallback(context)
+		if err != nil {
+			return nil, errors.NewSDKError(err, "action", "CachingJwtProvider.GetToken")
+		}
+		c.Jwt = token
+	}
+	return c.Jwt, nil
 }

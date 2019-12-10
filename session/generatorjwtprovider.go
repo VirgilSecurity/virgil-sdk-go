@@ -35,16 +35,41 @@
  *
  */
 
-package sdk
+package session
 
-type AccessTokenProvider interface {
-	GetToken(context *TokenContext) (AccessToken, error)
+import "github.com/VirgilSecurity/virgil-sdk-go/errors"
+
+type GeneratorJwtProvider struct {
+	jwtGenerator    JwtGenerator
+	additionalData  map[string]interface{}
+	defaultIdentity string
 }
 
-type ConstAccessTokenProvider struct {
-	AccessToken AccessToken
+func NewGeneratorJwtProvider(generator JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
+	if err := generator.Validate(); err != nil {
+		panic(err)
+	}
+
+	return &GeneratorJwtProvider{
+		jwtGenerator:    generator,
+		additionalData:  additionalData,
+		defaultIdentity: defaultIdentity,
+	}
 }
 
-func (a *ConstAccessTokenProvider) GetToken(context *TokenContext) (AccessToken, error) {
-	return a.AccessToken, nil
+func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
+
+	if context == nil {
+		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "GeneratorJwtProvider.GetToken")
+	}
+	identity := context.Identity
+	if identity == "" {
+		identity = g.defaultIdentity
+	}
+
+	at, err := g.jwtGenerator.GenerateToken(identity, g.additionalData)
+	if err != nil {
+		return nil, errors.NewSDKError(err, "action", "GeneratorJwtProvider.GetToken")
+	}
+	return at, nil
 }

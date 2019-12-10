@@ -35,78 +35,59 @@
  *
  */
 
-package sdk
+package session
 
 import (
-	"errors"
+	"encoding/hex"
+	"sync"
+	"testing"
+	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 )
 
-type VirgilPrivateKeyStorage struct {
-	PrivateKeyExporter crypto.PrivateKeyExporter
-	KeyStorage         KeyStorage
-}
+func TestCachingJwtProvider(t *testing.T) {
+	crypto := cryptocgo.NewVirgilCrypto()
 
-func NewVirgilPrivateKeyStorage(privateKeyExporter crypto.PrivateKeyExporter, path string) crypto.PrivateKeyStorage {
-	return &VirgilPrivateKeyStorage{
-		PrivateKeyExporter: privateKeyExporter,
-		KeyStorage: &FileKeyStorage{
-			RootDir: path,
-		},
-	}
-}
+	key, err := crypto.GenerateKeypair()
+	require.NoError(t, err)
 
-func (v *VirgilPrivateKeyStorage) Store(privateKey crypto.PrivateKey, name string, meta map[string]string) error {
-	if v.PrivateKeyExporter == nil {
-		return errors.New("PrivateKeyExporter is not set")
+	genCount := 0
+
+	jwtGenerator := JwtGenerator{
+		ApiKey:                 key,
+		ApiPublicKeyIdentifier: hex.EncodeToString(key.Identifier()),
+		TTL:                    6 * time.Second,
+		AccessTokenSigner:      cryptocgo.NewVirgilAccessTokenSigner(),
+		AppID:                  "app_id",
 	}
 
-	if v.KeyStorage == nil {
-		return errors.New("KeyStorage is not set")
-	}
-
-	exported, err := v.PrivateKeyExporter.ExportPrivateKey(privateKey)
-	if err != nil {
-		return err
-	}
-
-	return v.KeyStorage.Store(&StorageItem{
-		Name: name,
-		Data: exported,
-		Meta: meta,
+	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
+		genCount++
+		return jwtGenerator.GenerateToken(context.Identity, nil)
 	})
-}
 
-func (v *VirgilPrivateKeyStorage) Load(name string) (privateKey crypto.PrivateKey, meta map[string]string, err error) {
-	if v.PrivateKeyExporter == nil {
-		err = errors.New("PrivateKeyExporter is not set")
-		return
+	routines := 100
+
+	wg := &sync.WaitGroup{}
+	wg.Add(routines)
+
+	start := time.Now()
+
+	for i := 0; i < routines; i++ {
+		go func() {
+			defer wg.Done()
+
+			for time.Since(start) < (time.Second * 5) {
+				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
+				assert.NotNil(t, token)
+				assert.NoError(t, err)
+			}
+		}()
 	}
-
-	if v.KeyStorage == nil {
-		err = errors.New("KeyStorage is not set")
-		return
-	}
-
-	item, err := v.KeyStorage.Load(name)
-
-	if err != nil {
-		return
-	}
-
-	privateKey, err = v.PrivateKeyExporter.ImportPrivateKey(item.Data)
-	if err != nil {
-		return
-	}
-
-	return privateKey, item.Meta, nil
-}
-
-func (v *VirgilPrivateKeyStorage) Delete(name string) error {
-	if v.KeyStorage == nil {
-		return errors.New("KeyStorage is not set")
-	}
-
-	return v.KeyStorage.Delete(name)
+	wg.Wait()
+	assert.Equal(t, 6, genCount)
 }

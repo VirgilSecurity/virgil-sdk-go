@@ -41,6 +41,7 @@ import (
 	"time"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/session"
 )
 
 type CardManagerOption func(c *CardManager)
@@ -78,13 +79,13 @@ func CardManagerSetSignCallback(callback func(model *RawSignedModel) (signedCard
 type CardManager struct {
 	modelSigner         ModelSigner
 	crypto              crypto.CardCrypto
-	accessTokenProvider AccessTokenProvider
+	accessTokenProvider session.AccessTokenProvider
 	cardVerifier        CardVerifier
 	cardClient          CardClient
 	signCallback        func(model *RawSignedModel) (signedCard *RawSignedModel, err error)
 }
 
-func NewCardManager(accessTokenProvider AccessTokenProvider, options ...CardManagerOption) *CardManager {
+func NewCardManager(accessTokenProvider session.AccessTokenProvider, options ...CardManagerOption) *CardManager {
 	cm := &CardManager{
 		crypto:              defaultCardCrypto,
 		accessTokenProvider: accessTokenProvider,
@@ -117,7 +118,7 @@ func (c *CardManager) PublishRawCard(rawSignedModel *RawSignedModel) (card *Card
 		return nil, err
 	}
 
-	tokenContext := &TokenContext{Service: "cards", Operation: "publish", Identity: model.Identity}
+	tokenContext := &session.TokenContext{Service: "cards", Operation: "publish", Identity: model.Identity}
 	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
@@ -153,7 +154,7 @@ func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 }
 
 func (c *CardManager) GetCard(cardID string) (*Card, error) {
-	tokenContext := &TokenContext{Identity: "my_default_identity", Operation: "get"}
+	tokenContext := &session.TokenContext{Identity: "my_default_identity", Operation: "get"}
 	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
@@ -176,7 +177,7 @@ func (c *CardManager) GetCard(cardID string) (*Card, error) {
 }
 
 func (c *CardManager) RevokeCard(cardID string) error {
-	tokenContext := &TokenContext{Operation: "delete", Service: "cards"}
+	tokenContext := &session.TokenContext{Operation: "delete", Service: "cards"}
 	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return err
@@ -186,7 +187,7 @@ func (c *CardManager) RevokeCard(cardID string) error {
 }
 
 func (c *CardManager) SearchCards(identity string) (Cards, error) {
-	tokenContext := &TokenContext{Identity: "my_default_identity", Operation: "search"}
+	tokenContext := &session.TokenContext{Identity: "my_default_identity", Operation: "search"}
 	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err

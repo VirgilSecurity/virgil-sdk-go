@@ -35,53 +35,59 @@
  *
  */
 
-package errors
+package session
 
 import (
+	"errors"
 	"strings"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
-func NewSDKError(err error, params ...string) error {
-	if err == nil {
-		return nil
-	}
-
-	m := make(map[string]string)
-	for i := 0; i < len(params); i++ {
-		var val = "val_is_missed"
-		if i+1 < len(params) {
-			val = params[i+1]
-		}
-		m[params[i]] = val
-		i++
-	}
-	return SDKError{
-		Params:   m,
-		InnerErr: err,
-	}
+type JwtVerifier struct {
+	APIPublicKey      crypto.PublicKey
+	APIPublicKeyID    string
+	AccessTokenSigner crypto.AccessTokenSigner
 }
 
-type SDKError struct {
-	Params   map[string]string
-	InnerErr error
-}
-
-// nolint:gosec
-func (e SDKError) Error() string {
-	var b strings.Builder
-	b.WriteString("sdk error { ")
-	for k, v := range e.Params {
-		b.WriteString(k + ": " + v)
+func NewJwtVerifier(apiPublicKey crypto.PublicKey, apiPublicKeyID string, accessTokenSigner crypto.AccessTokenSigner) *JwtVerifier {
+	v := &JwtVerifier{
+		AccessTokenSigner: accessTokenSigner,
+		APIPublicKeyID:    apiPublicKeyID,
+		APIPublicKey:      apiPublicKey,
 	}
-	b.WriteString("}: ")
-	b.WriteString(e.InnerErr.Error())
-	return b.String()
+	if err := v.Validate(); err != nil {
+		panic(err)
+	}
+	return v
 }
 
-func (e SDKError) Unwrap() error {
-	return e.InnerErr
+func (j *JwtVerifier) VerifyToken(jwtToken *Jwt) error {
+	if jwtToken == nil {
+		return ErrJWTTokenIsMandatory
+	}
+
+	if jwtToken.HeaderContent.APIKeyID != j.APIPublicKeyID ||
+		jwtToken.HeaderContent.Algorithm != j.AccessTokenSigner.GetAlgorithm() ||
+		jwtToken.HeaderContent.ContentType != VirgilContentType ||
+		jwtToken.HeaderContent.Type != JwtType {
+		return ErrJWTInvalid
+	}
+
+	return jwtToken.Verify(j.AccessTokenSigner, j.APIPublicKey)
 }
 
-func (e SDKError) Cause() error {
-	return e.InnerErr
+func (j JwtVerifier) Validate() error {
+	if j.AccessTokenSigner == nil {
+		return errors.New("JwtVerifier: access token signer is not set")
+	}
+
+	if j.APIPublicKey == nil {
+		return errors.New("JwtVerifier: api public key is not set")
+	}
+
+	if strings.Replace(j.APIPublicKeyID, " ", "", -1) == "" {
+		return errors.New("JwtVerifier: api public key id is not set")
+	}
+	return nil
 }

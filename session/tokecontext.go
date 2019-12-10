@@ -35,9 +35,11 @@
  *
  */
 
-package sdk
+package session
 
-type AccessToken interface {
-	String() string
-	Identity() (string, error)
+type TokenContext struct {
+	Identity    string
+	Operation   string
+	Service     string
+	ForceReload bool
 }

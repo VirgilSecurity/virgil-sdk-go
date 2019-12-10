@@ -49,6 +49,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/session"
 )
 
 func initCardManager() (*CardManager, error) {
@@ -83,7 +84,7 @@ func initCardManagerWithIdentityName(identityName string) (*CardManager, error) 
 		cardClientOptions = append(cardClientOptions, SetCardClientURL(os.Getenv("TEST_ADDRESS")))
 	}
 
-	generator := JwtGenerator{
+	generator := session.JwtGenerator{
 		ApiKey:                 apiKey,
 		ApiPublicKeyIdentifier: apiKeyID,
 		AppID:                  appID,
@@ -91,7 +92,7 @@ func initCardManagerWithIdentityName(identityName string) (*CardManager, error) 
 		TTL:                    time.Minute,
 	}
 
-	return NewCardManager(NewGeneratorJwtProvider(generator, nil, identityName),
+	return NewCardManager(session.NewGeneratorJwtProvider(generator, nil, identityName),
 		CardManagerSetCardClient(NewCardsClient(cardClientOptions...)),
 		CardManagerSetCardVerifier(NewVirgilCardVerifier(virgilCardVerifierOptions...)),
 	), nil

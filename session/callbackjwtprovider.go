@@ -35,35 +35,28 @@
  *
  */
 
-package sdk
+package session
 
-import (
-	"sync"
-	"time"
+import "github.com/VirgilSecurity/virgil-sdk-go/errors"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
-)
-
-type CachingJwtProvider struct {
-	RenewTokenCallback func(context *TokenContext) (*Jwt, error)
-	Jwt                *Jwt
-	lock               sync.RWMutex
+type CallbackJwtProvider struct {
+	GetTokenCallback func(context *TokenContext) (*Jwt, error)
 }
 
-func NewCachingJwtProvider(renewTokenCallback func(context *TokenContext) (*Jwt, error)) *CachingJwtProvider {
-	if renewTokenCallback == nil {
+func NewCallbackJwtProvider(callback func(context *TokenContext) (*Jwt, error)) *CallbackJwtProvider {
+	if callback == nil {
 		panic("callback is mandatory")
 	}
-	return &CachingJwtProvider{
-		RenewTokenCallback: renewTokenCallback,
+	return &CallbackJwtProvider{
+		GetTokenCallback: callback,
 	}
 }
 
-func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CachingJwtProvider {
+func NewCallbackStringJwtProvider(renewTokenCallback func(context *TokenContext) (string, error)) *CallbackJwtProvider {
 	if renewTokenCallback == nil {
 		panic("callback is mandatory")
 	}
-	return NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
+	return NewCallbackJwtProvider(func(context *TokenContext) (*Jwt, error) {
 		token, err := renewTokenCallback(context)
 		if err != nil {
 			return nil, err
@@ -72,27 +65,10 @@ func NewCachingStringJwtProvider(renewTokenCallback func(context *TokenContext) 
 	})
 }
 
-func (c *CachingJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
+func (c *CallbackJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {
 	if context == nil {
-		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "CachingJwtProvider.GetToken")
+		return nil, errors.NewSDKError(ErrContextIsMandatory, "action", "CallbackJwtProvider.GetToken")
 	}
 
-	// TODO: refactor
-	c.lock.RLock()
-	if c.Jwt != nil && c.Jwt.IsExpiredDelta(5*time.Second) == nil {
-		c.lock.RUnlock()
-		return c.Jwt, nil
-	}
-	c.lock.RUnlock()
-
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	if c.Jwt == nil || c.Jwt.IsExpiredDelta(5*time.Second) != nil {
-		token, err := c.RenewTokenCallback(context)
-		if err != nil {
-			return nil, errors.NewSDKError(err, "action", "CachingJwtProvider.GetToken")
-		}
-		c.Jwt = token
-	}
-	return c.Jwt, nil
+	return c.GetTokenCallback(context)
 }

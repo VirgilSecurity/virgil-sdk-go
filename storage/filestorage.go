@@ -35,67 +35,39 @@
  *
  */
 
-package sdk
+package storage
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 
-	"os/user"
-
-	"github.com/pkg/errors"
+	errors "github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
-
-type KeyStorage interface {
-	Store(key *StorageItem) error
-	Load(name string) (*StorageItem, error)
-	Exists(name string) bool
-	Delete(name string) error
-}
-
-type StorageItem struct {
-	Name string
-	Data []byte
-	Meta map[string]string
-}
 
 var (
-	ErrorKeyAlreadyExists = errors.New("Key already exists")
-	ErrorKeyNotFound      = errors.New("Key not found")
+	_ Storage = &FileStorage{}
 )
 
-type storageKeyJSON struct {
-	Data []byte
-	Meta map[string]string
-}
-type FileKeyStorage struct {
+type FileStorage struct {
 	RootDir string
 }
 
-func (s *FileKeyStorage) Store(key *StorageItem) error {
+func (s *FileStorage) Store(key string, val []byte) error {
 	dir, err := s.getRootDir()
 	if err != nil {
 		return err
 	}
-	if s.Exists(key.Name) {
+	if s.Exists(key) {
 		return ErrorKeyAlreadyExists
 	}
 
-	data, err := json.Marshal(storageKeyJSON{
-		Data: key.Data,
-		Meta: key.Meta,
-	})
-	if err != nil {
-		return errors.Wrap(err, "FileKeyStorage cannot marshal data")
-	}
-
-	return ioutil.WriteFile(path.Join(dir, key.Name), data, 0600)
+	return ioutil.WriteFile(path.Join(dir, key), val, 0600)
 }
 
-func (s *FileKeyStorage) Load(name string) (*StorageItem, error) {
+func (s *FileStorage) Load(name string) ([]byte, error) {
 	dir, err := s.getRootDir()
 	if err != nil {
 		return nil, err
@@ -103,24 +75,16 @@ func (s *FileKeyStorage) Load(name string) (*StorageItem, error) {
 	if !s.Exists(name) {
 		return nil, ErrorKeyNotFound
 	}
+
 	//nolint: gosec
 	d, err := ioutil.ReadFile(path.Join(dir, name))
 	if err != nil {
-		return nil, errors.Wrap(err, "Cannot read file")
+		return nil, errors.NewSDKError(err, "action", "FileStorage.Load", "file", path.Join(dir, name))
 	}
-	j := new(storageKeyJSON)
-	err = json.Unmarshal(d, j)
-	if err != nil {
-		return nil, errors.Wrap(err, "FileKeyStorage cannot unmarshal data")
-	}
-	return &StorageItem{
-		Name: name,
-		Data: j.Data,
-		Meta: j.Meta,
-	}, nil
+	return d, nil
 }
 
-func (s *FileKeyStorage) Exists(name string) bool {
+func (s *FileStorage) Exists(name string) bool {
 	dir, err := s.getRootDir()
 	if err != nil {
 		return false
@@ -129,7 +93,7 @@ func (s *FileKeyStorage) Exists(name string) bool {
 	return !os.IsNotExist(err)
 }
 
-func (s *FileKeyStorage) Delete(name string) error {
+func (s *FileStorage) Delete(name string) error {
 	dir, err := s.getRootDir()
 	if err != nil {
 		return err
@@ -137,24 +101,23 @@ func (s *FileKeyStorage) Delete(name string) error {
 	return os.Remove(path.Join(dir, name))
 }
 
-func (s *FileKeyStorage) getRootDir() (string, error) {
+func (s *FileStorage) getRootDir() (_ string, err error) {
 	if s.RootDir == "" {
-		var err error
 		s.RootDir, err = filepath.Abs(filepath.Dir(os.Args[0]))
 		if err != nil {
-			return "", errors.Wrap(err, "FileKeyStorage cannot get executable path")
+			return "", errors.NewSDKError(err, "action", "FileStorage.getRootDir")
 		}
-	} else {
-		var err error
-		s.RootDir, err = expand(s.RootDir)
+		return s.RootDir, nil
+	}
+
+	s.RootDir, err = expand(s.RootDir)
+	if err != nil {
+		return "", err
+	}
+	if _, err := os.Stat(s.RootDir); os.IsNotExist(err) {
+		err = os.Mkdir(s.RootDir, 0700)
 		if err != nil {
 			return "", err
-		}
-		if _, err := os.Stat(s.RootDir); os.IsNotExist(err) {
-			err = os.Mkdir(s.RootDir, 0700)
-			if err != nil {
-				return "", err
-			}
 		}
 	}
 	return s.RootDir, nil

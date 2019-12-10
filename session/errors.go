@@ -34,60 +34,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+package session
 
-package sdk
+import "errors"
 
-import (
-	"encoding/hex"
-	"sync"
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
+var (
+	ErrIdentityIsMandatory = errors.New("identity is mandatory")
+	ErrContextIsMandatory  = errors.New("token context is mandatory")
+	ErrJWTInvalid          = errors.New("jwt invalid")
+	ErrJWTTokenIsMandatory = errors.New("jwt token is mandatory")
+	ErrJWTExpired          = errors.New("jwt token is expired")
+	ErrJWTParseFailed      = errors.New("jwt parse failed")
+	ErrJWTIncorrect        = errors.New("jwt body does not contain virgil prefix")
 )
-
-func TestCachingJwtProvider(t *testing.T) {
-	crypto := cryptocgo.NewVirgilCrypto()
-
-	key, err := crypto.GenerateKeypair()
-	require.NoError(t, err)
-
-	genCount := 0
-
-	jwtGenerator := JwtGenerator{
-		ApiKey:                 key,
-		ApiPublicKeyIdentifier: hex.EncodeToString(key.Identifier()),
-		TTL:                    6 * time.Second,
-		AccessTokenSigner:      cryptocgo.NewVirgilAccessTokenSigner(),
-		AppID:                  "app_id",
-	}
-
-	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {
-		genCount++
-		return jwtGenerator.GenerateToken(context.Identity, nil)
-	})
-
-	routines := 100
-
-	wg := &sync.WaitGroup{}
-	wg.Add(routines)
-
-	start := time.Now()
-
-	for i := 0; i < routines; i++ {
-		go func() {
-			defer wg.Done()
-
-			for time.Since(start) < (time.Second * 5) {
-				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
-				assert.NotNil(t, token)
-				assert.NoError(t, err)
-			}
-		}()
-	}
-	wg.Wait()
-	assert.Equal(t, 6, genCount)
-}
