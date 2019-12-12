@@ -4,7 +4,7 @@ package ratchet
 import "C"
 import unsafe "unsafe"
 import "runtime"
-import "github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo/internal/foundation"
+import "github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
 
 
 /*

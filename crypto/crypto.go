@@ -37,25 +37,6 @@
 
 package crypto
 
-type CardCrypto interface {
-	GenerateSignature(data []byte, privateKey PrivateKey) ([]byte, error)
-	VerifySignature(data []byte, signature []byte, publicKey PublicKey) error
-	ExportPublicKey(publicKey PublicKey) ([]byte, error)
-	ImportPublicKey(publicKeySrc []byte) (PublicKey, error)
-	GenerateSHA512(data []byte) []byte
-}
-
-type AccessTokenSigner interface {
-	GenerateTokenSignature(data []byte, privateKey PrivateKey) ([]byte, error)
-	VerifyTokenSignature(data []byte, signature []byte, publicKey PublicKey) error
-	GetAlgorithm() string
-}
-
-type PrivateKeyExporter interface {
-	ExportPrivateKey(privateKey PrivateKey) ([]byte, error)
-	ImportPrivateKey(data []byte) (privateKey PrivateKey, err error)
-}
-
 type PrivateKey interface {
 	Identifier() []byte
 	PublicKey() PublicKey

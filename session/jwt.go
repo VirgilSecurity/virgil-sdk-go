@@ -158,7 +158,7 @@ func (j *Jwt) signatureBase64() string {
 	return base64.RawURLEncoding.EncodeToString(j.Signature)
 }
 
-func (j *Jwt) Sign(c crypto.AccessTokenSigner, key crypto.PrivateKey) error {
+func (j *Jwt) Sign(c AccessTokenSigner, key crypto.PrivateKey) error {
 	h, err := j.headerBase64()
 	if err != nil {
 		return err
@@ -178,7 +178,7 @@ func (j *Jwt) Sign(c crypto.AccessTokenSigner, key crypto.PrivateKey) error {
 	return nil
 }
 
-func (j *Jwt) Verify(c crypto.AccessTokenSigner, key crypto.PublicKey) error {
+func (j *Jwt) Verify(c AccessTokenSigner, key crypto.PublicKey) error {
 	return c.VerifyTokenSignature(j.unsignedToken, j.Signature, key)
 }
 

@@ -46,11 +46,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 func TestCachingJwtProvider(t *testing.T) {
-	crypto := cryptocgo.NewVirgilCrypto()
+	crypto := crypto.NewVirgilCrypto()
 
 	key, err := crypto.GenerateKeypair()
 	require.NoError(t, err)
@@ -61,7 +61,7 @@ func TestCachingJwtProvider(t *testing.T) {
 		ApiKey:                 key,
 		ApiPublicKeyIdentifier: hex.EncodeToString(key.Identifier()),
 		TTL:                    6 * time.Second,
-		AccessTokenSigner:      cryptocgo.NewVirgilAccessTokenSigner(),
+		AccessTokenSigner:      VirgilAccessTokenSigner{},
 		AppID:                  "app_id",
 	}
 

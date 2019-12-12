@@ -44,11 +44,9 @@ import (
 	"encoding/json"
 
 	"time"
-
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
-func ParseRawCard(crypto crypto.CardCrypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
+func ParseRawCard(crypto Crypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
 	if crypto == nil {
 		return nil, ErrCryptoIsMandatory
 	}
@@ -101,7 +99,7 @@ func GenerateCardID(data []byte) string {
 	return hex.EncodeToString(h[:32])
 }
 
-func ParseRawCards(crypto crypto.CardCrypto, models ...*RawSignedModel) ([]*Card, error) {
+func ParseRawCards(crypto Crypto, models ...*RawSignedModel) ([]*Card, error) {
 	cards := make([]*Card, len(models))
 	for i, model := range models {
 		card, err := ParseRawCard(crypto, model, false)

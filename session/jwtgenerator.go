@@ -45,10 +45,16 @@ import (
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
+type AccessTokenSigner interface {
+	GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error)
+	VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error
+	GetAlgorithm() string
+}
+
 type JwtGenerator struct {
 	ApiKey                 crypto.PrivateKey
 	ApiPublicKeyIdentifier string
-	AccessTokenSigner      crypto.AccessTokenSigner
+	AccessTokenSigner      AccessTokenSigner
 	AppID                  string
 	TTL                    time.Duration
 }

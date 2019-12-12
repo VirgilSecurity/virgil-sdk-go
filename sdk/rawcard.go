@@ -41,15 +41,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"time"
-
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 const (
 	CardVersion = "5.0"
 )
 
-func GenerateRawCard(crypto crypto.CardCrypto, cardParams *CardParams, createdAt time.Time) (*RawSignedModel, error) {
+func GenerateRawCard(crypto Crypto, cardParams *CardParams, createdAt time.Time) (*RawSignedModel, error) {
 	if crypto == nil {
 		return nil, ErrCryptoIsMandatory
 	}
@@ -91,7 +89,7 @@ func GenerateRawSignedModelFromJson(json string) (*RawSignedModel, error) {
 	return model, err
 }
 
-func ParseCard(crypto crypto.CardCrypto, card *Card) (*RawSignedModel, error) {
+func ParseCard(crypto Crypto, card *Card) (*RawSignedModel, error) {
 	if crypto == nil {
 		return nil, ErrCryptoIsMandatory
 	}

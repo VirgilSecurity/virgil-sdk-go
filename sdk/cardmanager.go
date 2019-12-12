@@ -40,7 +40,6 @@ package sdk
 import (
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/session"
 )
 
@@ -52,7 +51,7 @@ func CardManagerSetModelSigner(ms ModelSigner) CardManagerOption {
 	}
 }
 
-func CardManagerSetCrypto(cc crypto.CardCrypto) CardManagerOption {
+func CardManagerSetCrypto(cc Crypto) CardManagerOption {
 	return func(c *CardManager) {
 		c.crypto = cc
 	}
@@ -78,7 +77,7 @@ func CardManagerSetSignCallback(callback func(model *RawSignedModel) (signedCard
 
 type CardManager struct {
 	modelSigner         ModelSigner
-	crypto              crypto.CardCrypto
+	crypto              Crypto
 	accessTokenProvider session.AccessTokenProvider
 	cardVerifier        CardVerifier
 	cardClient          CardClient
@@ -87,7 +86,7 @@ type CardManager struct {
 
 func NewCardManager(accessTokenProvider session.AccessTokenProvider, options ...CardManagerOption) *CardManager {
 	cm := &CardManager{
-		crypto:              defaultCardCrypto,
+		crypto:              DefaultCrypto,
 		accessTokenProvider: accessTokenProvider,
 		cardClient:          NewCardsClient(),
 	}

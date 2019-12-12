@@ -38,56 +38,38 @@
 package session
 
 import (
-	"errors"
-	"strings"
-
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
-type JwtVerifier struct {
-	APIPublicKey      crypto.PublicKey
-	APIPublicKeyID    string
-	AccessTokenSigner AccessTokenSigner
+var (
+	DefaultCrypto Crypto            = crypto.NewVirgilCrypto()
+	_             AccessTokenSigner = VirgilAccessTokenSigner{}
+)
+
+type Crypto interface {
+	Sign(data []byte, privateKey crypto.PrivateKey) ([]byte, error)
+	VerifySignature(data []byte, sign []byte, publicKey crypto.PublicKey) error
 }
 
-func NewJwtVerifier(apiPublicKey crypto.PublicKey, apiPublicKeyID string, accessTokenSigner AccessTokenSigner) *JwtVerifier {
-	v := &JwtVerifier{
-		AccessTokenSigner: accessTokenSigner,
-		APIPublicKeyID:    apiPublicKeyID,
-		APIPublicKey:      apiPublicKey,
-	}
-	if err := v.Validate(); err != nil {
-		panic(err)
-	}
-	return v
+type VirgilAccessTokenSigner struct {
+	Crypto Crypto
 }
 
-func (j *JwtVerifier) VerifyToken(jwtToken *Jwt) error {
-	if jwtToken == nil {
-		return ErrJWTTokenIsMandatory
-	}
-
-	if jwtToken.HeaderContent.APIKeyID != j.APIPublicKeyID ||
-		jwtToken.HeaderContent.Algorithm != j.AccessTokenSigner.GetAlgorithm() ||
-		jwtToken.HeaderContent.ContentType != VirgilContentType ||
-		jwtToken.HeaderContent.Type != JwtType {
-		return ErrJWTInvalid
-	}
-
-	return jwtToken.Verify(j.AccessTokenSigner, j.APIPublicKey)
+func (t VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
+	return t.getCrypto().Sign(data, privateKey)
 }
 
-func (j JwtVerifier) Validate() error {
-	if j.AccessTokenSigner == nil {
-		return errors.New("JwtVerifier: access token signer is not set")
-	}
+func (t VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
+	return t.getCrypto().VerifySignature(data, signature, publicKey)
+}
 
-	if j.APIPublicKey == nil {
-		return errors.New("JwtVerifier: api public key is not set")
-	}
+func (t VirgilAccessTokenSigner) GetAlgorithm() string {
+	return "VEDS512"
+}
 
-	if strings.Replace(j.APIPublicKeyID, " ", "", -1) == "" {
-		return errors.New("JwtVerifier: api public key id is not set")
+func (t VirgilAccessTokenSigner) getCrypto() Crypto {
+	if t.Crypto != nil {
+		return t.Crypto
 	}
-	return nil
+	return DefaultCrypto
 }

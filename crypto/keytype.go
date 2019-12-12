@@ -37,11 +37,15 @@
 
 package crypto
 
+import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
+)
+
 type KeyType int
 
 // nolint: golint
 const (
-	Default KeyType = iota
+	DefaultKeyType KeyType = iota
 	RSA_2048
 	RSA_3072
 	RSA_4096
@@ -58,3 +62,42 @@ const (
 	FAST_EC_ED25519
 	PQC
 )
+
+var keyTypeMap = map[KeyType]keyAlg{
+	DefaultKeyType:  keyType(foundation.AlgIdEd25519),
+	RSA_2048:        rsaKeyType{foundation.AlgIdRsa, 2048},
+	RSA_3072:        rsaKeyType{foundation.AlgIdRsa, 3072},
+	RSA_4096:        rsaKeyType{foundation.AlgIdRsa, 4096},
+	RSA_8192:        rsaKeyType{foundation.AlgIdRsa, 8192},
+	EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
+	EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
+	FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
+	PQC:             keyType(foundation.AlgIdPostQuantum),
+}
+
+type keyAlg interface {
+	AlgID() foundation.AlgId
+}
+
+type keyType foundation.AlgId
+
+func (t keyType) AlgID() foundation.AlgId {
+	return foundation.AlgId(t)
+}
+
+type rsaKeyAlg interface {
+	keyAlg
+	Len() uint32
+}
+
+type rsaKeyType struct {
+	t   foundation.AlgId
+	len uint32
+}
+
+func (t rsaKeyType) AlgID() foundation.AlgId {
+	return t.t
+}
+func (t rsaKeyType) Len() uint32 {
+	return t.len
+}

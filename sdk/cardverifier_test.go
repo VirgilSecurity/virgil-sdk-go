@@ -62,7 +62,7 @@ func TestWhitelist(t *testing.T) {
 	}
 
 	pk, cardCreds := makeRandomCredentials()
-	model, err := GenerateRawCard(cardCrypto, &CardParams{
+	model, err := GenerateRawCard(cryptoNative, &CardParams{
 		Identity:   cardCreds.Signer,
 		PrivateKey: pk,
 	}, time.Now())
@@ -82,13 +82,13 @@ func TestWhitelist(t *testing.T) {
 	addRawSign(t, model, creds[2])
 
 	verifier := NewVirgilCardVerifier(
-		VirgilCardVerifierSetCrypto(cardCrypto),
+		VirgilCardVerifierSetCrypto(cryptoNative),
 		VirgilCardVerifierDisableVirgilSignature(),
 		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[0].VerifierCredentials, creds[1].VerifierCredentials)),
 		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[2].VerifierCredentials)),
 	)
 
-	card, err := ParseRawCard(cardCrypto, model, false)
+	card, err := ParseRawCard(cryptoNative, model, false)
 	assert.NoError(t, err)
 
 	//check default case
@@ -98,7 +98,7 @@ func TestWhitelist(t *testing.T) {
 	//check that everything is ok if at least one signature in whitelist is valid
 	// creds[4] doesn't exist
 	verifier = NewVirgilCardVerifier(
-		VirgilCardVerifierSetCrypto(cardCrypto),
+		VirgilCardVerifierSetCrypto(cryptoNative),
 		VirgilCardVerifierDisableVirgilSignature(),
 		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[4].VerifierCredentials, creds[1].VerifierCredentials)),
 	)
@@ -109,7 +109,7 @@ func TestWhitelist(t *testing.T) {
 	//Check that verification fails if no signature exists for whitelist
 	// creds[3] doesn't exist
 	verifier = NewVirgilCardVerifier(
-		VirgilCardVerifierSetCrypto(cardCrypto),
+		VirgilCardVerifierSetCrypto(cryptoNative),
 		VirgilCardVerifierDisableVirgilSignature(),
 		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[2].VerifierCredentials)),
 		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[3].VerifierCredentials)),
@@ -120,7 +120,7 @@ func TestWhitelist(t *testing.T) {
 }
 
 func addRawSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
-	modelSigner := &ModelSigner{Crypto: cardCrypto}
+	modelSigner := &ModelSigner{Crypto: cryptoNative}
 
 	snapshot := make([]byte, 129)
 	_, err := rand.Read(snapshot)
@@ -131,7 +131,7 @@ func addRawSign(t *testing.T, model *RawSignedModel, credentials testCredentials
 }
 
 func addSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
-	modelSigner := &ModelSigner{Crypto: cardCrypto}
+	modelSigner := &ModelSigner{Crypto: cryptoNative}
 
 	err := modelSigner.Sign(model, credentials.Signer, credentials.PrivateKey, map[string]string{
 		"a": "b",

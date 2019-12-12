@@ -39,7 +39,6 @@ package sdk
 
 import (
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
@@ -48,10 +47,8 @@ const (
 	VirgilSigner = "virgil"
 )
 
-var defaultCardCrypto crypto.CardCrypto = cryptocgo.NewVirgilCardCrypto()
-
 type ModelSigner struct {
-	Crypto crypto.CardCrypto
+	Crypto Crypto
 }
 
 func (m *ModelSigner) Sign(model *RawSignedModel, signer string, privateKey crypto.PrivateKey, extraFields map[string]string) (err error) {
@@ -100,7 +97,7 @@ func (m *ModelSigner) signInternal(model *RawSignedModel, params signParams, ext
 	}
 
 	resultSnapshot := append(model.ContentSnapshot, extraFieldsSnapshot...)
-	signature, err := m.getCrypto().GenerateSignature(resultSnapshot, params.signerKey)
+	signature, err := m.getCrypto().Sign(resultSnapshot, params.signerKey)
 	if err != nil {
 		return err
 	}
@@ -122,9 +119,9 @@ func (m *ModelSigner) CheckSignatureExists(model *RawSignedModel, signer string)
 	return nil
 }
 
-func (m *ModelSigner) getCrypto() crypto.CardCrypto {
+func (m *ModelSigner) getCrypto() Crypto {
 	if m.Crypto == nil {
-		return defaultCardCrypto
+		return DefaultCrypto
 	}
 	return m.Crypto
 }

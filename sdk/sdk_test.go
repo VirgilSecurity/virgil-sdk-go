@@ -37,10 +37,8 @@
 
 package sdk
 
-import "github.com/VirgilSecurity/virgil-sdk-go/crypto/cryptocgo"
+import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
 
 var (
-	cryptoNative = cryptocgo.NewVirgilCrypto()
-	cardCrypto   = cryptocgo.NewVirgilCardCrypto()
-	tokenSigner  = cryptocgo.NewVirgilAccessTokenSigner()
+	cryptoNative = crypto.NewVirgilCrypto()
 )

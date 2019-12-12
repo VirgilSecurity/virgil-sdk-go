@@ -35,10 +35,51 @@
  *
  */
 
-package crypto
+package sdk
 
-type PrivateKeyStorage interface {
-	Store(privateKey PrivateKey, name string, meta map[string]string) error
-	Load(name string) (privateKey PrivateKey, meta map[string]string, err error)
-	Delete(name string) error
+import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+)
+
+var (
+	DefaultCrypto Crypto = crypto.NewVirgilCrypto()
+)
+
+type Crypto interface {
+	Sign(data []byte, privateKey crypto.PrivateKey) ([]byte, error)
+	VerifySignature(data []byte, signature []byte, publicKey crypto.PublicKey) error
+	ExportPublicKey(publicKey crypto.PublicKey) ([]byte, error)
+	ImportPublicKey(publicKeySrc []byte) (crypto.PublicKey, error)
+	Hash(data []byte, t crypto.HashType) ([]byte, error)
+}
+
+type CardCrypto struct {
+	Crypto Crypto
+}
+
+func (c *CardCrypto) GenerateSignature(data []byte, key crypto.PrivateKey) ([]byte, error) {
+	return c.getCrypto().Sign(data, key)
+}
+
+func (c *CardCrypto) VerifySignature(data []byte, signature []byte, key crypto.PublicKey) error {
+	return c.getCrypto().VerifySignature(data, signature, key)
+}
+
+func (c *CardCrypto) ExportPublicKey(key crypto.PublicKey) ([]byte, error) {
+	return c.getCrypto().ExportPublicKey(key)
+}
+
+func (c *CardCrypto) ImportPublicKey(data []byte) (crypto.PublicKey, error) {
+	return c.getCrypto().ImportPublicKey(data)
+}
+
+func (c *CardCrypto) GenerateSHA512(data []byte) ([]byte, error) {
+	return c.Crypto.Hash(data, crypto.Sha512)
+}
+
+func (c *CardCrypto) getCrypto() Crypto {
+	if c.Crypto != nil {
+		return c.Crypto
+	}
+	return DefaultCrypto
 }

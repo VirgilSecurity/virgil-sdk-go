@@ -52,9 +52,9 @@ const (
 
 type VirgilCardVerifierOption func(v *VirgilCardVerifier)
 
-func VirgilCardVerifierSetCrypto(c crypto.CardCrypto) VirgilCardVerifierOption {
+func VirgilCardVerifierSetCrypto(c Crypto) VirgilCardVerifierOption {
 	return func(v *VirgilCardVerifier) {
-		v.crypto = c
+		v.crypto = &CardCrypto{c}
 	}
 }
 
@@ -83,7 +83,7 @@ func VirgilCardVerifierSetCardsServicePublicKey(ks string) VirgilCardVerifierOpt
 }
 
 type VirgilCardVerifier struct {
-	crypto                crypto.CardCrypto
+	crypto                *CardCrypto
 	verifySelfSignature   bool
 	verifyVirgilSignature bool
 	whitelists            []Whitelist
@@ -96,7 +96,7 @@ type VirgilCardVerifier struct {
 
 func NewVirgilCardVerifier(options ...VirgilCardVerifierOption) *VirgilCardVerifier {
 	verifier := &VirgilCardVerifier{
-		crypto:                defaultCardCrypto,
+		crypto:                &CardCrypto{},
 		verifySelfSignature:   true,
 		verifyVirgilSignature: true,
 

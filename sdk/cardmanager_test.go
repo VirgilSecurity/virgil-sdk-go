@@ -88,7 +88,7 @@ func initCardManagerWithIdentityName(identityName string) (*CardManager, error) 
 		ApiKey:                 apiKey,
 		ApiPublicKeyIdentifier: apiKeyID,
 		AppID:                  appID,
-		AccessTokenSigner:      tokenSigner,
+		AccessTokenSigner:      session.VirgilAccessTokenSigner{Crypto: cryptoNative},
 		TTL:                    time.Minute,
 	}
 

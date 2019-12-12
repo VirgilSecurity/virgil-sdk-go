@@ -45,20 +45,40 @@ import (
 	verrors "github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
+var (
+	// DefaultPrivateKeyExporter is private key exporter is used by default
+	DefaultPrivateKeyExporter PrivateKeyExporter = crypto.NewVirgilCrypto()
+)
+
+type PrivateKeyExporter interface {
+	ExportPrivateKey(privateKey crypto.PrivateKey) ([]byte, error)
+	ImportPrivateKey(data []byte) (privateKey crypto.PrivateKey, err error)
+}
 type storageKeyJSON struct {
 	Key  []byte            `json:"key"`
 	Meta map[string]string `json:"meta"`
 }
 
+type PrivateKeyExporterOption func(s *VirgilPrivateKeyStorage)
+
+func SetPrivateKeyStorageExporter(e PrivateKeyExporter) PrivateKeyExporterOption {
+	return func(s *VirgilPrivateKeyStorage) {
+		s.privateKeyExporter = e
+	}
+}
+
 type VirgilPrivateKeyStorage struct {
-	privateKeyExporter crypto.PrivateKeyExporter
+	privateKeyExporter PrivateKeyExporter
 	storage            Storage
 }
 
-func NewVirgilPrivateKeyStorage(privateKeyExporter crypto.PrivateKeyExporter, storage Storage) *VirgilPrivateKeyStorage {
+func NewVirgilPrivateKeyStorage(storage Storage, options ...PrivateKeyExporterOption) *VirgilPrivateKeyStorage {
 	pks := &VirgilPrivateKeyStorage{
-		privateKeyExporter: privateKeyExporter,
+		privateKeyExporter: DefaultPrivateKeyExporter,
 		storage:            storage,
+	}
+	for _, o := range options {
+		o(pks)
 	}
 	if err := pks.Validate(); err != nil {
 		panic(err)

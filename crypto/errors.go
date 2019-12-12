@@ -30,26 +30,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package cryptocgo
+package crypto
 
-import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
+import (
+	"errors"
+	"fmt"
 
-type VirgilAccessTokenSigner struct {
-	Crypto *cryptoCgo
-}
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
+)
 
-func NewVirgilAccessTokenSigner() *VirgilAccessTokenSigner {
-	return &VirgilAccessTokenSigner{Crypto: NewVirgilCrypto()}
-}
-
-func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
-	return t.Crypto.Sign(data, privateKey)
-}
-
-func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
-	return t.Crypto.VerifySignature(data, signature, publicKey)
-}
-
-func (t *VirgilAccessTokenSigner) GetAlgorithm() string {
-	return "VEDS512"
-}
+// crypto errors
+var (
+	ErrUnsupportedKeyType  = errors.New("unsupported key types")
+	ErrUnsupportedHashType = errors.New("unsupported hash types")
+	ErrStreamSizeIncorrect = errors.New("stream size should be greater 0")
+	ErrInvalidSeedSize     = fmt.Errorf("invalid seed size (expected %d < x < %d)",
+		foundation.KeyMaterialRngKeyMaterialLenMin,
+		foundation.KeyMaterialRngKeyMaterialLenMax,
+	)
+	ErrUnsupportedParameter = errors.New("unsupported function parameter")
+	ErrSignVerification     = errors.New("sign verification failed")
+	ErrSignNotFound         = errors.New("signature not found")
+)
