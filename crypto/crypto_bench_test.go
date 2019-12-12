@@ -42,18 +42,18 @@ import (
 )
 
 func BenchmarkSign(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	signerKeypair, err := crypto.GenerateKeypair()
+	signerKeypair, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err = crypto.Sign(data, signerKeypair)
+		_, err = vcrypto.Sign(data, signerKeypair)
 		if err != nil {
 			b.Fatalf("Sing return error: %v", err)
 		}
@@ -61,158 +61,158 @@ func BenchmarkSign(b *testing.B) {
 }
 
 func BenchmarkVerify(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	signerSk, err := crypto.GenerateKeypair()
+	signerSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	signerPk := signerSk.PublicKey()
 
-	sign, err := crypto.Sign(data, signerSk)
+	sign, err := vcrypto.Sign(data, signerSk)
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if err = crypto.VerifySignature(data, sign, signerPk); err != nil {
+		if err = vcrypto.VerifySignature(data, sign, signerPk); err != nil {
 			b.Fatalf("Sing return error: %v", err)
 		}
 	}
 }
 
 func BenchmarkEncrypt(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	encryptSk, err := crypto.GenerateKeypair()
+	encryptSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if _, err := crypto.Encrypt(data, encryptPk); err != nil {
+		if _, err := vcrypto.Encrypt(data, encryptPk); err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
 func BenchmarkDecrypt(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	keypair, err := crypto.GenerateKeypair()
+	keypair, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 
-	data, err = crypto.Encrypt(data, keypair.PublicKey())
+	data, err = vcrypto.Encrypt(data, keypair.PublicKey())
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if _, err = crypto.Decrypt(data, keypair); err != nil {
+		if _, err = vcrypto.Decrypt(data, keypair); err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
 func BenchmarkSignAndEncrypt(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	encryptSk, err := crypto.GenerateKeypair()
+	encryptSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
-	signerKeypair, err := crypto.GenerateKeypair()
+	signerKeypair, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if _, err := crypto.SignAndEncrypt(data, signerKeypair, encryptPk); err != nil {
+		if _, err := vcrypto.SignAndEncrypt(data, signerKeypair, encryptPk); err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
 func BenchmarkDecryptAndVerify(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	recipientSk, err := crypto.GenerateKeypair()
+	recipientSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	recipientPk := recipientSk.PublicKey()
 
-	signerSk, err := crypto.GenerateKeypair()
+	signerSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	signerPk := signerSk.PublicKey()
 
-	data, err = crypto.SignAndEncrypt(data, signerSk, recipientPk)
+	data, err = vcrypto.SignAndEncrypt(data, signerSk, recipientPk)
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if _, err = crypto.DecryptAndVerify(data, recipientSk, signerPk); err != nil {
+		if _, err = vcrypto.DecryptAndVerify(data, recipientSk, signerPk); err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
 func BenchmarkSignThenEncrypt(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	encryptSk, err := crypto.GenerateKeypair()
+	encryptSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
-	signerKeypair, err := crypto.GenerateKeypair()
+	signerKeypair, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if _, err := crypto.SignThenEncrypt(data, signerKeypair, encryptPk); err != nil {
+		if _, err := vcrypto.SignThenEncrypt(data, signerKeypair, encryptPk); err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
 func BenchmarkDecryptThenVerify(b *testing.B) {
-	crypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
-	encryptSk, err := crypto.GenerateKeypair()
+	encryptSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
-	signerSk, err := crypto.GenerateKeypair()
+	signerSk, err := vcrypto.GenerateKeypair()
 	require.NoError(b, err)
 	signerPk := signerSk.PublicKey()
 
-	data, err = crypto.SignThenEncrypt(data, signerSk, encryptPk)
+	data, err = vcrypto.SignThenEncrypt(data, signerSk, encryptPk)
 	require.NoError(b, err)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		if _, err = crypto.DecryptThenVerify(data, encryptSk, signerPk); err != nil {
+		if _, err = vcrypto.DecryptThenVerify(data, encryptSk, signerPk); err != nil {
 			b.Fatal(err)
 		}
 	}

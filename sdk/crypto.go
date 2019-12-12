@@ -42,7 +42,7 @@ import (
 )
 
 var (
-	DefaultCrypto Crypto = crypto.NewVirgilCrypto()
+	DefaultCrypto Crypto = crypto.Crypto{}
 )
 
 type Crypto interface {

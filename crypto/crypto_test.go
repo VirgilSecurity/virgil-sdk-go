@@ -45,7 +45,7 @@ import (
 )
 
 func TestSignVerify(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
@@ -62,7 +62,7 @@ func TestSignVerify(t *testing.T) {
 }
 
 func TestEncryptDecrypt(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	//make random data
 	data := make([]byte, 257)
@@ -80,7 +80,7 @@ func TestEncryptDecrypt(t *testing.T) {
 }
 
 func TestStreamCipher(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
@@ -113,7 +113,7 @@ func TestStreamCipher(t *testing.T) {
 }
 
 func TestStreamSigner(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
@@ -144,7 +144,7 @@ func TestStreamSigner(t *testing.T) {
 }
 
 func TestExportImportKeys(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
@@ -175,7 +175,7 @@ func TestExportImportKeys(t *testing.T) {
 }
 
 func TestSignAndEncryptAndDecryptAndVerify(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	signKey, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
@@ -195,7 +195,7 @@ func TestSignAndEncryptAndDecryptAndVerify(t *testing.T) {
 }
 
 func TestSignThenEncryptAndDecryptThenVerify(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	signKey, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
@@ -238,7 +238,7 @@ func TestGenerateKeypairFromKeyMaterial(t *testing.T) {
 }
 
 func GenKeysFromSeed(t *testing.T, seed []byte) (publicKey []byte, privateKey []byte) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypairFromKeyMaterial(seed)
 	require.NoError(t, err)
 
@@ -259,7 +259,7 @@ func TestGenerateKeypairFromKeyMaterialBadCase(t *testing.T) {
 		{"less 32", 31},
 		{"greater 512", 513},
 	}
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 
 	for _, test := range table {
 		data, err := vcrypto.Random(test.size)
@@ -271,7 +271,7 @@ func TestGenerateKeypairFromKeyMaterialBadCase(t *testing.T) {
 }
 
 func TestKeyTypes(t *testing.T) {
-	vcrypto := crypto.NewVirgilCrypto()
+	var vcrypto crypto.Crypto
 	m, err := vcrypto.Random(128)
 	require.NoError(t, err)
 
@@ -291,9 +291,9 @@ func TestKeyTypes(t *testing.T) {
 	}
 
 	fs := []func(kt crypto.KeyType) error{
-		vcrypto.SetKeyType,
 		func(kt crypto.KeyType) error {
-			_, err := vcrypto.GenerateKeypairForType(kt)
+			vcrypto.KeyType = kt
+			_, err := vcrypto.GenerateKeypair()
 			return err
 		},
 		func(kt crypto.KeyType) error {

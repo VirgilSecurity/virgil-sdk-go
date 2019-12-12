@@ -50,7 +50,7 @@ import (
 )
 
 func TestCachingJwtProvider(t *testing.T) {
-	crypto := crypto.NewVirgilCrypto()
+	var crypto crypto.Crypto
 
 	key, err := crypto.GenerateKeypair()
 	require.NoError(t, err)

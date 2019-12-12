@@ -47,7 +47,7 @@ import (
 
 var (
 	// DefaultPrivateKeyExporter is private key exporter is used by default
-	DefaultPrivateKeyExporter PrivateKeyExporter = crypto.NewVirgilCrypto()
+	DefaultPrivateKeyExporter PrivateKeyExporter = crypto.Crypto{}
 )
 
 type PrivateKeyExporter interface {
