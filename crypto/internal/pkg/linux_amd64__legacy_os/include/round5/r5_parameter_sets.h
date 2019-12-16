@@ -1,666 +1,1290 @@
 /*
- * Copyright (c) 2018, Koninklijke Philips N.V.
+ * Copyright (c) 2018, PQShield and Koninklijke Philips N.V.
+ * Markku-Juhani O. Saarinen, Koninklijke Philips N.V.
  */
 
-/**
- * @file
- * Definition of the NIST API Round5 parameter sets and declaration of the
- * (internal) Round5 parameter set variables.
- */
-
-#ifndef R5_PARAMETER_SETS_H
-#define R5_PARAMETER_SETS_H
+#ifndef _R5_PARAMETER_SETS_H_
+#define _R5_PARAMETER_SETS_H_
 
 #include <stdint.h>
+#include <stddef.h>
+#include "misc.h"
 
-/* Positions of the NIST API parameters */
-
-/** The location of API parameter `CRYPTO_SECRETKEYBYTES` in the parameter set.  */
-#define API_SECRET   0
-/** The location of API parameter `CRYPTO_PUBLICKEYBYTES` in the parameter set.  */
-#define API_PUBLIC   1
-/** The location of API parameter `CRYPTO_BYTES` in the parameter set. */
-#define API_BYTES    2
-/** The location of API parameter `CRYPTO_CIPHERETEXTBYTES` in the parameter set.  */
-#define API_CIPHER   3
-
-/* Positions of our internal parameters */
-
-/** The location of algorithm parameter `kappa_bytes` in the parameter set */
-#define POS_KAPPA_BYTES 4
-/** The location of algorithm parameter `d` in the parameter set */
-#define POS_D           5
-/** The location of algorithm parameter `n` in the parameter set */
-#define POS_N           6
-/** The location of algorithm parameter `h` in the parameter set */
-#define POS_H           7
-/** The location of algorithm parameter `q_bits` in the parameter set */
-#define POS_Q_BITS      8
-/** The location of algorithm parameter `p_bits` in the parameter set */
-#define POS_P_BITS      9
-/** The location of algorithm parameter `t_bits` in the parameter set */
-#define POS_T_BITS     10
-/** The location of algorithm parameter `b_bits` in the parameter set */
-#define POS_B_BITS     11
-/** The location of algorithm parameter `n_bar` in the parameter set */
-#define POS_N_BAR      12
-/** The location of algorithm parameter `m_bar` in the parameter set */
-#define POS_M_BAR      13
-/** The location of algorithm parameter `f` in the parameter set */
-#define POS_F          14
-/** The location of algorithm parameter `xe` in the parameter set */
-#define POS_XE         15
+// Parameter Set definitions
 
 /* NIST API Round5 parameter set definitions */
 #if defined(R5ND_1KEM_0d)
-#define ROUND5_API_SET 0
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 634
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 682
-#define CRYPTO_ALGNAME "R5ND_1KEM_0d"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           618
+#define PARAMS_N           618
+#define PARAMS_H           104
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      8
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_1KEM_0d"
 #elif defined(R5ND_3KEM_0d)
-#define ROUND5_API_SET 1
-#define CRYPTO_SECRETKEYBYTES 24
-#define CRYPTO_PUBLICKEYBYTES 909
-#define CRYPTO_BYTES 24
-#define CRYPTO_CIPHERTEXTBYTES 981
-#define CRYPTO_ALGNAME "R5ND_3KEM_0d"
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           786
+#define PARAMS_N           786
+#define PARAMS_H           384
+#define PARAMS_Q_BITS      13
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_3KEM_0d"
 #elif defined(R5ND_5KEM_0d)
-#define ROUND5_API_SET 2
-#define CRYPTO_SECRETKEYBYTES 32
-#define CRYPTO_PUBLICKEYBYTES 1178
-#define CRYPTO_BYTES 32
-#define CRYPTO_CIPHERTEXTBYTES 1274
-#define CRYPTO_ALGNAME "R5ND_5KEM_0d"
+#define PARAMS_KAPPA_BYTES 32
+#define PARAMS_D           1018
+#define PARAMS_N           1018
+#define PARAMS_H           428
+#define PARAMS_Q_BITS      14
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_5KEM_0d"
 #elif defined(R5ND_1PKE_0d)
-#define ROUND5_API_SET 3
-#define CRYPTO_SECRETKEYBYTES 708
-#define CRYPTO_PUBLICKEYBYTES 676
-#define CRYPTO_BYTES 756
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5ND_1PKE_0d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           586
+#define PARAMS_N           586
+#define PARAMS_H           182
+#define PARAMS_Q_BITS      13
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_1PKE_0d"
 #elif defined(R5ND_3PKE_0d)
-#define ROUND5_API_SET 4
-#define CRYPTO_SECRETKEYBYTES 1031
-#define CRYPTO_PUBLICKEYBYTES 983
-#define CRYPTO_BYTES 1119
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5ND_3PKE_0d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           852
+#define PARAMS_N           852
+#define PARAMS_H           212
+#define PARAMS_Q_BITS      12
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      5
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_3PKE_0d"
 #elif defined(R5ND_5PKE_0d)
-#define ROUND5_API_SET 5
-#define CRYPTO_SECRETKEYBYTES 1413
-#define CRYPTO_PUBLICKEYBYTES 1349
-#define CRYPTO_BYTES 1525
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5ND_5PKE_0d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 32
+#define PARAMS_D           1170
+#define PARAMS_N           1170
+#define PARAMS_H           222
+#define PARAMS_Q_BITS      13
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      5
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_5PKE_0d"
 #elif defined(R5ND_1KEM_5d)
-#define ROUND5_API_SET 6
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 445
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 549
-#define CRYPTO_ALGNAME "R5ND_1KEM_5d"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           490
+#define PARAMS_N           490
+#define PARAMS_H           162
+#define PARAMS_Q_BITS      10
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      3
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           5
+#define PARAMS_XE          190
+#define CRYPTO_ALGNAME     "R5ND_1KEM_5d"
 #elif defined(R5ND_3KEM_5d)
-#define ROUND5_API_SET 7
-#define CRYPTO_SECRETKEYBYTES 24
-#define CRYPTO_PUBLICKEYBYTES 780
-#define CRYPTO_BYTES 24
-#define CRYPTO_CIPHERTEXTBYTES 859
-#define CRYPTO_ALGNAME "R5ND_3KEM_5d"
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           756
+#define PARAMS_N           756
+#define PARAMS_H           242
+#define PARAMS_Q_BITS      12
+#define PARAMS_P_BITS      8
+#define PARAMS_T_BITS      2
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           5
+#define PARAMS_XE          218
+#define CRYPTO_ALGNAME     "R5ND_3KEM_5d"
 #elif defined(R5ND_5KEM_5d)
-#define ROUND5_API_SET 8
-#define CRYPTO_SECRETKEYBYTES 32
-#define CRYPTO_PUBLICKEYBYTES 972
-#define CRYPTO_BYTES 32
-#define CRYPTO_CIPHERTEXTBYTES 1063
-#define CRYPTO_ALGNAME "R5ND_5KEM_5d"
+#define PARAMS_KAPPA_BYTES 32
+#define PARAMS_D           940
+#define PARAMS_N           940
+#define PARAMS_H           414
+#define PARAMS_Q_BITS      12
+#define PARAMS_P_BITS      8
+#define PARAMS_T_BITS      2
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           5
+#define PARAMS_XE          234
+#define CRYPTO_ALGNAME     "R5ND_5KEM_5d"
 #elif defined(R5ND_1PKE_5d)
-#define ROUND5_API_SET 9
-#define CRYPTO_SECRETKEYBYTES 493
-#define CRYPTO_PUBLICKEYBYTES 461
-#define CRYPTO_BYTES 636
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5ND_1PKE_5d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           508
+#define PARAMS_N           508
+#define PARAMS_H           136
+#define PARAMS_Q_BITS      10
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           5
+#define PARAMS_XE          190
+#define CRYPTO_ALGNAME     "R5ND_1PKE_5d"
 #elif defined(R5ND_3PKE_5d)
-#define ROUND5_API_SET 10
-#define CRYPTO_SECRETKEYBYTES 828
-#define CRYPTO_PUBLICKEYBYTES 780
-#define CRYPTO_BYTES 950
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5ND_3PKE_5d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           756
+#define PARAMS_N           756
+#define PARAMS_H           242
+#define PARAMS_Q_BITS      12
+#define PARAMS_P_BITS      8
+#define PARAMS_T_BITS      3
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           5
+#define PARAMS_XE          218
+#define CRYPTO_ALGNAME     "R5ND_3PKE_5d"
 #elif defined(R5ND_5PKE_5d)
-#define ROUND5_API_SET 11
-#define CRYPTO_SECRETKEYBYTES 1042
-#define CRYPTO_PUBLICKEYBYTES 978
-#define CRYPTO_BYTES 1301
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5ND_5PKE_5d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 32
+#define PARAMS_D           946
+#define PARAMS_N           946
+#define PARAMS_H           388
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      8
+#define PARAMS_T_BITS      5
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           5
+#define PARAMS_XE          234
+#define CRYPTO_ALGNAME     "R5ND_5PKE_5d"
 #elif defined(R5N1_1KEM_0d)
-#define ROUND5_API_SET 12
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 5214
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 5236
-#define CRYPTO_ALGNAME "R5N1_1KEM_0d"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           594
+#define PARAMS_N           1
+#define PARAMS_H           238
+#define PARAMS_Q_BITS      13
+#define PARAMS_P_BITS      10
+#define PARAMS_T_BITS      7
+#define PARAMS_B_BITS      3
+#define PARAMS_N_BAR       7
+#define PARAMS_M_BAR       7
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_1KEM_0d"
 #elif defined(R5N1_3KEM_0d)
-#define ROUND5_API_SET 13
-#define CRYPTO_SECRETKEYBYTES 24
-#define CRYPTO_PUBLICKEYBYTES 8834
-#define CRYPTO_BYTES 24
-#define CRYPTO_CIPHERTEXTBYTES 8866
-#define CRYPTO_ALGNAME "R5N1_3KEM_0d"
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           881
+#define PARAMS_N           1
+#define PARAMS_H           238
+#define PARAMS_Q_BITS      13
+#define PARAMS_P_BITS      10
+#define PARAMS_T_BITS      7
+#define PARAMS_B_BITS      3
+#define PARAMS_N_BAR       8
+#define PARAMS_M_BAR       8
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_3KEM_0d"
 #elif defined(R5N1_5KEM_0d)
-#define ROUND5_API_SET 14
-#define CRYPTO_SECRETKEYBYTES 32
-#define CRYPTO_PUBLICKEYBYTES 14264
-#define CRYPTO_BYTES 32
-#define CRYPTO_CIPHERTEXTBYTES 14288
-#define CRYPTO_ALGNAME "R5N1_5KEM_0d"
+#define PARAMS_KAPPA_BYTES 32
+#define PARAMS_D           1186
+#define PARAMS_N           1
+#define PARAMS_H           712
+#define PARAMS_Q_BITS      15
+#define PARAMS_P_BITS      12
+#define PARAMS_T_BITS      7
+#define PARAMS_B_BITS      4
+#define PARAMS_N_BAR       8
+#define PARAMS_M_BAR       8
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_5KEM_0d"
 #elif defined(R5N1_1PKE_0d)
-#define ROUND5_API_SET 15
-#define CRYPTO_SECRETKEYBYTES 5772
-#define CRYPTO_PUBLICKEYBYTES 5740
-#define CRYPTO_BYTES 5804
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5N1_1PKE_0d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           636
+#define PARAMS_N           1
+#define PARAMS_H           114
+#define PARAMS_Q_BITS      12
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      6
+#define PARAMS_B_BITS      2
+#define PARAMS_N_BAR       8
+#define PARAMS_M_BAR       8
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_1PKE_0d"
 #elif defined(R5N1_3PKE_0d)
-#define ROUND5_API_SET 16
-#define CRYPTO_SECRETKEYBYTES 9708
-#define CRYPTO_PUBLICKEYBYTES 9660
-#define CRYPTO_BYTES 9732
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5N1_3PKE_0d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           876
+#define PARAMS_N           1
+#define PARAMS_H           446
+#define PARAMS_Q_BITS      15
+#define PARAMS_P_BITS      11
+#define PARAMS_T_BITS      7
+#define PARAMS_B_BITS      3
+#define PARAMS_N_BAR       8
+#define PARAMS_M_BAR       8
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_3PKE_0d"
 #elif defined(R5N1_5PKE_0d)
-#define ROUND5_API_SET 17
-#define CRYPTO_SECRETKEYBYTES 14700
-#define CRYPTO_PUBLICKEYBYTES 14636
-#define CRYPTO_BYTES 14724
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5N1_5PKE_0d"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 32
+#define PARAMS_D           1217
+#define PARAMS_N           1
+#define PARAMS_H           462
+#define PARAMS_Q_BITS      15
+#define PARAMS_P_BITS      12
+#define PARAMS_T_BITS      9
+#define PARAMS_B_BITS      4
+#define PARAMS_N_BAR       8
+#define PARAMS_M_BAR       8
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_5PKE_0d"
 #elif defined(R5ND_0KEM_2iot)
-#define ROUND5_API_SET 18
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 342
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 394
-#define CRYPTO_ALGNAME "R5ND_0KEM_2iot"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           372
+#define PARAMS_N           372
+#define PARAMS_H           178
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      3
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           2
+#define PARAMS_XE          53
+#define CRYPTO_ALGNAME     "R5ND_0KEM_2iot"
 #elif defined(R5ND_1KEM_4longkey)
-#define ROUND5_API_SET 19
-#define CRYPTO_SECRETKEYBYTES 24
-#define CRYPTO_PUBLICKEYBYTES 453
-#define CRYPTO_BYTES 24
-#define CRYPTO_CIPHERTEXTBYTES 563
-#define CRYPTO_ALGNAME "R5ND_1KEM_4longkey"
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           490
+#define PARAMS_N           490
+#define PARAMS_H           162
+#define PARAMS_Q_BITS      10
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      3
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           4
+#define PARAMS_XE          163
+#define CRYPTO_ALGNAME     "R5ND_1KEM_4longkey"
 #elif defined(R5N1_3PKE_0smallCT)
-#define ROUND5_API_SET 20
-#define CRYPTO_SECRETKEYBYTES 163584
-#define CRYPTO_PUBLICKEYBYTES 163536
-#define CRYPTO_BYTES 988
-#define CRYPTO_CIPHERTEXTBYTES 0
-#define CRYPTO_ALGNAME "R5N1_3PKE_0smallCT"
+#define ROUND5_CCA_PKE
+#define PARAMS_KAPPA_BYTES 24
+#define PARAMS_D           757
+#define PARAMS_N           1
+#define PARAMS_H           378
+#define PARAMS_Q_BITS      14
+#define PARAMS_P_BITS      9
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       192
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5N1_3PKE_0smallCT"
 #elif defined(R5ND_0KEM_0fail_phi_0)
-#define ROUND5_API_SET 21
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_0"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           170
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_0"
 #elif defined(R5ND_0KEM_0fail_phi_1)
-#define ROUND5_API_SET 22
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_1"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           180
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_1"
 #elif defined(R5ND_0KEM_0fail_phi_2)
-#define ROUND5_API_SET 23
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_2"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           200
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_2"
 #elif defined(R5ND_0KEM_0fail_phi_3)
-#define ROUND5_API_SET 24
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_3"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           220
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_3"
 #elif defined(R5ND_0KEM_0fail_phi_4)
-#define ROUND5_API_SET 25
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_4"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           250
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_4"
 #elif defined(R5ND_0KEM_0fail_phi_5)
-#define ROUND5_API_SET 26
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_5"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           270
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_5"
 #elif defined(R5ND_0KEM_0fail_phi_6)
-#define ROUND5_API_SET 27
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_6"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           300
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_6"
 #elif defined(R5ND_0KEM_0fail_phi_7)
-#define ROUND5_API_SET 28
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_7"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           320
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_7"
 #elif defined(R5ND_0KEM_0fail_phi_8)
-#define ROUND5_API_SET 29
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_8"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           350
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_8"
 #elif defined(R5ND_0KEM_0fail_phi_9)
-#define ROUND5_API_SET 30
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_9"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           370
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_9"
 #elif defined(R5ND_0KEM_0fail_phi_10)
-#define ROUND5_API_SET 31
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_10"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           400
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_10"
 #elif defined(R5ND_0KEM_0fail_phi_11)
-#define ROUND5_API_SET 32
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_11"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           420
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_11"
 #elif defined(R5ND_0KEM_0fail_phi_12)
-#define ROUND5_API_SET 33
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_12"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           440
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_12"
 #elif defined(R5ND_0KEM_0fail_phi_13)
-#define ROUND5_API_SET 34
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_13"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           450
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_13"
 #elif defined(R5ND_0KEM_0fail_phi_14)
-#define ROUND5_API_SET 35
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_14"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           470
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_14"
 #elif defined(R5ND_0KEM_0fail_phi_15)
-#define ROUND5_API_SET 36
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_15"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           500
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_15"
 #elif defined(R5ND_0KEM_0fail_phi_16)
-#define ROUND5_API_SET 37
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_16"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           520
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_16"
 #elif defined(R5ND_0KEM_0fail_phi_17)
-#define ROUND5_API_SET 38
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_17"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           540
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_17"
 #elif defined(R5ND_0KEM_0fail_phi_18)
-#define ROUND5_API_SET 39
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_18"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           550
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_18"
 #elif defined(R5ND_0KEM_0fail_phi_19)
-#define ROUND5_API_SET 40
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_19"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           570
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_19"
 #elif defined(R5ND_0KEM_0fail_phi_20)
-#define ROUND5_API_SET 41
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_20"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           590
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_20"
 #elif defined(R5ND_0KEM_0fail_phi_21)
-#define ROUND5_API_SET 42
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_21"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           600
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_21"
 #elif defined(R5ND_0KEM_0fail_phi_22)
-#define ROUND5_API_SET 43
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_22"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           620
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_22"
 #elif defined(R5ND_0KEM_0fail_phi_23)
-#define ROUND5_API_SET 44
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_23"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           640
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_23"
 #elif defined(R5ND_0KEM_0fail_phi_24)
-#define ROUND5_API_SET 45
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_24"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           650
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_24"
 #elif defined(R5ND_0KEM_0fail_phi_25)
-#define ROUND5_API_SET 46
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_25"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           670
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_25"
 #elif defined(R5ND_0KEM_0fail_phi_26)
-#define ROUND5_API_SET 47
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_26"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           700
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_26"
 #elif defined(R5ND_0KEM_0fail_phi_27)
-#define ROUND5_API_SET 48
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_27"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           720
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_27"
 #elif defined(R5ND_0KEM_0fail_phi_28)
-#define ROUND5_API_SET 49
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_28"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           740
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_28"
 #elif defined(R5ND_0KEM_0fail_phi_29)
-#define ROUND5_API_SET 50
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_0fail_phi_29"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           750
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_0fail_phi_29"
 #elif defined(R5ND_0KEM_xfail_ntru_0)
-#define ROUND5_API_SET 51
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_0"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           170
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_0"
 #elif defined(R5ND_0KEM_xfail_ntru_1)
-#define ROUND5_API_SET 52
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_1"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           180
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_1"
 #elif defined(R5ND_0KEM_xfail_ntru_2)
-#define ROUND5_API_SET 53
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_2"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           200
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_2"
 #elif defined(R5ND_0KEM_xfail_ntru_3)
-#define ROUND5_API_SET 54
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_3"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           220
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_3"
 #elif defined(R5ND_0KEM_xfail_ntru_4)
-#define ROUND5_API_SET 55
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_4"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           250
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_4"
 #elif defined(R5ND_0KEM_xfail_ntru_5)
-#define ROUND5_API_SET 56
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_5"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           270
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_5"
 #elif defined(R5ND_0KEM_xfail_ntru_6)
-#define ROUND5_API_SET 57
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_6"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           300
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_6"
 #elif defined(R5ND_0KEM_xfail_ntru_7)
-#define ROUND5_API_SET 58
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_7"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           320
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_7"
 #elif defined(R5ND_0KEM_xfail_ntru_8)
-#define ROUND5_API_SET 59
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_8"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           350
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_8"
 #elif defined(R5ND_0KEM_xfail_ntru_9)
-#define ROUND5_API_SET 60
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_9"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           370
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_9"
 #elif defined(R5ND_0KEM_xfail_ntru_10)
-#define ROUND5_API_SET 61
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_10"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           400
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_10"
 #elif defined(R5ND_0KEM_xfail_ntru_11)
-#define ROUND5_API_SET 62
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_11"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           420
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_11"
 #elif defined(R5ND_0KEM_xfail_ntru_12)
-#define ROUND5_API_SET 63
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_12"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           440
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_12"
 #elif defined(R5ND_0KEM_xfail_ntru_13)
-#define ROUND5_API_SET 64
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_13"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           450
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_13"
 #elif defined(R5ND_0KEM_xfail_ntru_14)
-#define ROUND5_API_SET 65
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_14"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           470
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_14"
 #elif defined(R5ND_0KEM_xfail_ntru_15)
-#define ROUND5_API_SET 66
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_15"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           500
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_15"
 #elif defined(R5ND_0KEM_xfail_ntru_16)
-#define ROUND5_API_SET 67
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_16"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           520
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_16"
 #elif defined(R5ND_0KEM_xfail_ntru_17)
-#define ROUND5_API_SET 68
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_17"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           540
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_17"
 #elif defined(R5ND_0KEM_xfail_ntru_18)
-#define ROUND5_API_SET 69
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_18"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           550
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_18"
 #elif defined(R5ND_0KEM_xfail_ntru_19)
-#define ROUND5_API_SET 70
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_19"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           570
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_19"
 #elif defined(R5ND_0KEM_xfail_ntru_20)
-#define ROUND5_API_SET 71
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_20"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           590
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_20"
 #elif defined(R5ND_0KEM_xfail_ntru_21)
-#define ROUND5_API_SET 72
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_21"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           600
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_21"
 #elif defined(R5ND_0KEM_xfail_ntru_22)
-#define ROUND5_API_SET 73
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_22"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           620
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_22"
 #elif defined(R5ND_0KEM_xfail_ntru_23)
-#define ROUND5_API_SET 74
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_23"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           640
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_23"
 #elif defined(R5ND_0KEM_xfail_ntru_24)
-#define ROUND5_API_SET 75
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_24"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           650
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_24"
 #elif defined(R5ND_0KEM_xfail_ntru_25)
-#define ROUND5_API_SET 76
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_25"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           670
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_25"
 #elif defined(R5ND_0KEM_xfail_ntru_26)
-#define ROUND5_API_SET 77
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_26"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           700
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_26"
 #elif defined(R5ND_0KEM_xfail_ntru_27)
-#define ROUND5_API_SET 78
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_27"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           720
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_27"
 #elif defined(R5ND_0KEM_xfail_ntru_28)
-#define ROUND5_API_SET 79
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_28"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           740
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_28"
 #elif defined(R5ND_0KEM_xfail_ntru_29)
-#define ROUND5_API_SET 80
-#define CRYPTO_SECRETKEYBYTES 16
-#define CRYPTO_PUBLICKEYBYTES 716
-#define CRYPTO_BYTES 16
-#define CRYPTO_CIPHERTEXTBYTES 764
-#define CRYPTO_ALGNAME "R5ND_0KEM_xfail_ntru_29"
+#define PARAMS_KAPPA_BYTES 16
+#define PARAMS_D           800
+#define PARAMS_N           800
+#define PARAMS_H           750
+#define PARAMS_Q_BITS      11
+#define PARAMS_P_BITS      7
+#define PARAMS_T_BITS      4
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           -1
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "R5ND_0KEM_xfail_ntru_29"
 #else
 #error You must define one of: R5ND_1KEM_0d, R5ND_3KEM_0d, R5ND_5KEM_0d, R5ND_1PKE_0d, R5ND_3PKE_0d, R5ND_5PKE_0d, R5ND_1KEM_5d, R5ND_3KEM_5d, R5ND_5KEM_5d, R5ND_1PKE_5d, R5ND_3PKE_5d, R5ND_5PKE_5d, R5N1_1KEM_0d, R5N1_3KEM_0d, R5N1_5KEM_0d, R5N1_1PKE_0d, R5N1_3PKE_0d, R5N1_5PKE_0d, R5ND_0KEM_2iot, R5ND_1KEM_4longkey, R5N1_3PKE_0smallCT, R5ND_0KEM_0fail_phi_0, R5ND_0KEM_0fail_phi_1, R5ND_0KEM_0fail_phi_2, R5ND_0KEM_0fail_phi_3, R5ND_0KEM_0fail_phi_4, R5ND_0KEM_0fail_phi_5, R5ND_0KEM_0fail_phi_6, R5ND_0KEM_0fail_phi_7, R5ND_0KEM_0fail_phi_8, R5ND_0KEM_0fail_phi_9, R5ND_0KEM_0fail_phi_10, R5ND_0KEM_0fail_phi_11, R5ND_0KEM_0fail_phi_12, R5ND_0KEM_0fail_phi_13, R5ND_0KEM_0fail_phi_14, R5ND_0KEM_0fail_phi_15, R5ND_0KEM_0fail_phi_16, R5ND_0KEM_0fail_phi_17, R5ND_0KEM_0fail_phi_18, R5ND_0KEM_0fail_phi_19, R5ND_0KEM_0fail_phi_20, R5ND_0KEM_0fail_phi_21, R5ND_0KEM_0fail_phi_22, R5ND_0KEM_0fail_phi_23, R5ND_0KEM_0fail_phi_24, R5ND_0KEM_0fail_phi_25, R5ND_0KEM_0fail_phi_26, R5ND_0KEM_0fail_phi_27, R5ND_0KEM_0fail_phi_28, R5ND_0KEM_0fail_phi_29, R5ND_0KEM_xfail_ntru_0, R5ND_0KEM_xfail_ntru_1, R5ND_0KEM_xfail_ntru_2, R5ND_0KEM_xfail_ntru_3, R5ND_0KEM_xfail_ntru_4, R5ND_0KEM_xfail_ntru_5, R5ND_0KEM_xfail_ntru_6, R5ND_0KEM_xfail_ntru_7, R5ND_0KEM_xfail_ntru_8, R5ND_0KEM_xfail_ntru_9, R5ND_0KEM_xfail_ntru_10, R5ND_0KEM_xfail_ntru_11, R5ND_0KEM_xfail_ntru_12, R5ND_0KEM_xfail_ntru_13, R5ND_0KEM_xfail_ntru_14, R5ND_0KEM_xfail_ntru_15, R5ND_0KEM_xfail_ntru_16, R5ND_0KEM_xfail_ntru_17, R5ND_0KEM_xfail_ntru_18, R5ND_0KEM_xfail_ntru_19, R5ND_0KEM_xfail_ntru_20, R5ND_0KEM_xfail_ntru_21, R5ND_0KEM_xfail_ntru_22, R5ND_0KEM_xfail_ntru_23, R5ND_0KEM_xfail_ntru_24, R5ND_0KEM_xfail_ntru_25, R5ND_0KEM_xfail_ntru_26, R5ND_0KEM_xfail_ntru_27, R5ND_0KEM_xfail_ntru_28, R5ND_0KEM_xfail_ntru_29.
-/** The API set implemented with the NIST API. */
-#define ROUND5_API_SET -1
-/** The number of bytes of the secret key (NIST API). */
-#define CRYPTO_SECRETKEYBYTES 0
-/** The number of bytes of the public key (NIST API). */
-#define CRYPTO_PUBLICKEYBYTES 0
-/** The number of bytes of the shared secret in case of KEM, the encryption overhead in case of ENCRYPT (NIST API). */
-#define CRYPTO_BYTES 0
-/** The number of bytes of the cipher text in case of KEM, 0 in case of ENCRYPT (NIST API). */
-#define CRYPTO_CIPHERTEXTBYTES 0
+#define PARAMS_KAPPA_BYTES 1
+#define PARAMS_D           1
+#define PARAMS_N           1
+#define PARAMS_H           1
+#define PARAMS_Q_BITS      1
+#define PARAMS_P_BITS      1
+#define PARAMS_T_BITS      1
+#define PARAMS_B_BITS      1
+#define PARAMS_N_BAR       1
+#define PARAMS_M_BAR       1
+#define PARAMS_F           0
+#define PARAMS_XE          0
+#define CRYPTO_ALGNAME     "INVALID"
 #endif
 
-/** The Round5 parameter set parameter values. */
-extern const uint32_t r5_parameter_sets[81][16];
+// appropriate types
+typedef uint16_t modq_t;
+#if (PARAMS_P_BITS <= 8)
+typedef uint8_t modp_t;
+#else
+typedef uint16_t modp_t;
+#endif
+typedef uint8_t modt_t;
 
-/** The names of the Round5 parameter sets. */
-extern const char *r5_parameter_set_names[81];
+#define PARAMS_ND       PARAMS_D
+#define PARAMS_K        (PARAMS_D/PARAMS_N)
+#define PARAMS_Q        (1 << PARAMS_Q_BITS)
+#define PARAMS_Q_MASK   (PARAMS_Q - 1)
+#define PARAMS_P        (1 << PARAMS_P_BITS)
+#define PARAMS_P_MASK   (PARAMS_P - 1)
+#define PARAMS_KAPPA    (8 * PARAMS_KAPPA_BYTES)
+#define PARAMS_MU       CEIL_DIV((PARAMS_KAPPA + PARAMS_XE), PARAMS_B_BITS)
+#define PARAMS_MUT_SIZE BITS_TO_BYTES(PARAMS_MU * PARAMS_T_BITS)
+#if PARAMS_K == 1
+#define PARAMS_RS_DIV   (0x10000 / PARAMS_ND)
+#define PARAMS_RS_LIM   (PARAMS_ND * PARAMS_RS_DIV)
+#define PARAMS_NDP_SIZE BITS_TO_BYTES(PARAMS_ND * PARAMS_P_BITS)
+#else
+#define PARAMS_RS_DIV   (0x10000 / PARAMS_D)
+#define PARAMS_RS_LIM   (PARAMS_D * PARAMS_RS_DIV)
+#define PARAMS_DP_SIZE  BITS_TO_BYTES(PARAMS_N_BAR * PARAMS_D * PARAMS_P_BITS)
+#define PARAMS_DPU_SIZE BITS_TO_BYTES(PARAMS_M_BAR * PARAMS_D * PARAMS_P_BITS)
+#endif
 
-/* Default ROUND5_API_TAU to 0 if not yet defined */
-#if !defined(ROUND5_API_TAU)
-/** Defines the variant tau to use for the creation of A. */
+// Definition of TAU parameter, defaults to 0 unless otherwise defined and non-ring
+#if PARAMS_K == 1 || !defined(ROUND5_API_TAU)
+#undef ROUND5_API_TAU
 #define ROUND5_API_TAU 0
 #endif
+#define PARAMS_TAU      ROUND5_API_TAU
 
-/* Default ROUND5_API_TAU2_LEN to 2<<11 if not yet defined (or 0) */
+// Define the length of the random vector when TAU is 2 is used for generating A, defaults to parameter 2^11.
+// Important: Must be a power of two and > d
 #if !defined(ROUND5_API_TAU2_LEN) || ROUND5_API_TAU2_LEN == 0
 #undef ROUND5_API_TAU2_LEN
-/**
- * Defines the length of the random vector for the A matrix when A is created using TAU=2.
- * The value 0 (the default) means that the value of parameter _2^11_ will be used.
- *
- * <strong>Important: this must be a power of 2 and larger than parameter _d_!</strong>
- */
 #define ROUND5_API_TAU2_LEN (1<<11)
 #endif
 #if ROUND5_API_TAU2_LEN > (1<<31)
 #error ROUND5_API_TAU2_LEN must be less than or equal to 2^31
 #endif
-#if (ROUND5_API_TAU2_LEN & (ROUND5_API_TAU2_LEN - 1)) != 0
-#error ROUND5_API_TAU2_LEN must be a power of two
+#if (ROUND5_API_TAU2_LEN & (ROUND5_API_TAU2_LEN - 1)) != 0 || ROUND5_API_TAU2_LEN < PARAMS_D
+#error ROUND5_API_TAU2_LEN must be a power of two and greater than or equal to PARAMS_D
+#endif
+#define PARAMS_TAU2_LEN ROUND5_API_TAU2_LEN
+
+// Rounding constants
+#if ((PARAMS_Q_BITS - PARAMS_P_BITS + PARAMS_T_BITS) < PARAMS_P_BITS)
+#define PARAMS_Z_BITS   PARAMS_P_BITS
+#else
+#define PARAMS_Z_BITS   (PARAMS_Q_BITS - PARAMS_P_BITS + PARAMS_T_BITS)
+#endif
+#define PARAMS_H1       (1 << (PARAMS_Q_BITS - PARAMS_P_BITS - 1))
+#define PARAMS_H2       (1 << (PARAMS_Q_BITS - PARAMS_Z_BITS - 1))
+#define PARAMS_H3       ((1 << (PARAMS_P_BITS - PARAMS_T_BITS - 1)) + (1 << (PARAMS_P_BITS - PARAMS_B_BITS - 1)) - (1 << (PARAMS_Q_BITS - PARAMS_Z_BITS - 1)))
+
+#if PARAMS_K == 1
+#define PARAMS_PK_SIZE  (PARAMS_KAPPA_BYTES + PARAMS_NDP_SIZE)
+#define PARAMS_CT_SIZE  (PARAMS_NDP_SIZE + PARAMS_MUT_SIZE)
+#else
+#define PARAMS_PK_SIZE  (PARAMS_KAPPA_BYTES + PARAMS_DP_SIZE)
+#define PARAMS_CT_SIZE  (PARAMS_DPU_SIZE + PARAMS_MUT_SIZE)
+
+// Packing shift
+#if PARAMS_B_BITS == 1
+#define PACK_SHIFT 3
+#define PACK_AND 7
+#endif
+#if PARAMS_B_BITS == 2
+#define PACK_SHIFT 2
+#define PACK_AND 3
+#endif
+#if PARAMS_B_BITS == 4
+#define PACK_SHIFT 1
+#define PACK_AND 1
 #endif
 
-#endif /* R5_PARAMETER_SETS_H */
+#endif
+
+// Derive the NIST parameters
+#ifdef ROUND5_CCA_PKE
+
+// CCA_PKE Variant
+#define CRYPTO_SECRETKEYBYTES  (PARAMS_KAPPA_BYTES + PARAMS_KAPPA_BYTES + PARAMS_PK_SIZE)
+#define CRYPTO_PUBLICKEYBYTES  PARAMS_PK_SIZE
+#define CRYPTO_BYTES           (PARAMS_CT_SIZE + PARAMS_KAPPA_BYTES + 16)
+#define CRYPTO_CIPHERTEXTBYTES 0
+
+#else
+
+// CPA_KEM Variant
+#define CRYPTO_SECRETKEYBYTES  PARAMS_KAPPA_BYTES
+#define CRYPTO_PUBLICKEYBYTES  PARAMS_PK_SIZE
+#define CRYPTO_BYTES           PARAMS_KAPPA_BYTES
+#define CRYPTO_CIPHERTEXTBYTES PARAMS_CT_SIZE
+
+#endif /* ROUND5_CCA_PKE */
+
+// AVX2 implies CM_CACHE
+#ifdef AVX2
+#undef CM_CACHE
+#define CM_CACHE
+// Disable AVX2 if not supported by platform
+#ifndef __AVX2__
+#warning AVX2 not supported by platform
+#undef AVX2
+#endif
+#endif
+
+#endif /* _R5_PARAMETER_SETS_H_ */

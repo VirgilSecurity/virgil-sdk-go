@@ -10,7 +10,11 @@
 #ifndef DRBG_H
 #define DRBG_H
 
+#include "r5_parameter_sets.h"
+#include "misc.h"
 #include "little_endian.h"
+#include "shake.h"
+#include "r5_hash.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -28,73 +32,292 @@
 #undef USE_AES_DRBG
 #endif
 
+#ifdef USE_AES_DRBG
+
+#include "r5_memory.h"
+#include <assert.h>
+#include <openssl/opensslv.h>
+#include <openssl/evp.h>
+#include <string.h>
+
+/**
+ * The DRBG context data structure.
+ */
+typedef struct {
+    EVP_CIPHER_CTX *aes_ctx; /**< The AES cipher context */
+    uint8_t input[16]; /**< Input block (always 0). */
+    uint8_t output[16]; /**< Buffer for output. */
+    size_t index; /**< Current index in buffer. */
+} drbg_ctx;
+
+/**
+ * Macro to initialize the AES DRBG context
+ * @param ctx the DRBG context
+ */
+#define AES_INIT(ctx) \
+    if (!(ctx.aes_ctx = EVP_CIPHER_CTX_new())) { \
+        DEBUG_ERROR("Error: failed to create encryption context of the DRBG.\n"); \
+        abort(); \
+    } \
+    do { } while (0)
+
+#else
+
+/**
+ * The DRBG context data structure.
+ */
+typedef struct drbg_ctx {
+
+    union {
+        shake_ctx shake; /**< Context in case of a SHAKE generator */
+        cshake_ctx cshake; /**< Context in case of a cSHAKE generator */
+    } generator_ctx; /**< The generator context */
+    uint8_t output[SHAKE128_RATE > SHAKE256_RATE ? SHAKE128_RATE : SHAKE256_RATE]; /**< Buffer for output. */
+    size_t index; /**< Current index in buffer. */
+} drbg_ctx;
+
+#endif
+
+/**
+ * Initializes the deterministic random number generator.
+ *
+ * @param[in] seed      the seed to use for the deterministic number generator
+ */
+#ifdef USE_AES_DRBG
+#define drbg_init(seed) \
+    uint8_t key[32]; \
+    drbg_ctx ctx = {NULL, {0}, {0}, 0}; \
+    AES_INIT(ctx); \
+    int res; \
+    assert(PARAMS_KAPPA_BYTES == 16 || PARAMS_KAPPA_BYTES == 24 || PARAMS_KAPPA_BYTES == 32); \
+    hash(key, PARAMS_KAPPA_BYTES, seed, PARAMS_KAPPA_BYTES, (uint8_t) PARAMS_KAPPA_BYTES); \
+    switch (PARAMS_KAPPA_BYTES) { \
+        case 16: \
+            shake128(key, PARAMS_KAPPA_BYTES, seed, PARAMS_KAPPA_BYTES); \
+            res = EVP_EncryptInit_ex(ctx.aes_ctx, EVP_aes_128_ctr(), NULL, key, NULL); \
+            break; \
+        case 24: \
+            shake256(key, PARAMS_KAPPA_BYTES, seed, PARAMS_KAPPA_BYTES); \
+            res = EVP_EncryptInit_ex(ctx.aes_ctx, EVP_aes_192_ctr(), NULL, key, NULL); \
+            break; \
+        case 32: \
+            shake256(key, PARAMS_KAPPA_BYTES, seed, PARAMS_KAPPA_BYTES); \
+            res = EVP_EncryptInit_ex(ctx.aes_ctx, EVP_aes_256_ctr(), NULL, key, NULL); \
+            break; \
+    } \
+    if (res != 1) { \
+        DEBUG_ERROR("Error: failed to initialize encryption context for the DRBG.\n"); \
+        abort(); \
+    } \
+    ctx.index = 16
+
+#else
+
+#if PARAMS_KAPPA_BYTES > 16
+#define drbg_init(seed) \
+    drbg_ctx ctx; \
+    shake256_init(&ctx.generator_ctx.shake); \
+    shake256_absorb(&ctx.generator_ctx.shake, seed, PARAMS_KAPPA_BYTES); \
+    ctx.index = SHAKE256_RATE
+
+#else
+#define drbg_init(seed) \
+    drbg_ctx ctx; \
+    shake128_init(&ctx.generator_ctx.shake); \
+    shake128_absorb(&ctx.generator_ctx.shake, seed, PARAMS_KAPPA_BYTES); \
+    ctx.index = SHAKE128_RATE
+
+#endif
+
+#endif
+
+/**
+ * Initializes the deterministic random number generator with the specified
+ * customization string.
+ *
+ * @param[in] seed              the seed to use for the deterministic number generator
+ * @param[in] customization     the customization string to use
+ * @param[in] customization_len the length of the customization string
+ */
+#ifdef USE_AES_DRBG
+#define drbg_init_customization(seed, customization, customization_len) \
+    uint8_t key[32]; \
+    drbg_ctx ctx = {NULL, {0}, {0}, 0}; \
+    AES_INIT(ctx); \
+    int res; \
+    assert(PARAMS_KAPPA_BYTES == 16 || PARAMS_KAPPA_BYTES == 24 || PARAMS_KAPPA_BYTES == 32); \
+    hash_customization(key, PARAMS_KAPPA_BYTES, seed, PARAMS_KAPPA_BYTES, customization, customization_len, (uint8_t) PARAMS_KAPPA_BYTES); \
+    switch (PARAMS_KAPPA_BYTES) { \
+        case 16: \
+            res = EVP_EncryptInit_ex(ctx.aes_ctx, EVP_aes_128_ctr(), NULL, key, NULL); \
+            break; \
+        case 24: \
+            res = EVP_EncryptInit_ex(ctx.aes_ctx, EVP_aes_192_ctr(), NULL, key, NULL); \
+            break; \
+        case 32: \
+            res = EVP_EncryptInit_ex(ctx.aes_ctx, EVP_aes_256_ctr(), NULL, key, NULL); \
+            break; \
+    } \
+    if (res != 1) { \
+        DEBUG_ERROR("Error: failed to initialize encryption context for the DRBG.\n"); \
+        abort(); \
+    } \
+    ctx.index = 16
+
+#else
+
+#if PARAMS_KAPPA_BYTES > 16
+#define drbg_init_customization(seed, customization, customization_len) \
+    drbg_ctx ctx; \
+    cshake256_init(&ctx.generator_ctx.cshake, customization, customization_len); \
+    cshake256_absorb(&ctx.generator_ctx.cshake, seed, PARAMS_KAPPA_BYTES); \
+    ctx.index = SHAKE256_RATE
+
+#else
+#define drbg_init_customization(seed, customization, customization_len) \
+    drbg_ctx ctx; \
+    cshake128_init(&ctx.generator_ctx.cshake, customization, customization_len); \
+    cshake128_absorb(&ctx.generator_ctx.cshake, seed, PARAMS_KAPPA_BYTES); \
+    ctx.index = SHAKE128_RATE
+
+#endif
+
+#endif
+
+/**
+ * Generates the next sequence of deterministic random bytes using the
+ * (initial) seed as set with `drbg_init()`.
+ *
+ * @param[out] x    destination buffer for the random bytes
+ * @param[in]  xlen the number of deterministic random bytes to generate
+ */
+#ifdef USE_AES_DRBG
+#define drbg(x, xlen) do { \
+    size_t i, j; \
+    i = ctx.index; \
+    for (j = 0; j < xlen; j++) { \
+        if (i >= 16) { \
+            int len; \
+            if (EVP_EncryptUpdate(ctx.aes_ctx, ctx.output, &len, ctx.input, 16) != 1) { \
+                DEBUG_ERROR("Error: failed to generate deterministic random data.\n"); \
+                abort(); \
+            } \
+            i = 0; \
+        } \
+        ((uint8_t *) x)[j] = ctx.output[i++]; \
+    } \
+    ctx.index = i; \
+} while (0)
+#else
+#if PARAMS_KAPPA_BYTES > 16
+#define drbg(x, xlen) do { \
+    size_t i, j; \
+    i = ctx.index; \
+    for (j = 0; j < xlen; j++) { \
+        if (i >= SHAKE256_RATE) { \
+            shake256_squeezeblocks(&ctx.generator_ctx.shake, ctx.output, 1); \
+            i = 0; \
+        } \
+        ((uint8_t *) x)[j] = ctx.output[i++]; \
+    } \
+    ctx.index = i; \
+} while (0)
+#else
+#define drbg(x, xlen) do { \
+    size_t i, j; \
+    i = ctx.index; \
+    for (j = 0; j < xlen; j++) { \
+        if (i >= SHAKE128_RATE) { \
+            shake128_squeezeblocks(&ctx.generator_ctx.shake, ctx.output, 1); \
+            i = 0; \
+        } \
+        ((uint8_t *) x)[j] = ctx.output[i++]; \
+    } \
+    ctx.index = i; \
+} while (0)
+#endif
+#endif
+
+/**
+ * Generates the next deterministic random 16-bit integer using the
+ * (initial) seed as set with `drbg_init()`.
+ *
+ * @param[out] x    destination variable for the 16-bit integer
+ */
+#define drbg16(x) do { \
+    drbg(&x, 2); \
+    x = (uint16_t) LITTLE_ENDIAN16(x); \
+} while (0)
+
+/**
+ * Generates the next sequence of deterministic random bytes using the
+ * (initial) seed as set with `drbg_init_customization()`.
+ *
+ * @param[out] x    destination of the random bytes
+ * @param[in]  xlen the number of deterministic random bytes to generate
+ * @return __0__ in case of success
+ */
+#ifdef USE_AES_DRBG
+#define drbg_customization(x, xlen) do { \
+    size_t i, j; \
+    i = ctx.index; \
+    for (j = 0; j < xlen; j++) { \
+        if (i >= 16) { \
+            int len; \
+            if (EVP_EncryptUpdate(ctx.aes_ctx, ctx.output, &len, ctx.input, 16) != 1) { \
+                DEBUG_ERROR("Error: failed to generate deterministic random data.\n"); \
+                abort(); \
+            } \
+            i = 0; \
+        } \
+        ((uint8_t *) x)[j] = ctx.output[i++]; \
+    } \
+    ctx.index = i; \
+} while (0)
+#else
+#if PARAMS_KAPPA_BYTES > 16
+#define drbg_customization(x, xlen) do { \
+    size_t i, j; \
+    i = ctx.index; \
+    for (j = 0; j < xlen; j++) { \
+        if (i >= SHAKE256_RATE) { \
+            cshake256_squeezeblocks(&ctx.generator_ctx.cshake, ctx.output, 1); \
+            i = 0; \
+        } \
+        ((uint8_t *) x)[j] = ctx.output[i++]; \
+    } \
+    ctx.index = i; \
+} while (0)
+#else
+#define drbg_customization(x, xlen) do { \
+    size_t i, j; \
+    i = ctx.index; \
+    for (j = 0; j < xlen; j++) { \
+        if (i >= SHAKE128_RATE) { \
+            cshake128_squeezeblocks(&ctx.generator_ctx.cshake, ctx.output, 1); \
+            i = 0; \
+        } \
+        ((uint8_t *) x)[j] = ctx.output[i++]; \
+    } \
+    ctx.index = i; \
+} while (0)
+#endif
+#endif
+
+/**
+ * Generates the next deterministic random 16-bit integer using the
+ * (initial) seed as set with `drbg_init_customization()`.
+ *
+ * @param[out] x    destination variable for the 16-bit integer
+ */
+#define drbg16_customization(x) do { \
+    drbg_customization(&x, 2); \
+    x = (uint16_t) LITTLE_ENDIAN16(x); \
+} while (0)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-    /**
-     * Initializes the deterministic random number generator.
-     *
-     * @param[in] seed      the seed to use for the deterministic number generator
-     * @param[in] seed_size the size of the seed (must be 16, 24, or 32 bytes when USE_AES_DRBG is defined)
-     */
-    void drbg_init(const void *seed, const size_t seed_size);
-
-    /**
-     * Initializes the deterministic random number generator with the specified
-     * customization string.
-     *
-     * @param[in] seed              the seed to use for the deterministic number generator
-     * @param[in] seed_size         the size of the seed (must be 16, 24, or 32 bytes when USE_AES_DRBG is defined)
-     * @param[in] customization     the customization string to use
-     * @param[in] customization_len the length of the customization string
-     */
-    void drbg_init_customization(const void *seed, const size_t seed_size, const uint8_t *customization, const size_t customization_len);
-
-    /**
-     * Generates the next sequence of deterministic random bytes using the
-     * (initial) seed as set with `drbg_init()`.
-     *
-     * @param[out] x    destination of the random bytes
-     * @param[in]  xlen the number of deterministic random bytes to generate
-     * @return __0__ in case of success
-     */
-    int drbg(void *x, const size_t xlen);
-
-    /**
-     * Generates the next uniformly distributed random number in the given
-     * range using the (initial) seed as set with `drbg_init()`.
-     *
-     * Note: since this function re-calculates internal range factors, it is
-     * better to use the `DRBG_SAMPLER16_INIT()` and `DRBG_SAMPLER16()` macros when
-     * generating multiple random numbers.
-     *
-     * We use the "scaled" random number trick to quickly generate uniformly
-     * distributed random numbers in a range.
-     *
-     * We scale the range so it is very close to a power of two (2^16 in this
-     * case) and then scale back to get random number in the correct range.
-     * This is much better than the normal approach since the number of rejects
-     * is much smaller. For instance say we want to generate numbers in the
-     * range 0-700, the normal approach would generate numbers in the range
-     * 0-1023 and then retry if it was > 700. This is more than 30% rejects!
-     * The scale trick on the other hand generates number in the range 0-65535
-     * of which it only rejects if it was > 65.100, which happens in less than
-     * 1% of the cases!
-     *
-     * @param range the maximum value (exclusive)
-     * @return the next random number in the range _[0..range)_
-     */
-    uint16_t drbg_sampler16(const uint32_t range);
-
-    /**
-     * Generates the next sequence of deterministic random numbers using the
-     * (initial) seed as set with `drbg_init()`.
-     *
-     * @param[in]  range the maximum value (exclusive, must be a power of 2!)
-     * @return the next random number in the range _[0..range)_
-     */
-    uint16_t drbg_sampler16_2(const uint32_t range);
 
     /**
      * Generates a sequence of deterministic random numbers using the given seed.
@@ -103,16 +326,14 @@ extern "C" {
      *
      * Use this function to generate a fixed number of deterministic numbers
      * from a seed. It is faster than calling `drbg_init()` and
-     * `drbg_sampler16_2()` separately.
+     * `drbg16()` separately.
      *
      * @param[out] x         destination of the random numbers
      * @param[in]  xlen      the number of deterministic random numbers to generate
      * @param[in]  seed      the seed to use for the deterministic number generator
-     * @param[in]  seed_size the size of the seed (must be 16, 24, or 32 bytes when USE_AES_DRBG is defined)
-     * @param[in]  range     the maximum value (exclusive, must be a power of 2!)
      * @return __0__ in case of success
      */
-    int drbg_sampler16_2_once(uint16_t *x, const size_t xlen, const void *seed, const size_t seed_size, const uint32_t range);
+    int drbg_sampler16_2_once(uint16_t *x, const size_t xlen, const void *seed);
 
     /**
      * Generates a sequence of deterministic random numbers using the given seed
@@ -122,18 +343,16 @@ extern "C" {
      *
      * Use this function to generate a fixed number of deterministic numbers
      * from a seed. It is faster than calling `drbg_init()` and
-     * `drbg_sampler16_2()` separately.
+     * `drbg16_customization()` separately.
      *
      * @param[out] x                 destination of the random numbers
      * @param[in]  xlen              the number of deterministic random numbers to generate
      * @param[in]  seed              the seed to use for the deterministic number generator
-     * @param[in]  seed_size         the size of the seed (must be 16, 24, or 32 bytes when USE_AES_DRBG is defined)
      * @param[in]  customization     the customization string to use
      * @param[in]  customization_len the length of the customization string
-     * @param[in]  range             the maximum value (exclusive)
      * @return __0__ in case of success
      */
-    int drbg_sampler16_2_once_customization(uint16_t *x, const size_t xlen, const void *seed, const size_t seed_size, const void *customization, const size_t customization_len, const uint32_t range);
+    int drbg_sampler16_2_once_customization(uint16_t *x, const size_t xlen, const void *seed, const void *customization, const size_t customization_len);
 
 #ifdef __cplusplus
 }
