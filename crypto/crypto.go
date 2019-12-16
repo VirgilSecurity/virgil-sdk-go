@@ -61,24 +61,13 @@ var (
 	signerIDKey  = []byte("VIRGIL-DATA-SIGNER-ID")
 )
 
-func (c Crypto) generateKeypair(t keyAlg, rnd foundation.Random) (PrivateKey, error) {
+func (c Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, error) {
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
-	if t.AlgID() == foundation.AlgIdRsa {
-		// if keyAlg doesn't cast to rsaKeyAlg we catch panic
-		rsaAlg, ok := t.(rsaKeyAlg)
-		if !ok {
-			panic("incorrect used RSA algorithm")
-		}
-		kp.SetRsaParams(rsaAlg.Len())
-	}
 	kp.SetRandom(rnd)
-	if err := kp.SetupDefaults(); err != nil {
-		return nil, err
-	}
 
-	sk, err := kp.GeneratePrivateKey(t.AlgID())
+	sk, err := t.GeneratePrivateKey(kp)
 	if err != nil {
 		return nil, err
 	}

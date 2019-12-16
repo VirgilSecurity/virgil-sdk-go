@@ -63,41 +63,37 @@ const (
 	PQC
 )
 
-var keyTypeMap = map[KeyType]keyAlg{
+type keyGen interface {
+	GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error)
+}
+
+var keyTypeMap = map[KeyType]keyGen{
 	DefaultKeyType:  keyType(foundation.AlgIdEd25519),
-	RSA_2048:        rsaKeyType{foundation.AlgIdRsa, 2048},
-	RSA_3072:        rsaKeyType{foundation.AlgIdRsa, 3072},
-	RSA_4096:        rsaKeyType{foundation.AlgIdRsa, 4096},
-	RSA_8192:        rsaKeyType{foundation.AlgIdRsa, 8192},
+	RSA_2048:        rsaKeyType(2048),
+	RSA_3072:        rsaKeyType(3072),
+	RSA_4096:        rsaKeyType(4096),
+	RSA_8192:        rsaKeyType(8192),
 	EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
 	EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
 	FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
-	PQC:             keyType(foundation.AlgIdPostQuantum),
-}
-
-type keyAlg interface {
-	AlgID() foundation.AlgId
+	PQC:             pqcKeyType{},
 }
 
 type keyType foundation.AlgId
 
-func (t keyType) AlgID() foundation.AlgId {
-	return foundation.AlgId(t)
+func (t keyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+	return kp.GeneratePrivateKey(foundation.AlgId(t))
 }
 
-type rsaKeyAlg interface {
-	keyAlg
-	Len() uint32
+type rsaKeyType int
+
+func (t rsaKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+	kp.SetRsaParams(uint32(t))
+	return kp.GeneratePrivateKey(foundation.AlgIdRsa)
 }
 
-type rsaKeyType struct {
-	t   foundation.AlgId
-	len uint32
-}
+type pqcKeyType struct{}
 
-func (t rsaKeyType) AlgID() foundation.AlgId {
-	return t.t
-}
-func (t rsaKeyType) Len() uint32 {
-	return t.len
+func (t pqcKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+	return kp.GeneratePostQuantumPrivateKey()
 }
