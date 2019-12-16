@@ -47,16 +47,11 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class 'key recipient info list' types definition.
+//  Enumerates possible sequentail cipher's states.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-#define VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-
-#include "vscf_library.h"
-#include "vscf_atomic.h"
-#include "vscf_key_recipient_info.h"
-#include "vscf_key_recipient_info_list.h"
+#ifndef VSCF_CIPHER_STATE_H_INCLUDED
+#define VSCF_CIPHER_STATE_H_INCLUDED
 
 // clang-format on
 //  @end
@@ -74,28 +69,23 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'key recipient info list' context.
+//  Enumerates possible sequentail cipher's states.
 //
-struct vscf_key_recipient_info_list_t {
+enum vscf_cipher_state_t {
     //
-    //  Function do deallocate self context.
+    //  Cipher is ready for new encryption / decryption operation.
     //
-    vscf_dealloc_fn self_dealloc_cb;
+    vscf_cipher_state_INITIAL,
     //
-    //  Reference counter.
+    //  Cipher is configured for encryption.
     //
-    VSCF_ATOMIC size_t refcnt;
-
-    vscf_key_recipient_info_t *item;
+    vscf_cipher_state_ENCRYPTION,
     //
-    //  Class specific context.
+    //  Cipher is configured for decryption.
     //
-    vscf_key_recipient_info_list_t *next;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *prev;
+    vscf_cipher_state_DECRYPTION
 };
+typedef enum vscf_cipher_state_t vscf_cipher_state_t;
 
 
 // --------------------------------------------------------------------------
@@ -111,5 +101,5 @@ struct vscf_key_recipient_info_list_t {
 
 
 //  @footer
-#endif // VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#endif // VSCF_CIPHER_STATE_H_INCLUDED
 //  @end

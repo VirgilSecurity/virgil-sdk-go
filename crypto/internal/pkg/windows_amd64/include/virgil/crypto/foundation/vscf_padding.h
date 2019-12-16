@@ -47,16 +47,27 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class 'key recipient info list' types definition.
+//  Provide an interface to add and remove data padding.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-#define VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#ifndef VSCF_PADDING_H_INCLUDED
+#define VSCF_PADDING_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_atomic.h"
-#include "vscf_key_recipient_info.h"
-#include "vscf_key_recipient_info_list.h"
+#include "vscf_impl.h"
+#include "vscf_padding_params.h"
+#include "vscf_status.h"
+#include "vscf_api.h"
+
+#if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <virgil/crypto/common/vsc_data.h>
+#   include <virgil/crypto/common/vsc_buffer.h>
+#endif
+
+#if VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <VSCCommon/vsc_data.h>
+#   include <VSCCommon/vsc_buffer.h>
+#endif
 
 // clang-format on
 //  @end
@@ -74,28 +85,90 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'key recipient info list' context.
+//  Contains API requirements of the interface 'padding'.
 //
-struct vscf_key_recipient_info_list_t {
-    //
-    //  Function do deallocate self context.
-    //
-    vscf_dealloc_fn self_dealloc_cb;
-    //
-    //  Reference counter.
-    //
-    VSCF_ATOMIC size_t refcnt;
+typedef struct vscf_padding_api_t vscf_padding_api_t;
 
-    vscf_key_recipient_info_t *item;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *next;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *prev;
-};
+//
+//  Set new padding parameters.
+//
+VSCF_PUBLIC void
+vscf_padding_configure(vscf_impl_t *impl, const vscf_padding_params_t *params);
+
+//
+//  Return length in bytes of a data with a padding.
+//
+VSCF_PUBLIC size_t
+vscf_padding_padded_data_len(const vscf_impl_t *impl, size_t data_len);
+
+//
+//  Return an actual number of padding in bytes.
+//  Note, this method might be called right before "finish data processing".
+//
+VSCF_PUBLIC size_t
+vscf_padding_len(const vscf_impl_t *impl);
+
+//
+//  Return a maximum number of padding in bytes.
+//
+VSCF_PUBLIC size_t
+vscf_padding_len_max(const vscf_impl_t *impl);
+
+//
+//  Prepare the algorithm to process data.
+//
+VSCF_PUBLIC void
+vscf_padding_start_data_processing(vscf_impl_t *impl);
+
+//
+//  Only data length is needed to produce padding later.
+//  Return data that should be further proceeded.
+//
+VSCF_PUBLIC vsc_data_t
+vscf_padding_process_data(vscf_impl_t *impl, vsc_data_t data);
+
+//
+//  Accomplish data processing and return padding.
+//
+VSCF_PUBLIC vscf_status_t
+vscf_padding_finish_data_processing(vscf_impl_t *impl, vsc_buffer_t *out) VSCF_NODISCARD;
+
+//
+//  Prepare the algorithm to process padded data.
+//
+VSCF_PUBLIC void
+vscf_padding_start_padded_data_processing(vscf_impl_t *impl);
+
+//
+//  Process padded data.
+//  Return filtered data without padding.
+//
+VSCF_PUBLIC void
+vscf_padding_process_padded_data(vscf_impl_t *impl, vsc_data_t data, vsc_buffer_t *out);
+
+//
+//  Accomplish padded data processing and return left data without a padding.
+//
+VSCF_PUBLIC vscf_status_t
+vscf_padding_finish_padded_data_processing(vscf_impl_t *impl, vsc_buffer_t *out) VSCF_NODISCARD;
+
+//
+//  Return padding API, or NULL if it is not implemented.
+//
+VSCF_PUBLIC const vscf_padding_api_t *
+vscf_padding_api(const vscf_impl_t *impl);
+
+//
+//  Check if given object implements interface 'padding'.
+//
+VSCF_PUBLIC bool
+vscf_padding_is_implemented(const vscf_impl_t *impl);
+
+//
+//  Returns interface unique identifier.
+//
+VSCF_PUBLIC vscf_api_tag_t
+vscf_padding_api_tag(const vscf_padding_api_t *padding_api);
 
 
 // --------------------------------------------------------------------------
@@ -111,5 +184,5 @@ struct vscf_key_recipient_info_list_t {
 
 
 //  @footer
-#endif // VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#endif // VSCF_PADDING_H_INCLUDED
 //  @end

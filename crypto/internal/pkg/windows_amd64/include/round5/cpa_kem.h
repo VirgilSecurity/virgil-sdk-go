@@ -12,49 +12,57 @@
 
 #include "r5_parameter_sets.h"
 
+/*
+ * Conditionally provide the KEM NIST API functions.
+ */
+
+#if CRYPTO_CIPHERTEXTBYTES != 0
+
+#include "r5_cpa_kem.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    /*
-     * Conditionally provide the KEM NIST API functions.
-     */
-
-#if CRYPTO_CIPHERTEXTBYTES != 0
-
     /**
-     * Generates a CPA KEM key pair. Uses the fixed parameter configuration.
+     * Generates a CPA KEM key pair.
      *
      * @param[out] pk public key
      * @param[out] sk secret key
      * @return __0__ in case of success
      */
-    int crypto_kem_keypair(unsigned char *pk, unsigned char *sk);
+    inline int crypto_kem_keypair(unsigned char *pk, unsigned char *sk) {
+        return r5_cpa_kem_keygen(pk, sk);
+    }
 
     /**
-     * CPA KEM encapsulate. Uses the fixed parameter configuration.
+     * CPA KEM encapsulate.
      *
      * @param[out] ct    key encapsulation message (ciphertext)
      * @param[out] k     shared secret
      * @param[in]  pk    public key with which the message is encapsulated
      * @return __0__ in case of success
      */
-    int crypto_kem_enc(unsigned char *ct, unsigned char *k, const unsigned char *pk);
+    inline int crypto_kem_enc(unsigned char *ct, unsigned char *k, const unsigned char *pk) {
+        return r5_cpa_kem_encapsulate(ct, k, pk);
+    }
 
     /**
-     * CPA KEM de-capsulate. Uses the fixed parameter configuration.
+     * CPA KEM de-capsulate.
      *
      * @param[out] k     shared secret
      * @param[in]  ct    key encapsulation message (ciphertext)
      * @param[in]  sk    secret key with which the message is to be de-capsulated
      * @return __0__ in case of success
      */
-    int crypto_kem_dec(unsigned char *k, const unsigned char *ct, const unsigned char *sk);
-
-#endif
+    inline int crypto_kem_dec(unsigned char *k, const unsigned char *ct, const unsigned char *sk) {
+        return r5_cpa_kem_decapsulate(k, ct, sk);
+    }
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CPA_KEM_H */
+#endif
+
+#endif /* _CPA_KEM_H_ */

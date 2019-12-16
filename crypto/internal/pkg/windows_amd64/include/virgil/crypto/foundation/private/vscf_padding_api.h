@@ -47,15 +47,16 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Interface 'encrypt' API.
+//  Interface 'padding' API.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_ENCRYPT_API_H_INCLUDED
-#define VSCF_ENCRYPT_API_H_INCLUDED
+#ifndef VSCF_PADDING_API_H_INCLUDED
+#define VSCF_PADDING_API_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_api.h"
 #include "vscf_impl.h"
+#include "vscf_padding_params.h"
 #include "vscf_status.h"
 
 #if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
@@ -84,27 +85,65 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Callback. Encrypt given data.
+//  Callback. Set new padding parameters.
 //
-typedef vscf_status_t (*vscf_encrypt_api_encrypt_fn)(vscf_impl_t *impl, vsc_data_t data, vsc_buffer_t *out);
+typedef void (*vscf_padding_api_configure_fn)(vscf_impl_t *impl, const vscf_padding_params_t *params);
 
 //
-//  Callback. Calculate required buffer length to hold the encrypted data.
+//  Callback. Return length in bytes of a data with a padding.
 //
-typedef size_t (*vscf_encrypt_api_encrypted_len_fn)(const vscf_impl_t *impl, size_t data_len);
+typedef size_t (*vscf_padding_api_padded_data_len_fn)(const vscf_impl_t *impl, size_t data_len);
 
 //
-//  Callback. Precise length calculation of encrypted data.
+//  Callback. Return an actual number of padding in bytes.
+//          Note, this method might be called right before "finish data processing".
 //
-typedef size_t (*vscf_encrypt_api_precise_encrypted_len_fn)(const vscf_impl_t *impl, size_t data_len);
+typedef size_t (*vscf_padding_api_len_fn)(const vscf_impl_t *impl);
 
 //
-//  Contains API requirements of the interface 'encrypt'.
+//  Callback. Return a maximum number of padding in bytes.
 //
-struct vscf_encrypt_api_t {
+typedef size_t (*vscf_padding_api_len_max_fn)(const vscf_impl_t *impl);
+
+//
+//  Callback. Prepare the algorithm to process data.
+//
+typedef void (*vscf_padding_api_start_data_processing_fn)(vscf_impl_t *impl);
+
+//
+//  Callback. Only data length is needed to produce padding later.
+//          Return data that should be further proceeded.
+//
+typedef vsc_data_t (*vscf_padding_api_process_data_fn)(vscf_impl_t *impl, vsc_data_t data);
+
+//
+//  Callback. Accomplish data processing and return padding.
+//
+typedef vscf_status_t (*vscf_padding_api_finish_data_processing_fn)(vscf_impl_t *impl, vsc_buffer_t *out);
+
+//
+//  Callback. Prepare the algorithm to process padded data.
+//
+typedef void (*vscf_padding_api_start_padded_data_processing_fn)(vscf_impl_t *impl);
+
+//
+//  Callback. Process padded data.
+//          Return filtered data without padding.
+//
+typedef void (*vscf_padding_api_process_padded_data_fn)(vscf_impl_t *impl, vsc_data_t data, vsc_buffer_t *out);
+
+//
+//  Callback. Accomplish padded data processing and return left data without a padding.
+//
+typedef vscf_status_t (*vscf_padding_api_finish_padded_data_processing_fn)(vscf_impl_t *impl, vsc_buffer_t *out);
+
+//
+//  Contains API requirements of the interface 'padding'.
+//
+struct vscf_padding_api_t {
     //
     //  API's unique identifier, MUST be first in the structure.
-    //  For interface 'encrypt' MUST be equal to the 'vscf_api_tag_ENCRYPT'.
+    //  For interface 'padding' MUST be equal to the 'vscf_api_tag_PADDING'.
     //
     vscf_api_tag_t api_tag;
     //
@@ -112,17 +151,48 @@ struct vscf_encrypt_api_t {
     //
     vscf_impl_tag_t impl_tag;
     //
-    //  Encrypt given data.
+    //  Set new padding parameters.
     //
-    vscf_encrypt_api_encrypt_fn encrypt_cb;
+    vscf_padding_api_configure_fn configure_cb;
     //
-    //  Calculate required buffer length to hold the encrypted data.
+    //  Return length in bytes of a data with a padding.
     //
-    vscf_encrypt_api_encrypted_len_fn encrypted_len_cb;
+    vscf_padding_api_padded_data_len_fn padded_data_len_cb;
     //
-    //  Precise length calculation of encrypted data.
+    //  Return an actual number of padding in bytes.
+    //  Note, this method might be called right before "finish data processing".
     //
-    vscf_encrypt_api_precise_encrypted_len_fn precise_encrypted_len_cb;
+    vscf_padding_api_len_fn len_cb;
+    //
+    //  Return a maximum number of padding in bytes.
+    //
+    vscf_padding_api_len_max_fn len_max_cb;
+    //
+    //  Prepare the algorithm to process data.
+    //
+    vscf_padding_api_start_data_processing_fn start_data_processing_cb;
+    //
+    //  Only data length is needed to produce padding later.
+    //  Return data that should be further proceeded.
+    //
+    vscf_padding_api_process_data_fn process_data_cb;
+    //
+    //  Accomplish data processing and return padding.
+    //
+    vscf_padding_api_finish_data_processing_fn finish_data_processing_cb;
+    //
+    //  Prepare the algorithm to process padded data.
+    //
+    vscf_padding_api_start_padded_data_processing_fn start_padded_data_processing_cb;
+    //
+    //  Process padded data.
+    //  Return filtered data without padding.
+    //
+    vscf_padding_api_process_padded_data_fn process_padded_data_cb;
+    //
+    //  Accomplish padded data processing and return left data without a padding.
+    //
+    vscf_padding_api_finish_padded_data_processing_fn finish_padded_data_processing_cb;
 };
 
 
@@ -139,5 +209,5 @@ struct vscf_encrypt_api_t {
 
 
 //  @footer
-#endif // VSCF_ENCRYPT_API_H_INCLUDED
+#endif // VSCF_PADDING_API_H_INCLUDED
 //  @end

@@ -47,16 +47,13 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class 'key recipient info list' types definition.
+//  Handles padding parameters and constraints.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-#define VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#ifndef VSCF_PADDING_PARAMS_H_INCLUDED
+#define VSCF_PADDING_PARAMS_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_atomic.h"
-#include "vscf_key_recipient_info.h"
-#include "vscf_key_recipient_info_list.h"
 
 // clang-format on
 //  @end
@@ -74,28 +71,99 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'key recipient info list' context.
+//  Public integral constants.
 //
-struct vscf_key_recipient_info_list_t {
-    //
-    //  Function do deallocate self context.
-    //
-    vscf_dealloc_fn self_dealloc_cb;
-    //
-    //  Reference counter.
-    //
-    VSCF_ATOMIC size_t refcnt;
-
-    vscf_key_recipient_info_t *item;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *next;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *prev;
+enum {
+    vscf_padding_params_DEFAULT_FRAME = 160,
+    vscf_padding_params_DEFAULT_FRAME_MIN = 32,
+    vscf_padding_params_DEFAULT_FRAME_MAX = 8 * 1024
 };
+
+//
+//  Handle 'padding params' context.
+//
+typedef struct vscf_padding_params_t vscf_padding_params_t;
+
+//
+//  Return size of 'vscf_padding_params_t'.
+//
+VSCF_PUBLIC size_t
+vscf_padding_params_ctx_size(void);
+
+//
+//  Perform initialization of pre-allocated context.
+//
+VSCF_PUBLIC void
+vscf_padding_params_init(vscf_padding_params_t *self);
+
+//
+//  Release all inner resources including class dependencies.
+//
+VSCF_PUBLIC void
+vscf_padding_params_cleanup(vscf_padding_params_t *self);
+
+//
+//  Allocate context and perform it's initialization.
+//
+VSCF_PUBLIC vscf_padding_params_t *
+vscf_padding_params_new(void);
+
+//
+//  Perform initialization of pre-allocated context.
+//  Build padding params with given constraints.
+//  Precondition: frame_length_min <= frame_length <= frame_length_max.
+//  Next formula can clarify what frame is: padding_length = data_length MOD frame
+//
+VSCF_PUBLIC void
+vscf_padding_params_init_with_constraints(vscf_padding_params_t *self, size_t frame, size_t frame_min,
+        size_t frame_max);
+
+//
+//  Allocate class context and perform it's initialization.
+//  Build padding params with given constraints.
+//  Precondition: frame_length_min <= frame_length <= frame_length_max.
+//  Next formula can clarify what frame is: padding_length = data_length MOD frame
+//
+VSCF_PUBLIC vscf_padding_params_t *
+vscf_padding_params_new_with_constraints(size_t frame, size_t frame_min, size_t frame_max);
+
+//
+//  Release all inner resources and deallocate context if needed.
+//  It is safe to call this method even if the context was statically allocated.
+//
+VSCF_PUBLIC void
+vscf_padding_params_delete(vscf_padding_params_t *self);
+
+//
+//  Delete given context and nullifies reference.
+//  This is a reverse action of the function 'vscf_padding_params_new ()'.
+//
+VSCF_PUBLIC void
+vscf_padding_params_destroy(vscf_padding_params_t **self_ref);
+
+//
+//  Copy given class context by increasing reference counter.
+//
+VSCF_PUBLIC vscf_padding_params_t *
+vscf_padding_params_shallow_copy(vscf_padding_params_t *self);
+
+//
+//  Return padding frame in bytes.
+//
+VSCF_PUBLIC size_t
+vscf_padding_params_frame(const vscf_padding_params_t *self);
+
+//
+//  Return minimum padding frame in bytes.
+//
+VSCF_PUBLIC size_t
+vscf_padding_params_frame_min(const vscf_padding_params_t *self);
+
+//
+//  Return minimum padding frame in bytes.
+//
+VSCF_PUBLIC size_t
+vscf_padding_params_frame_max(const vscf_padding_params_t *self);
 
 
 // --------------------------------------------------------------------------
@@ -111,5 +179,5 @@ struct vscf_key_recipient_info_list_t {
 
 
 //  @footer
-#endif // VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#endif // VSCF_PADDING_PARAMS_H_INCLUDED
 //  @end

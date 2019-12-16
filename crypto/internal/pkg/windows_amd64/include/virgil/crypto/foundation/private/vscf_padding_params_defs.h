@@ -47,16 +47,14 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class 'key recipient info list' types definition.
+//  Class 'padding params' types definition.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-#define VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#ifndef VSCF_PADDING_PARAMS_DEFS_H_INCLUDED
+#define VSCF_PADDING_PARAMS_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_atomic.h"
-#include "vscf_key_recipient_info.h"
-#include "vscf_key_recipient_info_list.h"
 
 // clang-format on
 //  @end
@@ -74,9 +72,9 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'key recipient info list' context.
+//  Handle 'padding params' context.
 //
-struct vscf_key_recipient_info_list_t {
+struct vscf_padding_params_t {
     //
     //  Function do deallocate self context.
     //
@@ -86,15 +84,11 @@ struct vscf_key_recipient_info_list_t {
     //
     VSCF_ATOMIC size_t refcnt;
 
-    vscf_key_recipient_info_t *item;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *next;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *prev;
+    size_t frame;
+
+    size_t frame_min;
+
+    size_t frame_max;
 };
 
 
@@ -111,5 +105,5 @@ struct vscf_key_recipient_info_list_t {
 
 
 //  @footer
-#endif // VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#endif // VSCF_PADDING_PARAMS_DEFS_H_INCLUDED
 //  @end

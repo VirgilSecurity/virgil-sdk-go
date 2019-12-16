@@ -47,16 +47,15 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class 'key recipient info list' types definition.
+//  Class 'key info' types definition.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-#define VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#ifndef VSCF_KEY_INFO_DEFS_H_INCLUDED
+#define VSCF_KEY_INFO_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_atomic.h"
-#include "vscf_key_recipient_info.h"
-#include "vscf_key_recipient_info_list.h"
+#include "vscf_alg_id.h"
 
 // clang-format on
 //  @end
@@ -74,9 +73,9 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'key recipient info list' context.
+//  Handle 'key info' context.
 //
-struct vscf_key_recipient_info_list_t {
+struct vscf_key_info_t {
     //
     //  Function do deallocate self context.
     //
@@ -86,15 +85,23 @@ struct vscf_key_recipient_info_list_t {
     //
     VSCF_ATOMIC size_t refcnt;
 
-    vscf_key_recipient_info_t *item;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *next;
-    //
-    //  Class specific context.
-    //
-    vscf_key_recipient_info_list_t *prev;
+    vscf_alg_id_t alg_id;
+
+    vscf_alg_id_t chained_l1_alg_id;
+
+    vscf_alg_id_t chained_l2_alg_id;
+
+    vscf_alg_id_t compound_cipher_alg_id;
+
+    vscf_alg_id_t compound_signer_alg_id;
+
+    vscf_alg_id_t compound_cipher_l1_alg_id;
+
+    vscf_alg_id_t compound_cipher_l2_alg_id;
+
+    vscf_alg_id_t compound_signer_l1_alg_id;
+
+    vscf_alg_id_t compound_signer_l2_alg_id;
 };
 
 
@@ -111,5 +118,5 @@ struct vscf_key_recipient_info_list_t {
 
 
 //  @footer
-#endif // VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#endif // VSCF_KEY_INFO_DEFS_H_INCLUDED
 //  @end

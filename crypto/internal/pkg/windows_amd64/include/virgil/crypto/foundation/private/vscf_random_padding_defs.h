@@ -47,16 +47,29 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class 'key recipient info list' types definition.
+//  Types of the 'random padding' implementation.
+//  This types SHOULD NOT be used directly.
+//  The only purpose of including this module is to place implementation
+//  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
-#define VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#ifndef VSCF_RANDOM_PADDING_DEFS_H_INCLUDED
+#define VSCF_RANDOM_PADDING_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_impl_private.h"
+#include "vscf_random_padding.h"
 #include "vscf_atomic.h"
-#include "vscf_key_recipient_info.h"
-#include "vscf_key_recipient_info_list.h"
+#include "vscf_tail_filter.h"
+#include "vscf_impl.h"
+
+#if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <virgil/crypto/common/vsc_buffer.h>
+#endif
+
+#if VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <VSCCommon/vsc_buffer.h>
+#endif
 
 // clang-format on
 //  @end
@@ -74,27 +87,41 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'key recipient info list' context.
+//  Handles implementation details.
 //
-struct vscf_key_recipient_info_list_t {
+struct vscf_random_padding_t {
     //
-    //  Function do deallocate self context.
+    //  Compile-time known information about this implementation.
     //
-    vscf_dealloc_fn self_dealloc_cb;
+    const vscf_impl_info_t *info;
     //
     //  Reference counter.
     //
     VSCF_ATOMIC size_t refcnt;
-
-    vscf_key_recipient_info_t *item;
     //
-    //  Class specific context.
+    //  Dependency to the interface 'random'.
     //
-    vscf_key_recipient_info_list_t *next;
+    vscf_impl_t *random;
     //
-    //  Class specific context.
+    //  Implementation specific context.
     //
-    vscf_key_recipient_info_list_t *prev;
+    vscf_tail_filter_t *tail_filter;
+    //
+    //  Implementation specific context.
+    //
+    vsc_buffer_t *buffer;
+    //
+    //  Implementation specific context.
+    //
+    size_t unpadded_len;
+    //
+    //  Implementation specific context.
+    //
+    size_t padding_frame;
+    //
+    //  Implementation specific context.
+    //
+    size_t padding_frame_max;
 };
 
 
@@ -111,5 +138,5 @@ struct vscf_key_recipient_info_list_t {
 
 
 //  @footer
-#endif // VSCF_KEY_RECIPIENT_INFO_LIST_DEFS_H_INCLUDED
+#endif // VSCF_RANDOM_PADDING_DEFS_H_INCLUDED
 //  @end

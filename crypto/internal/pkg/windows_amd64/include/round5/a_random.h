@@ -10,7 +10,7 @@
 #ifndef A_RANDOM_H
 #define A_RANDOM_H
 
-#include "parameters.h"
+#include "r5_parameter_sets.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,11 +20,9 @@ extern "C" {
      * Creates A random for the given seed and algorithm parameters.
      *
      * @param[out] A_random     the random A to create
-     * @param[in]  seed         the seed (kappa_bytes bytes)
-     * @param[in]  params       the algorithm parameters in use
-     * @return __0__ on success
+     * @param[in]  seed         the seed (PARAMS_KAPPA_BYTES bytes)
      */
-    int create_A_random(uint16_t *A_random, const unsigned char *seed, const parameters *params);
+    void create_A_random(modq_t *A_random, const unsigned char *seed);
 
 #ifdef __cplusplus
 }
