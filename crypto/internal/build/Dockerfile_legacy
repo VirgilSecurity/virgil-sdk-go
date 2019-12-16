@@ -4,20 +4,24 @@ MAINTAINER Virgil Security Inc. <support@virgilsecurity.com>
 # ---------------------------------------------------------------------------
 #   Basic
 # ---------------------------------------------------------------------------
-RUN yum install -y wget
-RUN yum install -y yum-utils
-RUN yum install -y pcre-devel
-RUN yum install -y git
-RUN yum install -y yum install gcc-c++
-RUN yum install -y centos-release-scl
-RUN yum install -y devtoolset-7
+RUN yum install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+RUN yum install -y \
+    wget \
+    yum-utils \
+    pcre-devel \
+    git \
+    gcc-c++ \
+    centos-release-scl \
+    devtoolset-7
 
 # ---------------------------------------------------------------------------
 #   GCC 4.8 (install and enable)
 # ---------------------------------------------------------------------------
 RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo
-RUN yum install -y devtoolset-2-gcc devtoolset-2-binutils
-RUN yum install -y devtoolset-2-gcc-c++
+RUN yum install -y \
+    devtoolset-2-gcc \
+    devtoolset-2-binutils \
+    devtoolset-2-gcc-c++
 
 COPY entrypoint_legacy.sh /usr/bin/entrypoint.sh
 RUN chmod +x /usr/bin/entrypoint.sh
