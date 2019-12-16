@@ -214,6 +214,10 @@ extern "C" {
 #define VSCF_MESSAGE_INFO_FOOTER_SERIALIZER 1
 #endif
 
+#ifndef VSCF_PADDING
+#define VSCF_PADDING 1
+#endif
+
 #ifndef VSCF_SHA224
 #define VSCF_SHA224 1
 #endif
@@ -422,6 +426,10 @@ extern "C" {
 #define VSCF_MESSAGE_INFO_DER_SERIALIZER 1
 #endif
 
+#ifndef VSCF_RANDOM_PADDING
+#define VSCF_RANDOM_PADDING 1
+#endif
+
 #ifndef VSCF_ERROR
 #define VSCF_ERROR 1
 #endif
@@ -588,6 +596,22 @@ extern "C" {
 
 #ifndef VSCF_FOOTER_INFO
 #define VSCF_FOOTER_INFO 1
+#endif
+
+#ifndef VSCF_KEY_INFO
+#define VSCF_KEY_INFO 1
+#endif
+
+#ifndef VSCF_TAIL_FILTER
+#define VSCF_TAIL_FILTER 1
+#endif
+
+#ifndef VSCF_PADDING_PARAMS
+#define VSCF_PADDING_PARAMS 1
+#endif
+
+#ifndef VSCF_PADDING_CIPHER
+#define VSCF_PADDING_CIPHER 1
 #endif
 
 //
