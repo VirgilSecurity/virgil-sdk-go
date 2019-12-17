@@ -3,5 +3,5 @@
 package foundation
 
 // #cgo CFLAGS: -I${SRCDIR}/../pkg/linux_amd64__legacy_os/include/
-// #cgo LDFLAGS: -L${SRCDIR}/../pkg/linux_amd64__legacy_os/lib -lvsc_foundation -lvsc_foundation_pb -led25519 -lprotobuf-nanopb -lvsc_common -lmbedcrypto -lround5 -lfalcon -lkeccak -pthread
+// #cgo LDFLAGS: -L${SRCDIR}/../pkg/linux_amd64__legacy_os/lib -lvsc_foundation -lvsc_foundation_pb -led25519 -lprotobuf-nanopb -lvsc_common -lmbedcrypto -lround5 -lfalcon -lkeccak -lpthread
 import "C"
