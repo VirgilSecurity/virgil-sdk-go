@@ -39,22 +39,40 @@ package session
 
 import "github.com/VirgilSecurity/virgil-sdk-go/errors"
 
+type GeneratorJwtProviderOption func(p *GeneratorJwtProvider)
+
+func SetGeneratorJwtProviderAddtionalData(additionalData map[string]interface{}) GeneratorJwtProviderOption {
+	return func(p *GeneratorJwtProvider) {
+		p.additionalData = additionalData
+	}
+}
+
+func SetGeneratorJwtProviderDefaultIdentity(identity string) GeneratorJwtProviderOption {
+	return func(p *GeneratorJwtProvider) {
+		p.defaultIdentity = identity
+	}
+}
+
 type GeneratorJwtProvider struct {
 	jwtGenerator    JwtGenerator
 	additionalData  map[string]interface{}
 	defaultIdentity string
 }
 
-func NewGeneratorJwtProvider(generator JwtGenerator, additionalData map[string]interface{}, defaultIdentity string) *GeneratorJwtProvider {
+func NewGeneratorJwtProvider(generator JwtGenerator, options ...GeneratorJwtProviderOption) *GeneratorJwtProvider {
+	p := &GeneratorJwtProvider{
+		jwtGenerator:    generator,
+		defaultIdentity: "go-sdk",
+	}
+
+	for i := range options {
+		options[i](p)
+	}
 	if err := generator.Validate(); err != nil {
 		panic(err)
 	}
 
-	return &GeneratorJwtProvider{
-		jwtGenerator:    generator,
-		additionalData:  additionalData,
-		defaultIdentity: defaultIdentity,
-	}
+	return p
 }
 
 func (g *GeneratorJwtProvider) GetToken(context *TokenContext) (AccessToken, error) {

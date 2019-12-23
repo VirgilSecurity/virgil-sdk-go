@@ -79,7 +79,7 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 	}
 
 	issuedAt := time.Now().UTC().Truncate(time.Second)
-	expiresAt := issuedAt.Add(j.TTL)
+	expiresAt := issuedAt.Add(j.getTTL())
 
 	h := JwtHeaderContent{
 		Algorithm:   j.getAccessTokenSigner().GetAlgorithm(),
@@ -109,4 +109,11 @@ func (j JwtGenerator) getAccessTokenSigner() AccessTokenSigner {
 		return VirgilAccessTokenSigner{}
 	}
 	return j.AccessTokenSigner
+}
+
+func (j JwtGenerator) getTTL() time.Duration {
+	if j.TTL == 0 {
+		return time.Hour
+	}
+	return j.TTL
 }
