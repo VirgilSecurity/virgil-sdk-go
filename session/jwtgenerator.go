@@ -66,10 +66,8 @@ func (j JwtGenerator) Validate() error {
 	if strings.Replace(j.ApiPublicKeyIdentifier, " ", "", -1) == "" {
 		return errors.New("JwtGenerator: api public key identifier is not set")
 	}
-	if j.AccessTokenSigner == nil {
-		return errors.New("JwtGenerator: access token signer is not set")
-	}
-	if strings.Replace(j.AccessTokenSigner.GetAlgorithm(), " ", "", -1) == "" {
+
+	if strings.Replace(j.getAccessTokenSigner().GetAlgorithm(), " ", "", -1) == "" {
 		return errors.New("JwtGenerator: access token signer is not set")
 	}
 	return nil
@@ -84,7 +82,7 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 	expiresAt := issuedAt.Add(j.TTL)
 
 	h := JwtHeaderContent{
-		Algorithm:   j.AccessTokenSigner.GetAlgorithm(),
+		Algorithm:   j.getAccessTokenSigner().GetAlgorithm(),
 		APIKeyID:    j.ApiPublicKeyIdentifier,
 		ContentType: VirgilContentType,
 		Type:        JwtType,
@@ -99,9 +97,16 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 		AdditionalData: additionalData,
 	}
 	jwt := NewJwt(h, b)
-	if err := jwt.Sign(j.AccessTokenSigner, j.ApiKey); err != nil {
+	if err := jwt.Sign(j.getAccessTokenSigner(), j.ApiKey); err != nil {
 		return nil, err
 	}
 
 	return jwt, nil
+}
+
+func (j JwtGenerator) getAccessTokenSigner() AccessTokenSigner {
+	if j.AccessTokenSigner == nil {
+		return VirgilAccessTokenSigner{}
+	}
+	return j.AccessTokenSigner
 }
