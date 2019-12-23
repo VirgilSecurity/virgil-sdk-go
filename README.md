@@ -56,10 +56,10 @@ Use the following lines of code to create and publish a user's Card with Public 
 
 ```go
 import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk/storage"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/storage"
 )
 
 var (
@@ -74,7 +74,7 @@ func main() {
 	// generate a key pair
 	keypair, err := crypto.GenerateKeypair()
 
-	privateKeyStorage := storage.NewPrivateKeyStorage(storage.FileStorage{})
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 	// save a private key into key storage
 	err = privateKeyStorage.Store(keypair, "Alice", nil)
 	if err != nil{
@@ -86,22 +86,20 @@ func main() {
 		//handle error
 	}
 
-	cardManager := sdk.NewCardManager(NewGeneratorJwtProvider(JwtGenerator{
+	cardManager := sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
 		ApiPublicKeyIdentifier: APIKeyID,
-		APIKey: apiKey,
-		AppID: AppID,
-	})
+		ApiKey:                 apiKey,
+		AppID:                  AppID,
+	}))
 
 	// publish user's on the Cards Service
 	card, err := cardManager.PublishCard(&sdk.CardParams{
-		PublicKey:  keypair.PublicKey(),
 		PrivateKey: keypair,
 		Identity:   "Alice",
 	})
 	if err != nil{
 		//handle error
 	}
-
 }
 ```
 
