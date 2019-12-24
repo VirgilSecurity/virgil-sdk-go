@@ -52,18 +52,18 @@ type AccessTokenSigner interface {
 }
 
 type JwtGenerator struct {
-	ApiKey                 crypto.PrivateKey
-	ApiPublicKeyIdentifier string
-	AccessTokenSigner      AccessTokenSigner
-	AppID                  string
-	TTL                    time.Duration
+	AppKey            crypto.PrivateKey
+	AppKeyID          string
+	AppID             string
+	AccessTokenSigner AccessTokenSigner
+	TTL               time.Duration
 }
 
 func (j JwtGenerator) Validate() error {
-	if j.ApiKey == nil {
+	if j.AppKey == nil {
 		return errors.New("JwtGenerator: api private key is not set")
 	}
-	if strings.Replace(j.ApiPublicKeyIdentifier, " ", "", -1) == "" {
+	if strings.Replace(j.AppKeyID, " ", "", -1) == "" {
 		return errors.New("JwtGenerator: api public key identifier is not set")
 	}
 
@@ -79,11 +79,11 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 	}
 
 	issuedAt := time.Now().UTC().Truncate(time.Second)
-	expiresAt := issuedAt.Add(j.TTL)
+	expiresAt := issuedAt.Add(j.getTTL())
 
 	h := JwtHeaderContent{
 		Algorithm:   j.getAccessTokenSigner().GetAlgorithm(),
-		APIKeyID:    j.ApiPublicKeyIdentifier,
+		APIKeyID:    j.AppKeyID,
 		ContentType: VirgilContentType,
 		Type:        JwtType,
 	}
@@ -97,7 +97,7 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 		AdditionalData: additionalData,
 	}
 	jwt := NewJwt(h, b)
-	if err := jwt.Sign(j.getAccessTokenSigner(), j.ApiKey); err != nil {
+	if err := jwt.Sign(j.getAccessTokenSigner(), j.AppKey); err != nil {
 		return nil, err
 	}
 
@@ -109,4 +109,11 @@ func (j JwtGenerator) getAccessTokenSigner() AccessTokenSigner {
 		return VirgilAccessTokenSigner{}
 	}
 	return j.AccessTokenSigner
+}
+
+func (j JwtGenerator) getTTL() time.Duration {
+	if j.TTL == 0 {
+		return time.Hour
+	}
+	return j.TTL
 }
