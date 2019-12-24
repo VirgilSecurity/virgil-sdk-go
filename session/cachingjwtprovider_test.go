@@ -58,11 +58,11 @@ func TestCachingJwtProvider(t *testing.T) {
 	genCount := 0
 
 	jwtGenerator := JwtGenerator{
-		ApiKey:                 key,
-		ApiPublicKeyIdentifier: hex.EncodeToString(key.Identifier()),
-		TTL:                    6 * time.Second,
-		AccessTokenSigner:      VirgilAccessTokenSigner{},
-		AppID:                  "app_id",
+		AppKey:            key,
+		AppKeyID:          hex.EncodeToString(key.Identifier()),
+		TTL:               6 * time.Second,
+		AccessTokenSigner: VirgilAccessTokenSigner{},
+		AppID:             "app_id",
 	}
 
 	prov := NewCachingJwtProvider(func(context *TokenContext) (*Jwt, error) {

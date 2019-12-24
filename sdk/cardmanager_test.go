@@ -56,17 +56,17 @@ func initCardManager() (*CardManager, error) {
 	return initCardManagerWithIdentityName("default_identity")
 }
 func initCardManagerWithIdentityName(identityName string) (*CardManager, error) {
-	apiKeyID := os.Getenv("TEST_API_KEY_ID")
-	if apiKeyID == "" {
-		return nil, xerrors.New("TEST_API_KEY_ID is required")
+	appKeyID := os.Getenv("TEST_APP_KEY_ID")
+	if appKeyID == "" {
+		return nil, xerrors.New("TEST_APP_KEY_ID is required")
 	}
-	apiKeySource := os.Getenv("TEST_API_KEY")
-	if apiKeySource == "" {
-		return nil, xerrors.New("TEST_API_KEY is required")
+	appKeySource := os.Getenv("TEST_APP_KEY")
+	if appKeySource == "" {
+		return nil, xerrors.New("TEST_APP_KEY is required")
 	}
-	apiKey, err := cryptoNative.ImportPrivateKey([]byte(apiKeySource))
+	appKey, err := cryptoNative.ImportPrivateKey([]byte(appKeySource))
 	if err != nil {
-		return nil, xerrors.Errorf("Cannot import API private key: %w", err)
+		return nil, xerrors.Errorf("Cannot import appplication key: %w", err)
 	}
 
 	appID := os.Getenv("TEST_APP_ID")
@@ -85,14 +85,18 @@ func initCardManagerWithIdentityName(identityName string) (*CardManager, error) 
 	}
 
 	generator := session.JwtGenerator{
-		ApiKey:                 apiKey,
-		ApiPublicKeyIdentifier: apiKeyID,
-		AppID:                  appID,
-		AccessTokenSigner:      session.VirgilAccessTokenSigner{Crypto: cryptoNative},
-		TTL:                    time.Minute,
+		AppKey:            appKey,
+		AppKeyID:          appKeyID,
+		AppID:             appID,
+		AccessTokenSigner: session.VirgilAccessTokenSigner{Crypto: cryptoNative},
+		TTL:               time.Minute,
 	}
 
-	return NewCardManager(session.NewGeneratorJwtProvider(generator, nil, identityName),
+	return NewCardManager(
+		session.NewGeneratorJwtProvider(
+			generator,
+			session.SetGeneratorJwtProviderDefaultIdentity(identityName),
+		),
 		CardManagerSetCardClient(NewCardsClient(cardClientOptions...)),
 		CardManagerSetCardVerifier(NewVirgilCardVerifier(virgilCardVerifierOptions...)),
 	), nil

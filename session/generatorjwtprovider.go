@@ -62,7 +62,7 @@ type GeneratorJwtProvider struct {
 func NewGeneratorJwtProvider(generator JwtGenerator, options ...GeneratorJwtProviderOption) *GeneratorJwtProvider {
 	p := &GeneratorJwtProvider{
 		jwtGenerator:    generator,
-		defaultIdentity: "go-sdk",
+		defaultIdentity: "default_identity",
 	}
 
 	for i := range options {
