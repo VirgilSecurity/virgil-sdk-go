@@ -63,9 +63,9 @@ import (
 )
 
 var (
-	APIKey = "{YOUR_API_KEY}"
-	APIKeyID = "{YOUR_API_KEY_ID}"
-	AppID = "{APPLICATION_ID}"
+	AppKey   = "{YOUR_APP_KEY}"
+	AppKeyID = "{YOUR_APP_KEY_ID}"
+	AppID    = "{YOU_APP_ID}"
 )
 
 func main() {
@@ -73,23 +73,26 @@ func main() {
 
 	// generate a key pair
 	keypair, err := crypto.GenerateKeypair()
+	if err != nil {
+		//handle error
+	}
 
 	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 	// save a private key into key storage
 	err = privateKeyStorage.Store(keypair, "Alice", nil)
-	if err != nil{
+	if err != nil {
 		//handle error
 	}
 
-	apiKey,err:= crypto.ImportPrivateKey([]byte(APIKey))
-	if err != nil{
+	appKey, err := crypto.ImportPrivateKey([]byte(AppKey))
+	if err != nil {
 		//handle error
 	}
 
 	cardManager := sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
-		ApiPublicKeyIdentifier: APIKeyID,
-		ApiKey:                 apiKey,
-		AppID:                  AppID,
+		AppKeyID: AppKeyID,
+		AppKey:   appKey,
+		AppID:    AppID,
 	}))
 
 	// publish user's on the Cards Service
@@ -97,7 +100,7 @@ func main() {
 		PrivateKey: keypair,
 		Identity:   "Alice",
 	})
-	if err != nil{
+	if err != nil {
 		//handle error
 	}
 }
@@ -110,7 +113,6 @@ Virgil SDK lets you use a user's Private key and his or her Cards to sign, then 
 In the following example, we load a Private Key from a customized Key Storage and get recipient's Card from the Virgil Cards Services. Recipient's Card contains a Public Key on which we will encrypt the data and verify a signature.
 
 ```go
-
 import (
 	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
 	"github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
@@ -177,7 +179,6 @@ func main() {
 		//handle error
 	}
 }
-
 ```
 
 ## Docs
