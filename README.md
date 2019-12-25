@@ -26,44 +26,26 @@ The Virgil SDK allows developers to get up and running with Virgil API quickly a
 
 The Virgil Go SDK is provided as a package named virgil. The package is distributed via github. Also in this guide, you find one more package called Virgil Crypto (Virgil Crypto Library) that is used by the SDK to perform cryptographic operations.
 
-The package is available for Go 1.10 or newer.
+The package is available for Go 1.12 or newer.
 
 Installing the package:
 
 - go get -u github.com/VirgilSecurity/virgil-sdk-go/sdk
 
+### Virgil Crypto Library
 
-### Crypto library notice
+Virgil crypto library is a wrapper on [C crypto library](https://github.com/VirgilSecurity/virgil-crypto-c). Virgil crypto library use prebuild C library for better experience for most popular operation system:
 
-The built in crypto library supports only following primitives:
+- MacOS amd64 with X Code 11
+- Windows amd64 with mingw64
+- Linux amd64 gcc >= 5 and clang >=7
+- For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel use tag `legacy_os`
 
-- ED25519 keys
-- SHA512 hashes
-- AES256_GCM encrypting
-
-and is not recommended for production use.
-
-On linux and macOS consider using external crypto library written in c++
-
-### Using external crypto library (c++)
-
-```bash
-go get -u -d gopkg.in/virgilsecurity/virgil-crypto-go.v5
-cd $GOPATH/src/gopkg.in/virgilsecurity/virgil-crypto-go.v5
-make
-```
-
-in your source code use crypto objects from this library as follows:
-
-```go
-
-var (
-	crypto      = crypto.NewVirgilCrypto()
-	cardCrypto  = crypto.NewCardCrypto()
-	tokenSigner = crypto.NewVirgilAccessTokenSigner()
-)
-```
-
+## Library purposes
+* Asymmetric Key Generation
+* Encryption/Decryption of data and streams
+* Generation/Verification of digital signatures
+* PFS (Perfect Forward Secrecy)
 
 ## Usage Examples
 
@@ -74,37 +56,53 @@ Use the following lines of code to create and publish a user's Card with Public 
 
 ```go
 import (
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
-	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
+	"github.com/VirgilSecurity/virgil-sdk-go/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/storage"
 )
 
 var (
-	crypto      = crypto.NewVirgilCrypto()
-	cardCrypto  = crypto.NewVirgilCardCrypto()
-	tokenSigner = crypto.NewVirgilAccessTokenSigner()
+	AppKey   = "{YOUR_APP_KEY}"
+	AppKeyID = "{YOUR_APP_KEY_ID}"
+	AppID    = "{YOU_APP_ID}"
 )
 
 func main() {
+	var crypto crypto.Crypto
 
 	// generate a key pair
 	keypair, err := crypto.GenerateKeypair()
-
-	// save a private key into key storage
-	err = privateKeyStorage.Store(keypair.PrivateKey(), "Alice", nil)
-	if err != nil{
+	if err != nil {
 		//handle error
 	}
+
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
+	// save a private key into key storage
+	err = privateKeyStorage.Store(keypair, "Alice", nil)
+	if err != nil {
+		//handle error
+	}
+
+	appKey, err := crypto.ImportPrivateKey([]byte(AppKey))
+	if err != nil {
+		//handle error
+	}
+
+	cardManager := sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
+		AppKeyID: AppKeyID,
+		AppKey:   appKey,
+		AppID:    AppID,
+	}))
+
 	// publish user's on the Cards Service
 	card, err := cardManager.PublishCard(&sdk.CardParams{
-		PublicKey:  keypair.PublicKey(),
-		PrivateKey: keypair.PrivateKey(),
+		PrivateKey: keypair,
 		Identity:   "Alice",
 	})
-
-	if err != nil{
+	if err != nil {
 		//handle error
 	}
-
 }
 ```
 
@@ -115,20 +113,21 @@ Virgil SDK lets you use a user's Private key and his or her Cards to sign, then 
 In the following example, we load a Private Key from a customized Key Storage and get recipient's Card from the Virgil Cards Services. Recipient's Card contains a Public Key on which we will encrypt the data and verify a signature.
 
 ```go
-
-import "gopkg.in/virgilsecurity/virgil-crypto-go.v5"
-
-var (
-	crypto      = crypto.NewVirgilCrypto()
-	cardCrypto  = crypto.NewVirgilCardCrypto()
-	tokenSigner = crypto.NewVirgilAccessTokenSigner()
+import (
+	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/sdk/storage"
 )
+
+var crypto crypto.Crypto
 
 func main() {
 	messageToEncrypt := []byte("Hello, Bob!")
 
+	privateKeyStorage := storage.NewPrivateKeyStorage(storage.FileStorage{})
+
 	// prepare a user's private key from a device storage
-	alicePrivateKey, err := privateKeyStorage.Load("Alice")
+	alicePrivateKey, _, err := privateKeyStorage.Load("Alice")
 	if err != nil{
 		//handle error
 	}
@@ -155,15 +154,13 @@ func main() {
 Once the Users receive the signed and encrypted message, they can decrypt it with their own Private Key and verify signature with a Sender's Card:
 
 ```go
-import "gopkg.in/virgilsecurity/virgil-crypto-go.v5"
+import "github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
 
-var (
-	crypto      = crypto.NewVirgilCrypto()
-	cardCrypto  = crypto.NewVirgilCardCrypto()
-	tokenSigner = crypto.NewVirgilAccessTokenSigner()
-)
+var crypto crypto.Crypto
 
 func main() {
+	privateKeyStorage := storage.NewPrivateKeyStorage(storage.FileStorage{})
+
 	// prepare a user's private key
 	bobPrivateKey, err := privateKeyStorage.Load("Bob")
 	if err != nil{
@@ -172,19 +169,16 @@ func main() {
 
 	// using cardManager search for Alice's cards on Cards Service
 	aliceCards, err := cardManager.SearchCards("Alice")
-
 	if err != nil{
 		//handle error
 	}
 
 	// decrypt with a private key and verify using one of Alice's public keys
 	decryptedMessage, err := crypto.DecryptThenVerify(encryptedMessage, bobPrivateKey, cards.ExtractPublicKeys()...)
-
 	if err != nil{
 		//handle error
 	}
 }
-
 ```
 
 ## Docs
