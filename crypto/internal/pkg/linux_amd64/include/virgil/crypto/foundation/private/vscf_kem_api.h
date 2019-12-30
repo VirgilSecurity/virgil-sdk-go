@@ -47,13 +47,26 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Handles padding parameters and constraints.
+//  Interface 'kem' API.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_PADDING_PARAMS_H_INCLUDED
-#define VSCF_PADDING_PARAMS_H_INCLUDED
+#ifndef VSCF_KEM_API_H_INCLUDED
+#define VSCF_KEM_API_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_api.h"
+#include "vscf_impl.h"
+#include "vscf_status.h"
+
+#if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <virgil/crypto/common/vsc_buffer.h>
+#   include <virgil/crypto/common/vsc_data.h>
+#endif
+
+#if VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <VSCCommon/vsc_buffer.h>
+#   include <VSCCommon/vsc_data.h>
+#endif
 
 // clang-format on
 //  @end
@@ -71,90 +84,57 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Public integral constants.
+//  Callback. Return length in bytes required to hold encapsulated shared key.
 //
-enum {
-    vscf_padding_params_DEFAULT_FRAME_MIN = 32,
-    vscf_padding_params_DEFAULT_FRAME = 160,
-    vscf_padding_params_DEFAULT_FRAME_MAX = 256
+typedef size_t (*vscf_kem_api_kem_shared_key_len_fn)(const vscf_impl_t *impl, const vscf_impl_t *key);
+
+//
+//  Callback. Return length in bytes required to hold encapsulated key.
+//
+typedef size_t (*vscf_kem_api_kem_encapsulated_key_len_fn)(const vscf_impl_t *impl, const vscf_impl_t *public_key);
+
+//
+//  Callback. Generate a shared key and a key encapsulated message.
+//
+typedef vscf_status_t (*vscf_kem_api_kem_encapsulate_fn)(const vscf_impl_t *impl, const vscf_impl_t *public_key,
+        vsc_buffer_t *shared_key, vsc_buffer_t *encapsulated_key);
+
+//
+//  Callback. Decapsulate the shared key.
+//
+typedef vscf_status_t (*vscf_kem_api_kem_decapsulate_fn)(const vscf_impl_t *impl, vsc_data_t encapsulated_key,
+        const vscf_impl_t *private_key, vsc_buffer_t *shared_key);
+
+//
+//  Contains API requirements of the interface 'kem'.
+//
+struct vscf_kem_api_t {
+    //
+    //  API's unique identifier, MUST be first in the structure.
+    //  For interface 'kem' MUST be equal to the 'vscf_api_tag_KEM'.
+    //
+    vscf_api_tag_t api_tag;
+    //
+    //  Implementation unique identifier, MUST be second in the structure.
+    //
+    vscf_impl_tag_t impl_tag;
+    //
+    //  Return length in bytes required to hold encapsulated shared key.
+    //
+    vscf_kem_api_kem_shared_key_len_fn kem_shared_key_len_cb;
+    //
+    //  Return length in bytes required to hold encapsulated key.
+    //
+    vscf_kem_api_kem_encapsulated_key_len_fn kem_encapsulated_key_len_cb;
+    //
+    //  Generate a shared key and a key encapsulated message.
+    //
+    vscf_kem_api_kem_encapsulate_fn kem_encapsulate_cb;
+    //
+    //  Decapsulate the shared key.
+    //
+    vscf_kem_api_kem_decapsulate_fn kem_decapsulate_cb;
 };
-
-//
-//  Handle 'padding params' context.
-//
-typedef struct vscf_padding_params_t vscf_padding_params_t;
-
-//
-//  Return size of 'vscf_padding_params_t'.
-//
-VSCF_PUBLIC size_t
-vscf_padding_params_ctx_size(void);
-
-//
-//  Perform initialization of pre-allocated context.
-//
-VSCF_PUBLIC void
-vscf_padding_params_init(vscf_padding_params_t *self);
-
-//
-//  Release all inner resources including class dependencies.
-//
-VSCF_PUBLIC void
-vscf_padding_params_cleanup(vscf_padding_params_t *self);
-
-//
-//  Allocate context and perform it's initialization.
-//
-VSCF_PUBLIC vscf_padding_params_t *
-vscf_padding_params_new(void);
-
-//
-//  Perform initialization of pre-allocated context.
-//  Build padding params with given constraints.
-//  Next formula can clarify what frame is: padding_length = data_length MOD frame
-//
-VSCF_PUBLIC void
-vscf_padding_params_init_with_constraints(vscf_padding_params_t *self, size_t frame, size_t frame_max);
-
-//
-//  Allocate class context and perform it's initialization.
-//  Build padding params with given constraints.
-//  Next formula can clarify what frame is: padding_length = data_length MOD frame
-//
-VSCF_PUBLIC vscf_padding_params_t *
-vscf_padding_params_new_with_constraints(size_t frame, size_t frame_max);
-
-//
-//  Release all inner resources and deallocate context if needed.
-//  It is safe to call this method even if the context was statically allocated.
-//
-VSCF_PUBLIC void
-vscf_padding_params_delete(vscf_padding_params_t *self);
-
-//
-//  Delete given context and nullifies reference.
-//  This is a reverse action of the function 'vscf_padding_params_new ()'.
-//
-VSCF_PUBLIC void
-vscf_padding_params_destroy(vscf_padding_params_t **self_ref);
-
-//
-//  Copy given class context by increasing reference counter.
-//
-VSCF_PUBLIC vscf_padding_params_t *
-vscf_padding_params_shallow_copy(vscf_padding_params_t *self);
-
-//
-//  Return padding frame in bytes.
-//
-VSCF_PUBLIC size_t
-vscf_padding_params_frame(const vscf_padding_params_t *self);
-
-//
-//  Return maximum padding frame in bytes.
-//
-VSCF_PUBLIC size_t
-vscf_padding_params_frame_max(const vscf_padding_params_t *self);
 
 
 // --------------------------------------------------------------------------
@@ -170,5 +150,5 @@ vscf_padding_params_frame_max(const vscf_padding_params_t *self);
 
 
 //  @footer
-#endif // VSCF_PADDING_PARAMS_H_INCLUDED
+#endif // VSCF_KEM_API_H_INCLUDED
 //  @end

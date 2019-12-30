@@ -47,20 +47,19 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class for server-side PHE crypto operations.
-//  This class is thread-safe in case if VSCE_MULTI_THREADING defined.
+//  Implements wrap rotation.
 // --------------------------------------------------------------------------
 
-#ifndef VSCE_PHE_SERVER_H_INCLUDED
-#define VSCE_PHE_SERVER_H_INCLUDED
+#ifndef VSCE_UOKMS_WRAP_ROTATION_H_INCLUDED
+#define VSCE_UOKMS_WRAP_ROTATION_H_INCLUDED
 
 #include "vsce_library.h"
 #include "vsce_phe_common.h"
 #include "vsce_status.h"
 
 #if !VSCE_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
-#   include <virgil/crypto/common/vsc_data.h>
 #   include <virgil/crypto/common/vsc_buffer.h>
+#   include <virgil/crypto/common/vsc_data.h>
 #endif
 
 #if !VSCE_IMPORT_PROJECT_FOUNDATION_FROM_FRAMEWORK
@@ -68,8 +67,8 @@
 #endif
 
 #if VSCE_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
-#   include <VSCCommon/vsc_buffer.h>
 #   include <VSCCommon/vsc_data.h>
+#   include <VSCCommon/vsc_buffer.h>
 #endif
 
 #if VSCE_IMPORT_PROJECT_FOUNDATION_FROM_FRAMEWORK
@@ -92,76 +91,53 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'phe server' context.
+//  Handle 'uokms wrap rotation' context.
 //
-typedef struct vsce_phe_server_t vsce_phe_server_t;
+typedef struct vsce_uokms_wrap_rotation_t vsce_uokms_wrap_rotation_t;
 
 //
-//  Return size of 'vsce_phe_server_t'.
+//  Return size of 'vsce_uokms_wrap_rotation_t'.
 //
 VSCE_PUBLIC size_t
-vsce_phe_server_ctx_size(void);
+vsce_uokms_wrap_rotation_ctx_size(void);
 
 //
 //  Perform initialization of pre-allocated context.
 //
 VSCE_PUBLIC void
-vsce_phe_server_init(vsce_phe_server_t *self);
+vsce_uokms_wrap_rotation_init(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Release all inner resources including class dependencies.
 //
 VSCE_PUBLIC void
-vsce_phe_server_cleanup(vsce_phe_server_t *self);
+vsce_uokms_wrap_rotation_cleanup(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Allocate context and perform it's initialization.
 //
-VSCE_PUBLIC vsce_phe_server_t *
-vsce_phe_server_new(void);
+VSCE_PUBLIC vsce_uokms_wrap_rotation_t *
+vsce_uokms_wrap_rotation_new(void);
 
 //
 //  Release all inner resources and deallocate context if needed.
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCE_PUBLIC void
-vsce_phe_server_delete(vsce_phe_server_t *self);
+vsce_uokms_wrap_rotation_delete(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Delete given context and nullifies reference.
-//  This is a reverse action of the function 'vsce_phe_server_new ()'.
+//  This is a reverse action of the function 'vsce_uokms_wrap_rotation_new ()'.
 //
 VSCE_PUBLIC void
-vsce_phe_server_destroy(vsce_phe_server_t **self_ref);
+vsce_uokms_wrap_rotation_destroy(vsce_uokms_wrap_rotation_t **self_ref);
 
 //
 //  Copy given class context by increasing reference counter.
 //
-VSCE_PUBLIC vsce_phe_server_t *
-vsce_phe_server_shallow_copy(vsce_phe_server_t *self);
-
-//
-//  Random used for key generation, proofs, etc.
-//
-//  Note, ownership is shared.
-//
-VSCE_PUBLIC void
-vsce_phe_server_use_random(vsce_phe_server_t *self, vscf_impl_t *random);
-
-//
-//  Random used for key generation, proofs, etc.
-//
-//  Note, ownership is transfered.
-//  Note, transfer ownership does not mean that object is uniquely owned by the target object.
-//
-VSCE_PUBLIC void
-vsce_phe_server_take_random(vsce_phe_server_t *self, vscf_impl_t *random);
-
-//
-//  Release dependency to the interface 'random'.
-//
-VSCE_PUBLIC void
-vsce_phe_server_release_random(vsce_phe_server_t *self);
+VSCE_PUBLIC vsce_uokms_wrap_rotation_t *
+vsce_uokms_wrap_rotation_shallow_copy(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Random used for crypto operations to make them const-time
@@ -169,7 +145,7 @@ vsce_phe_server_release_random(vsce_phe_server_t *self);
 //  Note, ownership is shared.
 //
 VSCE_PUBLIC void
-vsce_phe_server_use_operation_random(vsce_phe_server_t *self, vscf_impl_t *operation_random);
+vsce_uokms_wrap_rotation_use_operation_random(vsce_uokms_wrap_rotation_t *self, vscf_impl_t *operation_random);
 
 //
 //  Random used for crypto operations to make them const-time
@@ -178,66 +154,32 @@ vsce_phe_server_use_operation_random(vsce_phe_server_t *self, vscf_impl_t *opera
 //  Note, transfer ownership does not mean that object is uniquely owned by the target object.
 //
 VSCE_PUBLIC void
-vsce_phe_server_take_operation_random(vsce_phe_server_t *self, vscf_impl_t *operation_random);
+vsce_uokms_wrap_rotation_take_operation_random(vsce_uokms_wrap_rotation_t *self, vscf_impl_t *operation_random);
 
 //
 //  Release dependency to the interface 'random'.
 //
 VSCE_PUBLIC void
-vsce_phe_server_release_operation_random(vsce_phe_server_t *self);
+vsce_uokms_wrap_rotation_release_operation_random(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Setups dependencies with default values.
 //
 VSCE_PUBLIC vsce_status_t
-vsce_phe_server_setup_defaults(vsce_phe_server_t *self) VSCE_NODISCARD;
+vsce_uokms_wrap_rotation_setup_defaults(vsce_uokms_wrap_rotation_t *self) VSCE_NODISCARD;
 
 //
-//  Generates new NIST P-256 server key pair for some client
+//  Sets update token. Should be called only once and before any other function
 //
 VSCE_PUBLIC vsce_status_t
-vsce_phe_server_generate_server_key_pair(vsce_phe_server_t *self, vsc_buffer_t *server_private_key,
-        vsc_buffer_t *server_public_key) VSCE_NODISCARD;
+vsce_uokms_wrap_rotation_set_update_token(vsce_uokms_wrap_rotation_t *self, vsc_data_t update_token) VSCE_NODISCARD;
 
 //
-//  Buffer size needed to fit EnrollmentResponse
-//
-VSCE_PUBLIC size_t
-vsce_phe_server_enrollment_response_len(vsce_phe_server_t *self);
-
-//
-//  Generates a new random enrollment and proof for a new user
+//  Updates EnrollmentRecord using server's update token
 //
 VSCE_PUBLIC vsce_status_t
-vsce_phe_server_get_enrollment(vsce_phe_server_t *self, vsc_data_t server_private_key, vsc_data_t server_public_key,
-        vsc_buffer_t *enrollment_response) VSCE_NODISCARD;
-
-//
-//  Buffer size needed to fit VerifyPasswordResponse
-//
-VSCE_PUBLIC size_t
-vsce_phe_server_verify_password_response_len(vsce_phe_server_t *self);
-
-//
-//  Verifies existing user's password and generates response with proof
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_server_verify_password(vsce_phe_server_t *self, vsc_data_t server_private_key, vsc_data_t server_public_key,
-        vsc_data_t verify_password_request, vsc_buffer_t *verify_password_response) VSCE_NODISCARD;
-
-//
-//  Buffer size needed to fit UpdateToken
-//
-VSCE_PUBLIC size_t
-vsce_phe_server_update_token_len(vsce_phe_server_t *self);
-
-//
-//  Updates server's private and public keys and issues an update token for use on client's side
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_server_rotate_keys(vsce_phe_server_t *self, vsc_data_t server_private_key,
-        vsc_buffer_t *new_server_private_key, vsc_buffer_t *new_server_public_key,
-        vsc_buffer_t *update_token) VSCE_NODISCARD;
+vsce_uokms_wrap_rotation_update_wrap(vsce_uokms_wrap_rotation_t *self, vsc_data_t wrap,
+        vsc_buffer_t *new_wrap) VSCE_NODISCARD;
 
 
 // --------------------------------------------------------------------------
@@ -253,5 +195,5 @@ vsce_phe_server_rotate_keys(vsce_phe_server_t *self, vsc_data_t server_private_k
 
 
 //  @footer
-#endif // VSCE_PHE_SERVER_H_INCLUDED
+#endif // VSCE_UOKMS_WRAP_ROTATION_H_INCLUDED
 //  @end

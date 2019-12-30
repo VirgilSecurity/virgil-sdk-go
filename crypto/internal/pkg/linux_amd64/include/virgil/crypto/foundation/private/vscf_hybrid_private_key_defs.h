@@ -47,13 +47,20 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Handles padding parameters and constraints.
+//  Types of the 'hybrid private key' implementation.
+//  This types SHOULD NOT be used directly.
+//  The only purpose of including this module is to place implementation
+//  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_PADDING_PARAMS_H_INCLUDED
-#define VSCF_PADDING_PARAMS_H_INCLUDED
+#ifndef VSCF_HYBRID_PRIVATE_KEY_DEFS_H_INCLUDED
+#define VSCF_HYBRID_PRIVATE_KEY_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_impl_private.h"
+#include "vscf_hybrid_private_key.h"
+#include "vscf_atomic.h"
+#include "vscf_impl.h"
 
 // clang-format on
 //  @end
@@ -71,90 +78,30 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Public integral constants.
+//  Handles implementation details.
 //
-enum {
-    vscf_padding_params_DEFAULT_FRAME_MIN = 32,
-    vscf_padding_params_DEFAULT_FRAME = 160,
-    vscf_padding_params_DEFAULT_FRAME_MAX = 256
+struct vscf_hybrid_private_key_t {
+    //
+    //  Compile-time known information about this implementation.
+    //
+    const vscf_impl_info_t *info;
+    //
+    //  Reference counter.
+    //
+    VSCF_ATOMIC size_t refcnt;
+    //
+    //  Implementation specific context.
+    //
+    vscf_impl_t *alg_info;
+    //
+    //  Implementation specific context.
+    //
+    vscf_impl_t *first_key;
+    //
+    //  Implementation specific context.
+    //
+    vscf_impl_t *second_key;
 };
-
-//
-//  Handle 'padding params' context.
-//
-typedef struct vscf_padding_params_t vscf_padding_params_t;
-
-//
-//  Return size of 'vscf_padding_params_t'.
-//
-VSCF_PUBLIC size_t
-vscf_padding_params_ctx_size(void);
-
-//
-//  Perform initialization of pre-allocated context.
-//
-VSCF_PUBLIC void
-vscf_padding_params_init(vscf_padding_params_t *self);
-
-//
-//  Release all inner resources including class dependencies.
-//
-VSCF_PUBLIC void
-vscf_padding_params_cleanup(vscf_padding_params_t *self);
-
-//
-//  Allocate context and perform it's initialization.
-//
-VSCF_PUBLIC vscf_padding_params_t *
-vscf_padding_params_new(void);
-
-//
-//  Perform initialization of pre-allocated context.
-//  Build padding params with given constraints.
-//  Next formula can clarify what frame is: padding_length = data_length MOD frame
-//
-VSCF_PUBLIC void
-vscf_padding_params_init_with_constraints(vscf_padding_params_t *self, size_t frame, size_t frame_max);
-
-//
-//  Allocate class context and perform it's initialization.
-//  Build padding params with given constraints.
-//  Next formula can clarify what frame is: padding_length = data_length MOD frame
-//
-VSCF_PUBLIC vscf_padding_params_t *
-vscf_padding_params_new_with_constraints(size_t frame, size_t frame_max);
-
-//
-//  Release all inner resources and deallocate context if needed.
-//  It is safe to call this method even if the context was statically allocated.
-//
-VSCF_PUBLIC void
-vscf_padding_params_delete(vscf_padding_params_t *self);
-
-//
-//  Delete given context and nullifies reference.
-//  This is a reverse action of the function 'vscf_padding_params_new ()'.
-//
-VSCF_PUBLIC void
-vscf_padding_params_destroy(vscf_padding_params_t **self_ref);
-
-//
-//  Copy given class context by increasing reference counter.
-//
-VSCF_PUBLIC vscf_padding_params_t *
-vscf_padding_params_shallow_copy(vscf_padding_params_t *self);
-
-//
-//  Return padding frame in bytes.
-//
-VSCF_PUBLIC size_t
-vscf_padding_params_frame(const vscf_padding_params_t *self);
-
-//
-//  Return maximum padding frame in bytes.
-//
-VSCF_PUBLIC size_t
-vscf_padding_params_frame_max(const vscf_padding_params_t *self);
 
 
 // --------------------------------------------------------------------------
@@ -170,5 +117,5 @@ vscf_padding_params_frame_max(const vscf_padding_params_t *self);
 
 
 //  @footer
-#endif // VSCF_PADDING_PARAMS_H_INCLUDED
+#endif // VSCF_HYBRID_PRIVATE_KEY_DEFS_H_INCLUDED
 //  @end

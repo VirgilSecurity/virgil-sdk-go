@@ -218,6 +218,10 @@ extern "C" {
 #define VSCF_PADDING 1
 #endif
 
+#ifndef VSCF_KEM
+#define VSCF_KEM 1
+#endif
+
 #ifndef VSCF_SHA224
 #define VSCF_SHA224 1
 #endif
@@ -374,20 +378,20 @@ extern "C" {
 #define VSCF_COMPOUND_KEY_ALG 1
 #endif
 
-#ifndef VSCF_CHAINED_KEY_ALG_INFO
-#define VSCF_CHAINED_KEY_ALG_INFO 1
+#ifndef VSCF_HYBRID_KEY_ALG_INFO
+#define VSCF_HYBRID_KEY_ALG_INFO 1
 #endif
 
-#ifndef VSCF_CHAINED_PUBLIC_KEY
-#define VSCF_CHAINED_PUBLIC_KEY 1
+#ifndef VSCF_HYBRID_PUBLIC_KEY
+#define VSCF_HYBRID_PUBLIC_KEY 1
 #endif
 
-#ifndef VSCF_CHAINED_PRIVATE_KEY
-#define VSCF_CHAINED_PRIVATE_KEY 1
+#ifndef VSCF_HYBRID_PRIVATE_KEY
+#define VSCF_HYBRID_PRIVATE_KEY 1
 #endif
 
-#ifndef VSCF_CHAINED_KEY_ALG
-#define VSCF_CHAINED_KEY_ALG 1
+#ifndef VSCF_HYBRID_KEY_ALG
+#define VSCF_HYBRID_KEY_ALG 1
 #endif
 
 #ifndef VSCF_SIMPLE_ALG_INFO

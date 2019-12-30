@@ -47,18 +47,18 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Types of the 'chained private key' implementation.
+//  Types of the 'hybrid public key' implementation.
 //  This types SHOULD NOT be used directly.
 //  The only purpose of including this module is to place implementation
 //  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_CHAINED_PRIVATE_KEY_DEFS_H_INCLUDED
-#define VSCF_CHAINED_PRIVATE_KEY_DEFS_H_INCLUDED
+#ifndef VSCF_HYBRID_PUBLIC_KEY_DEFS_H_INCLUDED
+#define VSCF_HYBRID_PUBLIC_KEY_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_impl_private.h"
-#include "vscf_chained_private_key.h"
+#include "vscf_hybrid_public_key.h"
 #include "vscf_atomic.h"
 #include "vscf_impl.h"
 
@@ -80,7 +80,7 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-struct vscf_chained_private_key_t {
+struct vscf_hybrid_public_key_t {
     //
     //  Compile-time known information about this implementation.
     //
@@ -96,11 +96,11 @@ struct vscf_chained_private_key_t {
     //
     //  Implementation specific context.
     //
-    vscf_impl_t *l1_key;
+    vscf_impl_t *first_key;
     //
     //  Implementation specific context.
     //
-    vscf_impl_t *l2_key;
+    vscf_impl_t *second_key;
 };
 
 
@@ -117,5 +117,5 @@ struct vscf_chained_private_key_t {
 
 
 //  @footer
-#endif // VSCF_CHAINED_PRIVATE_KEY_DEFS_H_INCLUDED
+#endif // VSCF_HYBRID_PUBLIC_KEY_DEFS_H_INCLUDED
 //  @end
