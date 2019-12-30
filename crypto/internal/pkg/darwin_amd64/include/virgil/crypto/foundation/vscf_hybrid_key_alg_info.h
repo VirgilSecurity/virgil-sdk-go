@@ -47,14 +47,13 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  This module contains 'chained public key' implementation.
+//  This module contains 'hybrid key alg info' implementation.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_CHAINED_PUBLIC_KEY_H_INCLUDED
-#define VSCF_CHAINED_PUBLIC_KEY_H_INCLUDED
+#ifndef VSCF_HYBRID_KEY_ALG_INFO_H_INCLUDED
+#define VSCF_HYBRID_KEY_ALG_INFO_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_public_key.h"
 #include "vscf_impl.h"
 #include "vscf_alg_id.h"
 
@@ -76,164 +75,124 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_chained_public_key_t vscf_chained_public_key_t;
+typedef struct vscf_hybrid_key_alg_info_t vscf_hybrid_key_alg_info_t;
 
 //
-//  Return size of 'vscf_chained_public_key_t' type.
+//  Return size of 'vscf_hybrid_key_alg_info_t' type.
 //
 VSCF_PUBLIC size_t
-vscf_chained_public_key_impl_size(void);
+vscf_hybrid_key_alg_info_impl_size(void);
 
 //
 //  Cast to the 'vscf_impl_t' type.
 //
 VSCF_PUBLIC vscf_impl_t *
-vscf_chained_public_key_impl(vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_impl(vscf_hybrid_key_alg_info_t *self);
 
 //
 //  Cast to the const 'vscf_impl_t' type.
 //
 VSCF_PUBLIC const vscf_impl_t *
-vscf_chained_public_key_impl_const(const vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_impl_const(const vscf_hybrid_key_alg_info_t *self);
 
 //
 //  Perform initialization of preallocated implementation context.
 //
 VSCF_PUBLIC void
-vscf_chained_public_key_init(vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_init(vscf_hybrid_key_alg_info_t *self);
 
 //
 //  Cleanup implementation context and release dependencies.
-//  This is a reverse action of the function 'vscf_chained_public_key_init()'.
+//  This is a reverse action of the function 'vscf_hybrid_key_alg_info_init()'.
 //
 VSCF_PUBLIC void
-vscf_chained_public_key_cleanup(vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_cleanup(vscf_hybrid_key_alg_info_t *self);
 
 //
 //  Allocate implementation context and perform it's initialization.
 //  Postcondition: check memory allocation result.
 //
-VSCF_PUBLIC vscf_chained_public_key_t *
-vscf_chained_public_key_new(void);
+VSCF_PUBLIC vscf_hybrid_key_alg_info_t *
+vscf_hybrid_key_alg_info_new(void);
 
 //
 //  Delete given implementation context and it's dependencies.
-//  This is a reverse action of the function 'vscf_chained_public_key_new()'.
+//  This is a reverse action of the function 'vscf_hybrid_key_alg_info_new()'.
 //
 VSCF_PUBLIC void
-vscf_chained_public_key_delete(vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_delete(vscf_hybrid_key_alg_info_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
-//  This is a reverse action of the function 'vscf_chained_public_key_new()'.
+//  This is a reverse action of the function 'vscf_hybrid_key_alg_info_new()'.
 //  Given reference is nullified.
 //
 VSCF_PUBLIC void
-vscf_chained_public_key_destroy(vscf_chained_public_key_t **self_ref);
+vscf_hybrid_key_alg_info_destroy(vscf_hybrid_key_alg_info_t **self_ref);
 
 //
 //  Copy given implementation context by increasing reference counter.
 //
-VSCF_PUBLIC vscf_chained_public_key_t *
-vscf_chained_public_key_shallow_copy(vscf_chained_public_key_t *self);
+VSCF_PUBLIC vscf_hybrid_key_alg_info_t *
+vscf_hybrid_key_alg_info_shallow_copy(vscf_hybrid_key_alg_info_t *self);
 
 //
 //  Perform initialization of pre-allocated context.
-//  Create a chained public key with 2 public keys suitable for
-//  encryption and/or verifying signatures.
+//  Create hybrid algorithm information.
 //
-//  Note, keys ownership is kept.
+//  Note, keys ownership is preserved.
 //
 VSCF_PRIVATE void
-vscf_chained_public_key_init_with_keys(vscf_chained_public_key_t *self, vscf_impl_t **alg_info_ref,
-        const vscf_impl_t *l1_key, const vscf_impl_t *l2_key);
+vscf_hybrid_key_alg_info_init_with_infos(vscf_hybrid_key_alg_info_t *self, vscf_alg_id_t alg_id,
+        const vscf_impl_t *first_key_alg_info, const vscf_impl_t *second_key_alg_info);
 
 //
 //  Allocate implementation context and perform it's initialization.
-//  Create a chained public key with 2 public keys suitable for
-//  encryption and/or verifying signatures.
+//  Create hybrid algorithm information.
 //
-//  Note, keys ownership is kept.
+//  Note, keys ownership is preserved.
 //
-VSCF_PRIVATE vscf_chained_public_key_t *
-vscf_chained_public_key_new_with_keys(vscf_impl_t **alg_info_ref, const vscf_impl_t *l1_key, const vscf_impl_t *l2_key);
+VSCF_PRIVATE vscf_hybrid_key_alg_info_t *
+vscf_hybrid_key_alg_info_new_with_infos(vscf_alg_id_t alg_id, const vscf_impl_t *first_key_alg_info,
+        const vscf_impl_t *second_key_alg_info);
 
 //
 //  Perform initialization of pre-allocated context.
-//  Create a chained public key with 2 public keys suitable for
-//  encryption and/or verifying signatures.
+//  Create hybrid algorithm information.
 //
 //  Note, keys ownership is transferred.
 //
 VSCF_PRIVATE void
-vscf_chained_public_key_init_with_imported_keys(vscf_chained_public_key_t *self, const vscf_impl_t *alg_info,
-        vscf_impl_t **l1_key_ref, vscf_impl_t **l2_key_ref);
+vscf_hybrid_key_alg_info_init_with_infos_disown(vscf_hybrid_key_alg_info_t *self, vscf_alg_id_t alg_id,
+        vscf_impl_t **first_key_alg_info_ref, vscf_impl_t **second_key_alg_info_ref);
 
 //
 //  Allocate implementation context and perform it's initialization.
-//  Create a chained public key with 2 public keys suitable for
-//  encryption and/or verifying signatures.
+//  Create hybrid algorithm information.
 //
 //  Note, keys ownership is transferred.
 //
-VSCF_PRIVATE vscf_chained_public_key_t *
-vscf_chained_public_key_new_with_imported_keys(const vscf_impl_t *alg_info, vscf_impl_t **l1_key_ref,
-        vscf_impl_t **l2_key_ref);
+VSCF_PRIVATE vscf_hybrid_key_alg_info_t *
+vscf_hybrid_key_alg_info_new_with_infos_disown(vscf_alg_id_t alg_id, vscf_impl_t **first_key_alg_info_ref,
+        vscf_impl_t **second_key_alg_info_ref);
 
 //
-//  Returns instance of the implemented interface 'public key'.
-//
-VSCF_PUBLIC const vscf_public_key_api_t *
-vscf_chained_public_key_public_key_api(void);
-
-//
-//  Return l1 public key.
+//  Return algorithm information about the first key.
 //
 VSCF_PUBLIC const vscf_impl_t *
-vscf_chained_public_key_l1_key(const vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_first_key_alg_info(const vscf_hybrid_key_alg_info_t *self);
 
 //
-//  Return l2 public key.
+//  Return algorithm information about the second key.
 //
 VSCF_PUBLIC const vscf_impl_t *
-vscf_chained_public_key_l2_key(const vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_second_key_alg_info(const vscf_hybrid_key_alg_info_t *self);
 
 //
-//  Algorithm identifier the key belongs to.
+//  Provide algorithm identificator.
 //
 VSCF_PUBLIC vscf_alg_id_t
-vscf_chained_public_key_alg_id(const vscf_chained_public_key_t *self);
-
-//
-//  Return algorithm information that can be used for serialization.
-//
-VSCF_PUBLIC const vscf_impl_t *
-vscf_chained_public_key_alg_info(const vscf_chained_public_key_t *self);
-
-//
-//  Length of the key in bytes.
-//
-VSCF_PUBLIC size_t
-vscf_chained_public_key_len(const vscf_chained_public_key_t *self);
-
-//
-//  Length of the key in bits.
-//
-VSCF_PUBLIC size_t
-vscf_chained_public_key_bitlen(const vscf_chained_public_key_t *self);
-
-//
-//  Return tag of an associated algorithm that can handle this key.
-//
-VSCF_PRIVATE vscf_impl_tag_t
-vscf_chained_public_key_impl_tag(const vscf_chained_public_key_t *self);
-
-//
-//  Check that key is valid.
-//  Note, this operation can be slow.
-//
-VSCF_PUBLIC bool
-vscf_chained_public_key_is_valid(const vscf_chained_public_key_t *self);
+vscf_hybrid_key_alg_info_alg_id(const vscf_hybrid_key_alg_info_t *self);
 
 
 // --------------------------------------------------------------------------
@@ -249,5 +208,5 @@ vscf_chained_public_key_is_valid(const vscf_chained_public_key_t *self);
 
 
 //  @footer
-#endif // VSCF_CHAINED_PUBLIC_KEY_H_INCLUDED
+#endif // VSCF_HYBRID_KEY_ALG_INFO_H_INCLUDED
 //  @end
