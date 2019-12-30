@@ -47,12 +47,11 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Class for client-side PHE crypto operations.
-//  This class is thread-safe in case if VSCE_MULTI_THREADING defined.
+//  Implements wrap rotation.
 // --------------------------------------------------------------------------
 
-#ifndef VSCE_PHE_CLIENT_H_INCLUDED
-#define VSCE_PHE_CLIENT_H_INCLUDED
+#ifndef VSCE_UOKMS_WRAP_ROTATION_H_INCLUDED
+#define VSCE_UOKMS_WRAP_ROTATION_H_INCLUDED
 
 #include "vsce_library.h"
 #include "vsce_phe_common.h"
@@ -92,76 +91,53 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handle 'phe client' context.
+//  Handle 'uokms wrap rotation' context.
 //
-typedef struct vsce_phe_client_t vsce_phe_client_t;
+typedef struct vsce_uokms_wrap_rotation_t vsce_uokms_wrap_rotation_t;
 
 //
-//  Return size of 'vsce_phe_client_t'.
+//  Return size of 'vsce_uokms_wrap_rotation_t'.
 //
 VSCE_PUBLIC size_t
-vsce_phe_client_ctx_size(void);
+vsce_uokms_wrap_rotation_ctx_size(void);
 
 //
 //  Perform initialization of pre-allocated context.
 //
 VSCE_PUBLIC void
-vsce_phe_client_init(vsce_phe_client_t *self);
+vsce_uokms_wrap_rotation_init(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Release all inner resources including class dependencies.
 //
 VSCE_PUBLIC void
-vsce_phe_client_cleanup(vsce_phe_client_t *self);
+vsce_uokms_wrap_rotation_cleanup(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Allocate context and perform it's initialization.
 //
-VSCE_PUBLIC vsce_phe_client_t *
-vsce_phe_client_new(void);
+VSCE_PUBLIC vsce_uokms_wrap_rotation_t *
+vsce_uokms_wrap_rotation_new(void);
 
 //
 //  Release all inner resources and deallocate context if needed.
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCE_PUBLIC void
-vsce_phe_client_delete(vsce_phe_client_t *self);
+vsce_uokms_wrap_rotation_delete(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Delete given context and nullifies reference.
-//  This is a reverse action of the function 'vsce_phe_client_new ()'.
+//  This is a reverse action of the function 'vsce_uokms_wrap_rotation_new ()'.
 //
 VSCE_PUBLIC void
-vsce_phe_client_destroy(vsce_phe_client_t **self_ref);
+vsce_uokms_wrap_rotation_destroy(vsce_uokms_wrap_rotation_t **self_ref);
 
 //
 //  Copy given class context by increasing reference counter.
 //
-VSCE_PUBLIC vsce_phe_client_t *
-vsce_phe_client_shallow_copy(vsce_phe_client_t *self);
-
-//
-//  Random used for key generation, proofs, etc.
-//
-//  Note, ownership is shared.
-//
-VSCE_PUBLIC void
-vsce_phe_client_use_random(vsce_phe_client_t *self, vscf_impl_t *random);
-
-//
-//  Random used for key generation, proofs, etc.
-//
-//  Note, ownership is transfered.
-//  Note, transfer ownership does not mean that object is uniquely owned by the target object.
-//
-VSCE_PUBLIC void
-vsce_phe_client_take_random(vsce_phe_client_t *self, vscf_impl_t *random);
-
-//
-//  Release dependency to the interface 'random'.
-//
-VSCE_PUBLIC void
-vsce_phe_client_release_random(vsce_phe_client_t *self);
+VSCE_PUBLIC vsce_uokms_wrap_rotation_t *
+vsce_uokms_wrap_rotation_shallow_copy(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Random used for crypto operations to make them const-time
@@ -169,7 +145,7 @@ vsce_phe_client_release_random(vsce_phe_client_t *self);
 //  Note, ownership is shared.
 //
 VSCE_PUBLIC void
-vsce_phe_client_use_operation_random(vsce_phe_client_t *self, vscf_impl_t *operation_random);
+vsce_uokms_wrap_rotation_use_operation_random(vsce_uokms_wrap_rotation_t *self, vscf_impl_t *operation_random);
 
 //
 //  Random used for crypto operations to make them const-time
@@ -178,86 +154,32 @@ vsce_phe_client_use_operation_random(vsce_phe_client_t *self, vscf_impl_t *opera
 //  Note, transfer ownership does not mean that object is uniquely owned by the target object.
 //
 VSCE_PUBLIC void
-vsce_phe_client_take_operation_random(vsce_phe_client_t *self, vscf_impl_t *operation_random);
+vsce_uokms_wrap_rotation_take_operation_random(vsce_uokms_wrap_rotation_t *self, vscf_impl_t *operation_random);
 
 //
 //  Release dependency to the interface 'random'.
 //
 VSCE_PUBLIC void
-vsce_phe_client_release_operation_random(vsce_phe_client_t *self);
+vsce_uokms_wrap_rotation_release_operation_random(vsce_uokms_wrap_rotation_t *self);
 
 //
 //  Setups dependencies with default values.
 //
 VSCE_PUBLIC vsce_status_t
-vsce_phe_client_setup_defaults(vsce_phe_client_t *self) VSCE_NODISCARD;
+vsce_uokms_wrap_rotation_setup_defaults(vsce_uokms_wrap_rotation_t *self) VSCE_NODISCARD;
 
 //
-//  Sets client private and server public key
-//  Call this method before any other methods except `update enrollment record` and `generate client private key`
-//  This function should be called only once
+//  Sets update token. Should be called only once and before any other function
 //
 VSCE_PUBLIC vsce_status_t
-vsce_phe_client_set_keys(vsce_phe_client_t *self, vsc_data_t client_private_key,
-        vsc_data_t server_public_key) VSCE_NODISCARD;
-
-//
-//  Generates client private key
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_client_generate_client_private_key(vsce_phe_client_t *self, vsc_buffer_t *client_private_key) VSCE_NODISCARD;
-
-//
-//  Buffer size needed to fit EnrollmentRecord
-//
-VSCE_PUBLIC size_t
-vsce_phe_client_enrollment_record_len(vsce_phe_client_t *self);
-
-//
-//  Uses fresh EnrollmentResponse from PHE server (see get enrollment func) and user's password (or its hash) to create
-//  a new EnrollmentRecord which is then supposed to be stored in a database for further authentication
-//  Also generates a random seed which then can be used to generate symmetric or private key to protect user's data
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_client_enroll_account(vsce_phe_client_t *self, vsc_data_t enrollment_response, vsc_data_t password,
-        vsc_buffer_t *enrollment_record, vsc_buffer_t *account_key) VSCE_NODISCARD;
-
-//
-//  Buffer size needed to fit VerifyPasswordRequest
-//
-VSCE_PUBLIC size_t
-vsce_phe_client_verify_password_request_len(vsce_phe_client_t *self);
-
-//
-//  Creates a request for further password verification at the PHE server side.
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_client_create_verify_password_request(vsce_phe_client_t *self, vsc_data_t password,
-        vsc_data_t enrollment_record, vsc_buffer_t *verify_password_request) VSCE_NODISCARD;
-
-//
-//  Verifies PHE server's answer
-//  If login succeeded, extracts account key
-//  If login failed account key will be empty
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_client_check_response_and_decrypt(vsce_phe_client_t *self, vsc_data_t password, vsc_data_t enrollment_record,
-        vsc_data_t verify_password_response, vsc_buffer_t *account_key) VSCE_NODISCARD;
-
-//
-//  Updates client's private key and server's public key using server's update token
-//  Use output values to instantiate new client instance with new keys
-//
-VSCE_PUBLIC vsce_status_t
-vsce_phe_client_rotate_keys(vsce_phe_client_t *self, vsc_data_t update_token, vsc_buffer_t *new_client_private_key,
-        vsc_buffer_t *new_server_public_key) VSCE_NODISCARD;
+vsce_uokms_wrap_rotation_set_update_token(vsce_uokms_wrap_rotation_t *self, vsc_data_t update_token) VSCE_NODISCARD;
 
 //
 //  Updates EnrollmentRecord using server's update token
 //
 VSCE_PUBLIC vsce_status_t
-vsce_phe_client_update_enrollment_record(vsce_phe_client_t *self, vsc_data_t enrollment_record, vsc_data_t update_token,
-        vsc_buffer_t *new_enrollment_record) VSCE_NODISCARD;
+vsce_uokms_wrap_rotation_update_wrap(vsce_uokms_wrap_rotation_t *self, vsc_data_t wrap,
+        vsc_buffer_t *new_wrap) VSCE_NODISCARD;
 
 
 // --------------------------------------------------------------------------
@@ -273,5 +195,5 @@ vsce_phe_client_update_enrollment_record(vsce_phe_client_t *self, vsc_data_t enr
 
 
 //  @footer
-#endif // VSCE_PHE_CLIENT_H_INCLUDED
+#endif // VSCE_UOKMS_WRAP_ROTATION_H_INCLUDED
 //  @end

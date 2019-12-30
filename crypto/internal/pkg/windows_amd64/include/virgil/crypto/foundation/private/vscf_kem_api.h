@@ -47,21 +47,26 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Types of the 'chained key alg info' implementation.
-//  This types SHOULD NOT be used directly.
-//  The only purpose of including this module is to place implementation
-//  object in the stack memory.
+//  Interface 'kem' API.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_CHAINED_KEY_ALG_INFO_DEFS_H_INCLUDED
-#define VSCF_CHAINED_KEY_ALG_INFO_DEFS_H_INCLUDED
+#ifndef VSCF_KEM_API_H_INCLUDED
+#define VSCF_KEM_API_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_impl_private.h"
-#include "vscf_chained_key_alg_info.h"
-#include "vscf_atomic.h"
-#include "vscf_alg_id.h"
+#include "vscf_api.h"
 #include "vscf_impl.h"
+#include "vscf_status.h"
+
+#if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <virgil/crypto/common/vsc_buffer.h>
+#   include <virgil/crypto/common/vsc_data.h>
+#endif
+
+#if VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
+#   include <VSCCommon/vsc_buffer.h>
+#   include <VSCCommon/vsc_data.h>
+#endif
 
 // clang-format on
 //  @end
@@ -79,29 +84,56 @@ extern "C" {
 // --------------------------------------------------------------------------
 
 //
-//  Handles implementation details.
+//  Callback. Return length in bytes required to hold encapsulated shared key.
 //
-struct vscf_chained_key_alg_info_t {
+typedef size_t (*vscf_kem_api_kem_shared_key_len_fn)(const vscf_impl_t *impl, const vscf_impl_t *key);
+
+//
+//  Callback. Return length in bytes required to hold encapsulated key.
+//
+typedef size_t (*vscf_kem_api_kem_encapsulated_key_len_fn)(const vscf_impl_t *impl, const vscf_impl_t *public_key);
+
+//
+//  Callback. Generate a shared key and a key encapsulated message.
+//
+typedef vscf_status_t (*vscf_kem_api_kem_encapsulate_fn)(const vscf_impl_t *impl, const vscf_impl_t *public_key,
+        vsc_buffer_t *shared_key, vsc_buffer_t *encapsulated_key);
+
+//
+//  Callback. Decapsulate the shared key.
+//
+typedef vscf_status_t (*vscf_kem_api_kem_decapsulate_fn)(const vscf_impl_t *impl, vsc_data_t encapsulated_key,
+        const vscf_impl_t *private_key, vsc_buffer_t *shared_key);
+
+//
+//  Contains API requirements of the interface 'kem'.
+//
+struct vscf_kem_api_t {
     //
-    //  Compile-time known information about this implementation.
+    //  API's unique identifier, MUST be first in the structure.
+    //  For interface 'kem' MUST be equal to the 'vscf_api_tag_KEM'.
     //
-    const vscf_impl_info_t *info;
+    vscf_api_tag_t api_tag;
     //
-    //  Reference counter.
+    //  Implementation unique identifier, MUST be second in the structure.
     //
-    VSCF_ATOMIC size_t refcnt;
+    vscf_impl_tag_t impl_tag;
     //
-    //  Implementation specific context.
+    //  Return length in bytes required to hold encapsulated shared key.
     //
-    vscf_alg_id_t alg_id;
+    vscf_kem_api_kem_shared_key_len_fn kem_shared_key_len_cb;
     //
-    //  Implementation specific context.
+    //  Return length in bytes required to hold encapsulated key.
     //
-    vscf_impl_t *l1_key_alg_info;
+    vscf_kem_api_kem_encapsulated_key_len_fn kem_encapsulated_key_len_cb;
     //
-    //  Implementation specific context.
+    //  Generate a shared key and a key encapsulated message.
     //
-    vscf_impl_t *l2_key_alg_info;
+    vscf_kem_api_kem_encapsulate_fn kem_encapsulate_cb;
+    //
+    //  Decapsulate the shared key.
+    //
+    vscf_kem_api_kem_decapsulate_fn kem_decapsulate_cb;
 };
 
 
@@ -118,5 +150,5 @@ struct vscf_chained_key_alg_info_t {
 
 
 //  @footer
-#endif // VSCF_CHAINED_KEY_ALG_INFO_DEFS_H_INCLUDED
+#endif // VSCF_KEM_API_H_INCLUDED
 //  @end
