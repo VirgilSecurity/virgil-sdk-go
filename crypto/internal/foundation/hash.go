@@ -12,12 +12,12 @@ type Hash interface {
     /*
     * Length of the digest (hashing output) in bytes.
     */
-    GetDigestLen () uint32
+    GetDigestLen () uint
 
     /*
     * Block length of the digest function in bytes.
     */
-    GetBlockLen () uint32
+    GetBlockLen () uint
 
     /*
     * Calculate hash over given data.

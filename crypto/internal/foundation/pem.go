@@ -14,13 +14,13 @@ type Pem struct {
 /*
 * Return length in bytes required to hold wrapped PEM format.
 */
-func PemWrappedLen(title string, dataLen uint32) uint32 {
+func PemWrappedLen(title string, dataLen uint) uint {
     titleStr := C.CString(title)
     defer C.free(unsafe.Pointer(titleStr))
 
     proxyResult := /*pr4*/C.vscf_pem_wrapped_len(titleStr/*pa9*/, (C.size_t)(dataLen)/*pa10*/)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -32,11 +32,11 @@ func PemWrap(title string, data []byte) []byte {
     titleStr := C.CString(title)
     defer C.free(unsafe.Pointer(titleStr))
 
-    pemBuf, pemBufErr := bufferNewBuffer(int(PemWrappedLen(title, uint32(len(data))) /* lg1 */))
+    pemBuf, pemBufErr := newBuffer(int(PemWrappedLen(title, uint(len(data))) /* lg1 */))
     if pemBufErr != nil {
         return nil
     }
-    defer pemBuf.Delete()
+    defer pemBuf.delete()
     dataData := helperWrapData (data)
 
     C.vscf_pem_wrap(titleStr/*pa9*/, dataData, pemBuf.ctx)
@@ -47,21 +47,21 @@ func PemWrap(title string, data []byte) []byte {
 /*
 * Return length in bytes required to hold unwrapped binary.
 */
-func PemUnwrappedLen(pemLen uint32) uint32 {
+func PemUnwrappedLen(pemLen uint) uint {
     proxyResult := /*pr4*/C.vscf_pem_unwrapped_len((C.size_t)(pemLen)/*pa10*/)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Takes PEM data and extract binary data from it.
 */
 func PemUnwrap(pem []byte) ([]byte, error) {
-    dataBuf, dataBufErr := bufferNewBuffer(int(PemUnwrappedLen(uint32(len(pem))) /* lg1 */))
+    dataBuf, dataBufErr := newBuffer(int(PemUnwrappedLen(uint(len(pem))) /* lg1 */))
     if dataBufErr != nil {
         return nil, dataBufErr
     }
-    defer dataBuf.Delete()
+    defer dataBuf.delete()
     pemData := helperWrapData (pem)
 
     proxyResult := /*pr4*/C.vscf_pem_unwrap(pemData, dataBuf.ctx)

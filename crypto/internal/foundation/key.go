@@ -22,12 +22,12 @@ type Key interface {
     /*
     * Length of the key in bytes.
     */
-    Len () uint32
+    Len () uint
 
     /*
     * Length of the key in bits.
     */
-    Bitlen () uint32
+    Bitlen () uint
 
     /*
     * Check that key is valid.

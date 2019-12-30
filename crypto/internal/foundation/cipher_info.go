@@ -12,22 +12,22 @@ type CipherInfo interface {
     /*
     * Cipher nfonce length or IV length in bytes, or 0 if nonce is not required.
     */
-    GetNonceLen () uint32
+    GetNonceLen () uint
 
     /*
     * Cipher key length in bytes.
     */
-    GetKeyLen () uint32
+    GetKeyLen () uint
 
     /*
     * Cipher key length in bits.
     */
-    GetKeyBitlen () uint32
+    GetKeyBitlen () uint
 
     /*
     * Cipher block length in bytes.
     */
-    GetBlockLen () uint32
+    GetBlockLen () uint
 
     /*
     * Release underlying C context.

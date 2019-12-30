@@ -113,11 +113,11 @@ func (obj *Aes256Gcm) RestoreAlgInfo(algInfo AlgInfo) error {
 * Encrypt given data.
 */
 func (obj *Aes256Gcm) Encrypt(data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.EncryptedLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.EncryptedLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_aes256_gcm_encrypt(obj.cCtx, dataData, outBuf.ctx)
@@ -135,34 +135,34 @@ func (obj *Aes256Gcm) Encrypt(data []byte) ([]byte, error) {
 /*
 * Calculate required buffer length to hold the encrypted data.
 */
-func (obj *Aes256Gcm) EncryptedLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) EncryptedLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_encrypted_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Precise length calculation of encrypted data.
 */
-func (obj *Aes256Gcm) PreciseEncryptedLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) PreciseEncryptedLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_precise_encrypted_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Decrypt given data.
 */
 func (obj *Aes256Gcm) Decrypt(data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.DecryptedLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.DecryptedLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_aes256_gcm_decrypt(obj.cCtx, dataData, outBuf.ctx)
@@ -180,39 +180,39 @@ func (obj *Aes256Gcm) Decrypt(data []byte) ([]byte, error) {
 /*
 * Calculate required buffer length to hold the decrypted data.
 */
-func (obj *Aes256Gcm) DecryptedLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) DecryptedLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_decrypted_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Cipher nfonce length or IV length in bytes, or 0 if nonce is not required.
 */
-func (obj *Aes256Gcm) GetNonceLen() uint32 {
+func (obj *Aes256Gcm) GetNonceLen() uint {
     return 12
 }
 
 /*
 * Cipher key length in bytes.
 */
-func (obj *Aes256Gcm) GetKeyLen() uint32 {
+func (obj *Aes256Gcm) GetKeyLen() uint {
     return 32
 }
 
 /*
 * Cipher key length in bits.
 */
-func (obj *Aes256Gcm) GetKeyBitlen() uint32 {
+func (obj *Aes256Gcm) GetKeyBitlen() uint {
     return 256
 }
 
 /*
 * Cipher block length in bytes.
 */
-func (obj *Aes256Gcm) GetBlockLen() uint32 {
+func (obj *Aes256Gcm) GetBlockLen() uint {
     return 16
 }
 
@@ -268,11 +268,11 @@ func (obj *Aes256Gcm) StartDecryption() {
 * Process encryption or decryption of the given data chunk.
 */
 func (obj *Aes256Gcm) Update(data []byte) []byte {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.OutLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.OutLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     C.vscf_aes256_gcm_update(obj.cCtx, dataData, outBuf.ctx)
@@ -287,12 +287,12 @@ func (obj *Aes256Gcm) Update(data []byte) []byte {
 * "update" or "finish" in an current mode.
 * Pass zero length to define buffer length of the method "finish".
 */
-func (obj *Aes256Gcm) OutLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) OutLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_out_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -300,12 +300,12 @@ func (obj *Aes256Gcm) OutLen(dataLen uint32) uint32 {
 * "update" or "finish" in an encryption mode.
 * Pass zero length to define buffer length of the method "finish".
 */
-func (obj *Aes256Gcm) EncryptedOutLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) EncryptedOutLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_encrypted_out_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -313,23 +313,23 @@ func (obj *Aes256Gcm) EncryptedOutLen(dataLen uint32) uint32 {
 * "update" or "finish" in an decryption mode.
 * Pass zero length to define buffer length of the method "finish".
 */
-func (obj *Aes256Gcm) DecryptedOutLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) DecryptedOutLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_decrypted_out_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Accomplish encryption or decryption process.
 */
 func (obj *Aes256Gcm) Finish() ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.OutLen(0) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.OutLen(0) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_aes256_gcm_finish(obj.cCtx, outBuf.ctx)
@@ -347,7 +347,7 @@ func (obj *Aes256Gcm) Finish() ([]byte, error) {
 /*
 * Defines authentication tag length in bytes.
 */
-func (obj *Aes256Gcm) GetAuthTagLen() uint32 {
+func (obj *Aes256Gcm) GetAuthTagLen() uint {
     return 16
 }
 
@@ -356,17 +356,17 @@ func (obj *Aes256Gcm) GetAuthTagLen() uint32 {
 * If 'tag' is not given, then it will written to the 'enc'.
 */
 func (obj *Aes256Gcm) AuthEncrypt(data []byte, authData []byte) ([]byte, []byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.AuthEncryptedLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.AuthEncryptedLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
-    tagBuf, tagBufErr := bufferNewBuffer(int(obj.GetAuthTagLen() /* lg3 */))
+    tagBuf, tagBufErr := newBuffer(int(obj.GetAuthTagLen() /* lg3 */))
     if tagBufErr != nil {
         return nil, nil, tagBufErr
     }
-    defer tagBuf.Delete()
+    defer tagBuf.delete()
     dataData := helperWrapData (data)
     authDataData := helperWrapData (authData)
 
@@ -385,12 +385,12 @@ func (obj *Aes256Gcm) AuthEncrypt(data []byte, authData []byte) ([]byte, []byte,
 /*
 * Calculate required buffer length to hold the authenticated encrypted data.
 */
-func (obj *Aes256Gcm) AuthEncryptedLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) AuthEncryptedLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_auth_encrypted_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -398,11 +398,11 @@ func (obj *Aes256Gcm) AuthEncryptedLen(dataLen uint32) uint32 {
 * If 'tag' is not given, then it will be taken from the 'enc'.
 */
 func (obj *Aes256Gcm) AuthDecrypt(data []byte, authData []byte, tag []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.AuthDecryptedLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.AuthDecryptedLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
     authDataData := helperWrapData (authData)
     tagData := helperWrapData (tag)
@@ -422,12 +422,12 @@ func (obj *Aes256Gcm) AuthDecrypt(data []byte, authData []byte, tag []byte) ([]b
 /*
 * Calculate required buffer length to hold the authenticated decrypted data.
 */
-func (obj *Aes256Gcm) AuthDecryptedLen(dataLen uint32) uint32 {
+func (obj *Aes256Gcm) AuthDecryptedLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_aes256_gcm_auth_decrypted_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -450,17 +450,17 @@ func (obj *Aes256Gcm) SetAuthData(authData []byte) {
 * method "finish" can be used.
 */
 func (obj *Aes256Gcm) FinishAuthEncryption() ([]byte, []byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.OutLen(0) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.OutLen(0) /* lg2 */))
     if outBufErr != nil {
         return nil, nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
-    tagBuf, tagBufErr := bufferNewBuffer(int(obj.GetAuthTagLen() /* lg3 */))
+    tagBuf, tagBufErr := newBuffer(int(obj.GetAuthTagLen() /* lg3 */))
     if tagBufErr != nil {
         return nil, nil, tagBufErr
     }
-    defer tagBuf.Delete()
+    defer tagBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_aes256_gcm_finish_auth_encryption(obj.cCtx, outBuf.ctx, tagBuf.ctx)
@@ -482,11 +482,11 @@ func (obj *Aes256Gcm) FinishAuthEncryption() ([]byte, []byte, error) {
 * method "finish" can be used for simplicity.
 */
 func (obj *Aes256Gcm) FinishAuthDecryption(tag []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.OutLen(0) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.OutLen(0) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     tagData := helperWrapData (tag)
 
     proxyResult := /*pr4*/C.vscf_aes256_gcm_finish_auth_decryption(obj.cCtx, tagData, outBuf.ctx)

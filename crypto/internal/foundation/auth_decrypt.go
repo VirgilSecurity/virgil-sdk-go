@@ -18,7 +18,7 @@ type AuthDecrypt interface {
     /*
     * Calculate required buffer length to hold the authenticated decrypted data.
     */
-    AuthDecryptedLen (dataLen uint32) uint32
+    AuthDecryptedLen (dataLen uint) uint
 
     /*
     * Release underlying C context.

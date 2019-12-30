@@ -12,12 +12,6 @@ import unsafe "unsafe"
 type SeedEntropySource struct {
     cCtx *C.vscf_seed_entropy_source_t /*ct10*/
 }
-const (
-    /*
-    * The maximum length of the entropy requested at once.
-    */
-    SeedEntropySourceGatherLenMax uint32 = 48
-)
 
 /*
 * Set a new seed as an entropy source.
@@ -100,12 +94,12 @@ func (obj *SeedEntropySource) IsStrong() bool {
 /*
 * Gather entropy of the requested length.
 */
-func (obj *SeedEntropySource) Gather(len uint32) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(len))
+func (obj *SeedEntropySource) Gather(len uint) ([]byte, error) {
+    outBuf, outBufErr := newBuffer(int(len))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_seed_entropy_source_gather(obj.cCtx, (C.size_t)(len)/*pa10*/, outBuf.ctx)

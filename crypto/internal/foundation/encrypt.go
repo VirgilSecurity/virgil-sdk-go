@@ -17,12 +17,12 @@ type Encrypt interface {
     /*
     * Calculate required buffer length to hold the encrypted data.
     */
-    EncryptedLen (dataLen uint32) uint32
+    EncryptedLen (dataLen uint) uint
 
     /*
     * Precise length calculation of encrypted data.
     */
-    PreciseEncryptedLen (dataLen uint32) uint32
+    PreciseEncryptedLen (dataLen uint) uint
 
     /*
     * Release underlying C context.

@@ -14,11 +14,6 @@ import "github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
 type PheCipher struct {
     cCtx *C.vsce_phe_cipher_t /*ct2*/
 }
-const (
-    PheCipherSaltLen uint32 = 32
-    PheCipherKeyLen uint32 = 32
-    PheCipherNonceLen uint32 = 12
-)
 
 /* Handle underlying C context. */
 func (obj *PheCipher) Ctx() uintptr {
@@ -104,34 +99,34 @@ func (obj *PheCipher) SetupDefaults() error {
 /*
 * Returns buffer capacity needed to fit cipher text
 */
-func (obj *PheCipher) EncryptLen(plainTextLen uint32) uint32 {
+func (obj *PheCipher) EncryptLen(plainTextLen uint) uint {
     proxyResult := /*pr4*/C.vsce_phe_cipher_encrypt_len(obj.cCtx, (C.size_t)(plainTextLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Returns buffer capacity needed to fit plain text
 */
-func (obj *PheCipher) DecryptLen(cipherTextLen uint32) uint32 {
+func (obj *PheCipher) DecryptLen(cipherTextLen uint) uint {
     proxyResult := /*pr4*/C.vsce_phe_cipher_decrypt_len(obj.cCtx, (C.size_t)(cipherTextLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Encrypts data using account key
 */
 func (obj *PheCipher) Encrypt(plainText []byte, accountKey []byte) ([]byte, error) {
-    cipherTextBuf, cipherTextBufErr := bufferNewBuffer(int(obj.EncryptLen(uint32(len(plainText))) /* lg2 */))
+    cipherTextBuf, cipherTextBufErr := newBuffer(int(obj.EncryptLen(uint(len(plainText))) /* lg2 */))
     if cipherTextBufErr != nil {
         return nil, cipherTextBufErr
     }
-    defer cipherTextBuf.Delete()
+    defer cipherTextBuf.delete()
     plainTextData := helperWrapData (plainText)
     accountKeyData := helperWrapData (accountKey)
 
@@ -151,11 +146,11 @@ func (obj *PheCipher) Encrypt(plainText []byte, accountKey []byte) ([]byte, erro
 * Decrypts data using account key
 */
 func (obj *PheCipher) Decrypt(cipherText []byte, accountKey []byte) ([]byte, error) {
-    plainTextBuf, plainTextBufErr := bufferNewBuffer(int(obj.DecryptLen(uint32(len(cipherText))) /* lg2 */))
+    plainTextBuf, plainTextBufErr := newBuffer(int(obj.DecryptLen(uint(len(cipherText))) /* lg2 */))
     if plainTextBufErr != nil {
         return nil, plainTextBufErr
     }
-    defer plainTextBuf.Delete()
+    defer plainTextBuf.delete()
     cipherTextData := helperWrapData (cipherText)
     accountKeyData := helperWrapData (accountKey)
 
@@ -175,11 +170,11 @@ func (obj *PheCipher) Decrypt(cipherText []byte, accountKey []byte) ([]byte, err
 * Encrypts data (and authenticates additional data) using account key
 */
 func (obj *PheCipher) AuthEncrypt(plainText []byte, additionalData []byte, accountKey []byte) ([]byte, error) {
-    cipherTextBuf, cipherTextBufErr := bufferNewBuffer(int(obj.EncryptLen(uint32(len(plainText))) /* lg2 */))
+    cipherTextBuf, cipherTextBufErr := newBuffer(int(obj.EncryptLen(uint(len(plainText))) /* lg2 */))
     if cipherTextBufErr != nil {
         return nil, cipherTextBufErr
     }
-    defer cipherTextBuf.Delete()
+    defer cipherTextBuf.delete()
     plainTextData := helperWrapData (plainText)
     additionalDataData := helperWrapData (additionalData)
     accountKeyData := helperWrapData (accountKey)
@@ -200,11 +195,11 @@ func (obj *PheCipher) AuthEncrypt(plainText []byte, additionalData []byte, accou
 * Decrypts data (and verifies additional data) using account key
 */
 func (obj *PheCipher) AuthDecrypt(cipherText []byte, additionalData []byte, accountKey []byte) ([]byte, error) {
-    plainTextBuf, plainTextBufErr := bufferNewBuffer(int(obj.DecryptLen(uint32(len(cipherText))) /* lg2 */))
+    plainTextBuf, plainTextBufErr := newBuffer(int(obj.DecryptLen(uint(len(cipherText))) /* lg2 */))
     if plainTextBufErr != nil {
         return nil, plainTextBufErr
     }
-    defer plainTextBuf.Delete()
+    defer plainTextBuf.delete()
     cipherTextData := helperWrapData (cipherText)
     additionalDataData := helperWrapData (additionalData)
     accountKeyData := helperWrapData (accountKey)

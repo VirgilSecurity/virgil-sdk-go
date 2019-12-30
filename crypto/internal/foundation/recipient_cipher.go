@@ -215,7 +215,7 @@ func (obj *RecipientCipher) StartEncryption() error {
 * Precondition: At least one signer should be added.
 * Note, store message info footer as well.
 */
-func (obj *RecipientCipher) StartSignedEncryption(dataSize uint32) error {
+func (obj *RecipientCipher) StartSignedEncryption(dataSize uint) error {
     proxyResult := /*pr4*/C.vscf_recipient_cipher_start_signed_encryption(obj.cCtx, (C.size_t)(dataSize)/*pa10*/)
 
     err := FoundationErrorHandleStatus(proxyResult)
@@ -233,12 +233,12 @@ func (obj *RecipientCipher) StartSignedEncryption(dataSize uint32) error {
 * "pack message info" method.
 * Precondition: all recipients and custom parameters should be set.
 */
-func (obj *RecipientCipher) MessageInfoLen() uint32 {
+func (obj *RecipientCipher) MessageInfoLen() uint {
     proxyResult := /*pr4*/C.vscf_recipient_cipher_message_info_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -254,11 +254,11 @@ func (obj *RecipientCipher) MessageInfoLen() uint32 {
 * algorithm information, etc.
 */
 func (obj *RecipientCipher) PackMessageInfo() []byte {
-    messageInfoBuf, messageInfoBufErr := bufferNewBuffer(int(obj.MessageInfoLen() /* lg2 */))
+    messageInfoBuf, messageInfoBufErr := newBuffer(int(obj.MessageInfoLen() /* lg2 */))
     if messageInfoBufErr != nil {
         return nil
     }
-    defer messageInfoBuf.Delete()
+    defer messageInfoBuf.delete()
 
 
     C.vscf_recipient_cipher_pack_message_info(obj.cCtx, messageInfoBuf.ctx)
@@ -272,23 +272,23 @@ func (obj *RecipientCipher) PackMessageInfo() []byte {
 * Return buffer length required to hold output of the method
 * "process encryption" and method "finish" during encryption.
 */
-func (obj *RecipientCipher) EncryptionOutLen(dataLen uint32) uint32 {
+func (obj *RecipientCipher) EncryptionOutLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_recipient_cipher_encryption_out_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Process encryption of a new portion of data.
 */
 func (obj *RecipientCipher) ProcessEncryption(data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.EncryptionOutLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.EncryptionOutLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_recipient_cipher_process_encryption(obj.cCtx, dataData, outBuf.ctx)
@@ -307,11 +307,11 @@ func (obj *RecipientCipher) ProcessEncryption(data []byte) ([]byte, error) {
 * Accomplish encryption.
 */
 func (obj *RecipientCipher) FinishEncryption() ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.EncryptionOutLen(0) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.EncryptionOutLen(0) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_recipient_cipher_finish_encryption(obj.cCtx, outBuf.ctx)
@@ -377,12 +377,12 @@ func (obj *RecipientCipher) StartVerifiedDecryptionWithKey(recipientId []byte, p
 * Return buffer length required to hold output of the method
 * "process decryption" and method "finish" during decryption.
 */
-func (obj *RecipientCipher) DecryptionOutLen(dataLen uint32) uint32 {
+func (obj *RecipientCipher) DecryptionOutLen(dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_recipient_cipher_decryption_out_len(obj.cCtx, (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -390,11 +390,11 @@ func (obj *RecipientCipher) DecryptionOutLen(dataLen uint32) uint32 {
 * Return error if data can not be encrypted or decrypted.
 */
 func (obj *RecipientCipher) ProcessDecryption(data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.DecryptionOutLen(uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.DecryptionOutLen(uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_recipient_cipher_process_decryption(obj.cCtx, dataData, outBuf.ctx)
@@ -413,11 +413,11 @@ func (obj *RecipientCipher) ProcessDecryption(data []byte) ([]byte, error) {
 * Accomplish decryption.
 */
 func (obj *RecipientCipher) FinishDecryption() ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.DecryptionOutLen(0) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.DecryptionOutLen(0) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_recipient_cipher_finish_decryption(obj.cCtx, outBuf.ctx)
@@ -480,12 +480,12 @@ func (obj *RecipientCipher) VerifySignerInfo(signerInfo *SignerInfo, publicKey P
 *
 * Precondition: this method should be called after "finish encryption".
 */
-func (obj *RecipientCipher) MessageInfoFooterLen() uint32 {
+func (obj *RecipientCipher) MessageInfoFooterLen() uint {
     proxyResult := /*pr4*/C.vscf_recipient_cipher_message_info_footer_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -499,11 +499,11 @@ func (obj *RecipientCipher) MessageInfoFooterLen() uint32 {
 * Return message info footer - signers public information, etc.
 */
 func (obj *RecipientCipher) PackMessageInfoFooter() ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.MessageInfoFooterLen() /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.MessageInfoFooterLen() /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_recipient_cipher_pack_message_info_footer(obj.cCtx, outBuf.ctx)

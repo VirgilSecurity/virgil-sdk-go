@@ -118,12 +118,12 @@ func (obj *Kdf1) RestoreAlgInfo(algInfo AlgInfo) error {
 /*
 * Derive key of the requested length from the given data.
 */
-func (obj *Kdf1) Derive(data []byte, keyLen uint32) []byte {
-    keyBuf, keyBufErr := bufferNewBuffer(int(keyLen))
+func (obj *Kdf1) Derive(data []byte, keyLen uint) []byte {
+    keyBuf, keyBufErr := newBuffer(int(keyLen))
     if keyBufErr != nil {
         return nil
     }
-    defer keyBuf.Delete()
+    defer keyBuf.delete()
     dataData := helperWrapData (data)
 
     C.vscf_kdf1_derive(obj.cCtx, dataData, (C.size_t)(keyLen)/*pa10*/, keyBuf.ctx)

@@ -18,11 +18,11 @@ const (
     /*
     * Minimum length in bytes for the key material.
     */
-    KeyMaterialRngKeyMaterialLenMin uint32 = 32
+    KeyMaterialRngKeyMaterialLenMin uint = 32
     /*
     * Maximum length in bytes for the key material.
     */
-    KeyMaterialRngKeyMaterialLenMax uint32 = 512
+    KeyMaterialRngKeyMaterialLenMax uint = 512
 )
 
 /*
@@ -96,12 +96,12 @@ func (obj *KeyMaterialRng) delete() {
 * Generate random bytes.
 * All RNG implementations must be thread-safe.
 */
-func (obj *KeyMaterialRng) Random(dataLen uint32) ([]byte, error) {
-    dataBuf, dataBufErr := bufferNewBuffer(int(dataLen))
+func (obj *KeyMaterialRng) Random(dataLen uint) ([]byte, error) {
+    dataBuf, dataBufErr := newBuffer(int(dataLen))
     if dataBufErr != nil {
         return nil, dataBufErr
     }
-    defer dataBuf.Delete()
+    defer dataBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_key_material_rng_random(obj.cCtx, (C.size_t)(dataLen)/*pa10*/, dataBuf.ctx)

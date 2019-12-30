@@ -98,7 +98,7 @@ func (c Crypto) GenerateKeypair() (PrivateKey, error) {
 }
 
 func (c Crypto) GenerateKeypairFromKeyMaterialForType(t KeyType, keyMaterial []byte) (PrivateKey, error) {
-	l := uint32(len(keyMaterial))
+	l := uint(len(keyMaterial))
 	if l < foundation.KeyMaterialRngKeyMaterialLenMin || l > foundation.KeyMaterialRngKeyMaterialLenMax {
 		return nil, ErrInvalidSeedSize
 	}
@@ -120,7 +120,7 @@ func (c Crypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (PrivateKey, 
 }
 
 func (c Crypto) Random(len int) ([]byte, error) {
-	return random.Random(uint32(len))
+	return random.Random(uint(len))
 }
 
 func (c Crypto) ImportPrivateKey(data []byte) (PrivateKey, error) {
@@ -404,7 +404,7 @@ func (c Crypto) SignThenEncrypt(data []byte, signer PrivateKey, recipients ...Pu
 	if err = cipher.AddSigner(sk.receiverID, sk.key); err != nil {
 		return nil, err
 	}
-	if err = cipher.StartSignedEncryption(uint32(len(data))); err != nil {
+	if err = cipher.StartSignedEncryption(uint(len(data))); err != nil {
 		return nil, err
 	}
 
@@ -486,7 +486,7 @@ func (c Crypto) SignThenEncryptStream(
 	if err = cipher.AddSigner(sk.Identifier(), sk.key); err != nil {
 		return err
 	}
-	if err = cipher.StartSignedEncryption(uint32(streamSize)); err != nil {
+	if err = cipher.StartSignedEncryption(uint(streamSize)); err != nil {
 		return err
 	}
 

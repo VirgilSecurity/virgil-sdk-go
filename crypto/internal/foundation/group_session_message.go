@@ -16,11 +16,11 @@ const (
     /*
     * Max message len
     */
-    GroupSessionMessageMaxMessageLen uint32 = 30188
+    GroupSessionMessageMaxMessageLen uint = 30188
     /*
     * Message version
     */
-    GroupSessionMessageMessageVersion uint32 = 1
+    GroupSessionMessageMessageVersion uint = 1
 )
 
 /* Handle underlying C context. */
@@ -114,23 +114,23 @@ func (obj *GroupSessionMessage) GetEpoch() uint32 {
 /*
 * Buffer len to serialize this class.
 */
-func (obj *GroupSessionMessage) SerializeLen() uint32 {
+func (obj *GroupSessionMessage) SerializeLen() uint {
     proxyResult := /*pr4*/C.vscf_group_session_message_serialize_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Serializes instance.
 */
 func (obj *GroupSessionMessage) Serialize() []byte {
-    outputBuf, outputBufErr := bufferNewBuffer(int(obj.SerializeLen() /* lg2 */))
+    outputBuf, outputBufErr := newBuffer(int(obj.SerializeLen() /* lg2 */))
     if outputBufErr != nil {
         return nil
     }
-    defer outputBuf.Delete()
+    defer outputBuf.delete()
 
 
     C.vscf_group_session_message_serialize(obj.cCtx, outputBuf.ctx)

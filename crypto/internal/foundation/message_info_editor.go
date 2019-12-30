@@ -186,12 +186,12 @@ func (obj *MessageInfoEditor) RemoveAll() {
 * Return length of serialized message info.
 * Actual length can be obtained right after applying changes.
 */
-func (obj *MessageInfoEditor) PackedLen() uint32 {
+func (obj *MessageInfoEditor) PackedLen() uint {
     proxyResult := /*pr4*/C.vscf_message_info_editor_packed_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -199,11 +199,11 @@ func (obj *MessageInfoEditor) PackedLen() uint32 {
 * Precondition: this method can be called after "apply".
 */
 func (obj *MessageInfoEditor) Pack() []byte {
-    messageInfoBuf, messageInfoBufErr := bufferNewBuffer(int(obj.PackedLen() /* lg2 */))
+    messageInfoBuf, messageInfoBufErr := newBuffer(int(obj.PackedLen() /* lg2 */))
     if messageInfoBufErr != nil {
         return nil
     }
-    defer messageInfoBuf.Delete()
+    defer messageInfoBuf.delete()
 
 
     C.vscf_message_info_editor_pack(obj.cCtx, messageInfoBuf.ctx)

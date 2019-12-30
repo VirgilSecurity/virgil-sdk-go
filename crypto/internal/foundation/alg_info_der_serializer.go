@@ -37,14 +37,14 @@ func (obj *AlgInfoDerSerializer) SetupDefaults() {
 * Note, that caller code is responsible to reset ASN.1 writer with
 * an output buffer.
 */
-func (obj *AlgInfoDerSerializer) SerializeInplace(algInfo AlgInfo) uint32 {
+func (obj *AlgInfoDerSerializer) SerializeInplace(algInfo AlgInfo) uint {
     proxyResult := /*pr4*/C.vscf_alg_info_der_serializer_serialize_inplace(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(algInfo.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(algInfo)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /* Handle underlying C context. */
@@ -104,25 +104,25 @@ func (obj *AlgInfoDerSerializer) delete() {
 /*
 * Return buffer size enough to hold serialized algorithm.
 */
-func (obj *AlgInfoDerSerializer) SerializedLen(algInfo AlgInfo) uint32 {
+func (obj *AlgInfoDerSerializer) SerializedLen(algInfo AlgInfo) uint {
     proxyResult := /*pr4*/C.vscf_alg_info_der_serializer_serialized_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(algInfo.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(algInfo)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Serialize algorithm info to buffer class.
 */
 func (obj *AlgInfoDerSerializer) Serialize(algInfo AlgInfo) []byte {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.SerializedLen(algInfo.(AlgInfo)) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.SerializedLen(algInfo.(AlgInfo)) /* lg2 */))
     if outBufErr != nil {
         return nil
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     C.vscf_alg_info_der_serializer_serialize(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(algInfo.Ctx())), outBuf.ctx)

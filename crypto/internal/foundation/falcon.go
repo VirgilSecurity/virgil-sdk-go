@@ -13,11 +13,6 @@ import "runtime"
 type Falcon struct {
     cCtx *C.vscf_falcon_t /*ct10*/
 }
-const (
-    FalconSeedLen uint32 = 48
-    FalconLogn512 uint32 = 9
-    FalconLogn1024 uint32 = 10
-)
 
 func (obj *Falcon) SetRandom(random Random) {
     C.vscf_falcon_release_random(obj.cCtx)
@@ -330,25 +325,25 @@ func (obj *Falcon) CanSign(privateKey PrivateKey) bool {
 * Return length in bytes required to hold signature.
 * Return zero if a given private key can not produce signatures.
 */
-func (obj *Falcon) SignatureLen(privateKey PrivateKey) uint32 {
+func (obj *Falcon) SignatureLen(privateKey PrivateKey) uint {
     proxyResult := /*pr4*/C.vscf_falcon_signature_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(privateKey)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Sign data digest with a given private key.
 */
 func (obj *Falcon) SignHash(privateKey PrivateKey, hashId AlgId, digest []byte) ([]byte, error) {
-    signatureBuf, signatureBufErr := bufferNewBuffer(int(obj.SignatureLen(privateKey.(PrivateKey)) /* lg2 */))
+    signatureBuf, signatureBufErr := newBuffer(int(obj.SignatureLen(privateKey.(PrivateKey)) /* lg2 */))
     if signatureBufErr != nil {
         return nil, signatureBufErr
     }
-    defer signatureBuf.Delete()
+    defer signatureBuf.delete()
     digestData := helperWrapData (digest)
 
     proxyResult := /*pr4*/C.vscf_falcon_sign_hash(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), C.vscf_alg_id_t(hashId) /*pa7*/, digestData, signatureBuf.ctx)

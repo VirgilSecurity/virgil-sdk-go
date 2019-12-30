@@ -118,23 +118,23 @@ func (obj *CompoundPublicKey) AlgInfo() (AlgInfo, error) {
 /*
 * Length of the key in bytes.
 */
-func (obj *CompoundPublicKey) Len() uint32 {
+func (obj *CompoundPublicKey) Len() uint {
     proxyResult := /*pr4*/C.vscf_compound_public_key_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Length of the key in bits.
 */
-func (obj *CompoundPublicKey) Bitlen() uint32 {
+func (obj *CompoundPublicKey) Bitlen() uint {
     proxyResult := /*pr4*/C.vscf_compound_public_key_bitlen(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*

@@ -16,19 +16,19 @@ const (
     /*
     * Sender id len
     */
-    GroupSessionSenderIdLen uint32 = 32
+    GroupSessionSenderIdLen uint = 32
     /*
     * Max plain text len
     */
-    GroupSessionMaxPlainTextLen uint32 = 30000
+    GroupSessionMaxPlainTextLen uint = 30000
     /*
     * Max epochs count
     */
-    GroupSessionMaxEpochsCount uint32 = 50
+    GroupSessionMaxEpochsCount uint = 50
     /*
     * Salt size
     */
-    GroupSessionSaltSize uint32 = 32
+    GroupSessionSaltSize uint = 32
 )
 
 /* Handle underlying C context. */
@@ -179,25 +179,25 @@ func (obj *GroupSession) Encrypt(plainText []byte, privateKey PrivateKey) (*Grou
 /*
 * Calculates size of buffer sufficient to store decrypted message
 */
-func (obj *GroupSession) DecryptLen(message *GroupSessionMessage) uint32 {
+func (obj *GroupSession) DecryptLen(message *GroupSessionMessage) uint {
     proxyResult := /*pr4*/C.vscf_group_session_decrypt_len(obj.cCtx, (*C.vscf_group_session_message_t)(unsafe.Pointer(message.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(message)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Decrypts message
 */
 func (obj *GroupSession) Decrypt(message *GroupSessionMessage, publicKey PublicKey) ([]byte, error) {
-    plainTextBuf, plainTextBufErr := bufferNewBuffer(int(obj.DecryptLen(message) /* lg2 */))
+    plainTextBuf, plainTextBufErr := newBuffer(int(obj.DecryptLen(message) /* lg2 */))
     if plainTextBufErr != nil {
         return nil, plainTextBufErr
     }
-    defer plainTextBuf.Delete()
+    defer plainTextBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_group_session_decrypt(obj.cCtx, (*C.vscf_group_session_message_t)(unsafe.Pointer(message.Ctx())), (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), plainTextBuf.ctx)

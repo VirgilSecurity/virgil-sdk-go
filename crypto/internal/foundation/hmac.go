@@ -118,23 +118,23 @@ func (obj *Hmac) RestoreAlgInfo(algInfo AlgInfo) error {
 /*
 * Size of the digest (mac output) in bytes.
 */
-func (obj *Hmac) DigestLen() uint32 {
+func (obj *Hmac) DigestLen() uint {
     proxyResult := /*pr4*/C.vscf_hmac_digest_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Calculate MAC over given data.
 */
 func (obj *Hmac) Mac(key []byte, data []byte) []byte {
-    macBuf, macBufErr := bufferNewBuffer(int(obj.DigestLen() /* lg2 */))
+    macBuf, macBufErr := newBuffer(int(obj.DigestLen() /* lg2 */))
     if macBufErr != nil {
         return nil
     }
-    defer macBuf.Delete()
+    defer macBuf.delete()
     keyData := helperWrapData (key)
     dataData := helperWrapData (data)
 
@@ -175,11 +175,11 @@ func (obj *Hmac) Update(data []byte) {
 * Accomplish MAC and return it's result (a message digest).
 */
 func (obj *Hmac) Finish() []byte {
-    macBuf, macBufErr := bufferNewBuffer(int(obj.DigestLen() /* lg2 */))
+    macBuf, macBufErr := newBuffer(int(obj.DigestLen() /* lg2 */))
     if macBufErr != nil {
         return nil
     }
-    defer macBuf.Delete()
+    defer macBuf.delete()
 
 
     C.vscf_hmac_finish(obj.cCtx, macBuf.ctx)

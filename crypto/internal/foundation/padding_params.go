@@ -13,9 +13,9 @@ type PaddingParams struct {
     cCtx *C.vscf_padding_params_t /*ct2*/
 }
 const (
-    PaddingParamsDefaultFrame uint32 = 160
-    PaddingParamsDefaultFrameMin uint32 = 32
-    PaddingParamsDefaultFrameMax uint32 = 8 * 1024
+    PaddingParamsDefaultFrameMin uint = 32
+    PaddingParamsDefaultFrame uint = 160
+    PaddingParamsDefaultFrameMax uint = 256
 )
 
 /* Handle underlying C context. */
@@ -74,11 +74,10 @@ func (obj *PaddingParams) delete() {
 
 /*
 * Build padding params with given constraints.
-* Precondition: frame_length_min <= frame_length <= frame_length_max.
 * Next formula can clarify what frame is: padding_length = data_length MOD frame
 */
-func NewPaddingParamsWithConstraints(frame uint32, frameMin uint32, frameMax uint32) *PaddingParams {
-    proxyResult := /*pr4*/C.vscf_padding_params_new_with_constraints((C.size_t)(frame)/*pa10*/, (C.size_t)(frameMin)/*pa10*/, (C.size_t)(frameMax)/*pa10*/)
+func NewPaddingParamsWithConstraints(frame uint, frameMax uint) *PaddingParams {
+    proxyResult := /*pr4*/C.vscf_padding_params_new_with_constraints((C.size_t)(frame)/*pa10*/, (C.size_t)(frameMax)/*pa10*/)
 
     obj := &PaddingParams {
         cCtx: proxyResult,
@@ -90,32 +89,21 @@ func NewPaddingParamsWithConstraints(frame uint32, frameMin uint32, frameMax uin
 /*
 * Return padding frame in bytes.
 */
-func (obj *PaddingParams) Frame() uint32 {
+func (obj *PaddingParams) Frame() uint {
     proxyResult := /*pr4*/C.vscf_padding_params_frame(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
-* Return minimum padding frame in bytes.
+* Return maximum padding frame in bytes.
 */
-func (obj *PaddingParams) FrameMin() uint32 {
-    proxyResult := /*pr4*/C.vscf_padding_params_frame_min(obj.cCtx)
-
-    runtime.KeepAlive(obj)
-
-    return uint32(proxyResult) /* r9 */
-}
-
-/*
-* Return minimum padding frame in bytes.
-*/
-func (obj *PaddingParams) FrameMax() uint32 {
+func (obj *PaddingParams) FrameMax() uint {
     proxyResult := /*pr4*/C.vscf_padding_params_frame_max(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }

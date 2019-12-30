@@ -19,7 +19,7 @@ type Asn1Reader interface {
     /*
     * Return length in bytes how many bytes are left for reading.
     */
-    LeftLen () uint32
+    LeftLen () uint
 
     /*
     * Return true if status is not "success".
@@ -39,25 +39,25 @@ type Asn1Reader interface {
     /*
     * Get length of the current ASN.1 element.
     */
-    GetLen () uint32
+    GetLen () uint
 
     /*
     * Get length of the current ASN.1 element with tag and length itself.
     */
-    GetDataLen () uint32
+    GetDataLen () uint
 
     /*
     * Read ASN.1 type: TAG.
     * Return element length.
     */
-    ReadTag (tag int32) uint32
+    ReadTag (tag int32) uint
 
     /*
     * Read ASN.1 type: context-specific TAG.
     * Return element length.
     * Return 0 if current position do not points to the requested tag.
     */
-    ReadContextTag (tag int32) uint32
+    ReadContextTag (tag int32) uint
 
     /*
     * Read ASN.1 type: INTEGER.
@@ -148,19 +148,19 @@ type Asn1Reader interface {
     /*
     * Read raw data of given length.
     */
-    ReadData (len uint32) []byte
+    ReadData (len uint) []byte
 
     /*
     * Read ASN.1 type: SEQUENCE.
     * Return element length.
     */
-    ReadSequence () uint32
+    ReadSequence () uint
 
     /*
     * Read ASN.1 type: SET.
     * Return element length.
     */
-    ReadSet () uint32
+    ReadSet () uint
 
     /*
     * Release underlying C context.

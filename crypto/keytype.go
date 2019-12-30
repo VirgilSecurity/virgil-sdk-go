@@ -88,7 +88,7 @@ func (t keyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.Priv
 type rsaKeyType int
 
 func (t rsaKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
-	kp.SetRsaParams(uint32(t))
+	kp.SetRsaParams(uint(t))
 	return kp.GeneratePrivateKey(foundation.AlgIdRsa)
 }
 

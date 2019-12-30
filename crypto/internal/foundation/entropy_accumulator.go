@@ -13,7 +13,7 @@ type EntropyAccumulator struct {
     cCtx *C.vscf_entropy_accumulator_t /*ct10*/
 }
 const (
-    EntropyAccumulatorSourcesMax uint32 = 15
+    EntropyAccumulatorSourcesMax uint = 15
 )
 
 /*
@@ -32,7 +32,7 @@ func (obj *EntropyAccumulator) SetupDefaults() {
 * Threshold defines minimum number of bytes that must be gathered
 * from the source during accumulation.
 */
-func (obj *EntropyAccumulator) AddSource(source EntropySource, threshold uint32) {
+func (obj *EntropyAccumulator) AddSource(source EntropySource, threshold uint) {
     C.vscf_entropy_accumulator_add_source(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(source.Ctx())), (C.size_t)(threshold)/*pa10*/)
 
     runtime.KeepAlive(obj)
@@ -110,12 +110,12 @@ func (obj *EntropyAccumulator) IsStrong() bool {
 /*
 * Gather entropy of the requested length.
 */
-func (obj *EntropyAccumulator) Gather(len uint32) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(len))
+func (obj *EntropyAccumulator) Gather(len uint) ([]byte, error) {
+    outBuf, outBufErr := newBuffer(int(len))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_entropy_accumulator_gather(obj.cCtx, (C.size_t)(len)/*pa10*/, outBuf.ctx)

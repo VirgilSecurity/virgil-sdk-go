@@ -91,6 +91,9 @@ func (obj *PheClient) SetOperationRandom(operationRandom foundation.Random) {
     runtime.KeepAlive(obj)
 }
 
+/*
+* Setups dependencies with default values.
+*/
 func (obj *PheClient) SetupDefaults() error {
     proxyResult := /*pr4*/C.vsce_phe_client_setup_defaults(obj.cCtx)
 
@@ -129,11 +132,11 @@ func (obj *PheClient) SetKeys(clientPrivateKey []byte, serverPublicKey []byte) e
 * Generates client private key
 */
 func (obj *PheClient) GenerateClientPrivateKey() ([]byte, error) {
-    clientPrivateKeyBuf, clientPrivateKeyBufErr := bufferNewBuffer(int(PheCommonPhePrivateKeyLength /* lg4 */))
+    clientPrivateKeyBuf, clientPrivateKeyBufErr := newBuffer(int(PheCommonPhePrivateKeyLength /* lg4 */))
     if clientPrivateKeyBufErr != nil {
         return nil, clientPrivateKeyBufErr
     }
-    defer clientPrivateKeyBuf.Delete()
+    defer clientPrivateKeyBuf.delete()
 
 
     proxyResult := /*pr4*/C.vsce_phe_client_generate_client_private_key(obj.cCtx, clientPrivateKeyBuf.ctx)
@@ -151,12 +154,12 @@ func (obj *PheClient) GenerateClientPrivateKey() ([]byte, error) {
 /*
 * Buffer size needed to fit EnrollmentRecord
 */
-func (obj *PheClient) EnrollmentRecordLen() uint32 {
+func (obj *PheClient) EnrollmentRecordLen() uint {
     proxyResult := /*pr4*/C.vsce_phe_client_enrollment_record_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
@@ -165,17 +168,17 @@ func (obj *PheClient) EnrollmentRecordLen() uint32 {
 * Also generates a random seed which then can be used to generate symmetric or private key to protect user's data
 */
 func (obj *PheClient) EnrollAccount(enrollmentResponse []byte, password []byte) ([]byte, []byte, error) {
-    enrollmentRecordBuf, enrollmentRecordBufErr := bufferNewBuffer(int(obj.EnrollmentRecordLen() /* lg2 */))
+    enrollmentRecordBuf, enrollmentRecordBufErr := newBuffer(int(obj.EnrollmentRecordLen() /* lg2 */))
     if enrollmentRecordBufErr != nil {
         return nil, nil, enrollmentRecordBufErr
     }
-    defer enrollmentRecordBuf.Delete()
+    defer enrollmentRecordBuf.delete()
 
-    accountKeyBuf, accountKeyBufErr := bufferNewBuffer(int(PheCommonPheAccountKeyLength /* lg4 */))
+    accountKeyBuf, accountKeyBufErr := newBuffer(int(PheCommonPheAccountKeyLength /* lg4 */))
     if accountKeyBufErr != nil {
         return nil, nil, accountKeyBufErr
     }
-    defer accountKeyBuf.Delete()
+    defer accountKeyBuf.delete()
     enrollmentResponseData := helperWrapData (enrollmentResponse)
     passwordData := helperWrapData (password)
 
@@ -194,23 +197,23 @@ func (obj *PheClient) EnrollAccount(enrollmentResponse []byte, password []byte) 
 /*
 * Buffer size needed to fit VerifyPasswordRequest
 */
-func (obj *PheClient) VerifyPasswordRequestLen() uint32 {
+func (obj *PheClient) VerifyPasswordRequestLen() uint {
     proxyResult := /*pr4*/C.vsce_phe_client_verify_password_request_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Creates a request for further password verification at the PHE server side.
 */
 func (obj *PheClient) CreateVerifyPasswordRequest(password []byte, enrollmentRecord []byte) ([]byte, error) {
-    verifyPasswordRequestBuf, verifyPasswordRequestBufErr := bufferNewBuffer(int(obj.VerifyPasswordRequestLen() /* lg2 */))
+    verifyPasswordRequestBuf, verifyPasswordRequestBufErr := newBuffer(int(obj.VerifyPasswordRequestLen() /* lg2 */))
     if verifyPasswordRequestBufErr != nil {
         return nil, verifyPasswordRequestBufErr
     }
-    defer verifyPasswordRequestBuf.Delete()
+    defer verifyPasswordRequestBuf.delete()
     passwordData := helperWrapData (password)
     enrollmentRecordData := helperWrapData (enrollmentRecord)
 
@@ -232,11 +235,11 @@ func (obj *PheClient) CreateVerifyPasswordRequest(password []byte, enrollmentRec
 * If login failed account key will be empty
 */
 func (obj *PheClient) CheckResponseAndDecrypt(password []byte, enrollmentRecord []byte, verifyPasswordResponse []byte) ([]byte, error) {
-    accountKeyBuf, accountKeyBufErr := bufferNewBuffer(int(PheCommonPheAccountKeyLength /* lg4 */))
+    accountKeyBuf, accountKeyBufErr := newBuffer(int(PheCommonPheAccountKeyLength /* lg4 */))
     if accountKeyBufErr != nil {
         return nil, accountKeyBufErr
     }
-    defer accountKeyBuf.Delete()
+    defer accountKeyBuf.delete()
     passwordData := helperWrapData (password)
     enrollmentRecordData := helperWrapData (enrollmentRecord)
     verifyPasswordResponseData := helperWrapData (verifyPasswordResponse)
@@ -258,17 +261,17 @@ func (obj *PheClient) CheckResponseAndDecrypt(password []byte, enrollmentRecord 
 * Use output values to instantiate new client instance with new keys
 */
 func (obj *PheClient) RotateKeys(updateToken []byte) ([]byte, []byte, error) {
-    newClientPrivateKeyBuf, newClientPrivateKeyBufErr := bufferNewBuffer(int(PheCommonPhePrivateKeyLength /* lg4 */))
+    newClientPrivateKeyBuf, newClientPrivateKeyBufErr := newBuffer(int(PheCommonPhePrivateKeyLength /* lg4 */))
     if newClientPrivateKeyBufErr != nil {
         return nil, nil, newClientPrivateKeyBufErr
     }
-    defer newClientPrivateKeyBuf.Delete()
+    defer newClientPrivateKeyBuf.delete()
 
-    newServerPublicKeyBuf, newServerPublicKeyBufErr := bufferNewBuffer(int(PheCommonPhePublicKeyLength /* lg4 */))
+    newServerPublicKeyBuf, newServerPublicKeyBufErr := newBuffer(int(PheCommonPhePublicKeyLength /* lg4 */))
     if newServerPublicKeyBufErr != nil {
         return nil, nil, newServerPublicKeyBufErr
     }
-    defer newServerPublicKeyBuf.Delete()
+    defer newServerPublicKeyBuf.delete()
     updateTokenData := helperWrapData (updateToken)
 
     proxyResult := /*pr4*/C.vsce_phe_client_rotate_keys(obj.cCtx, updateTokenData, newClientPrivateKeyBuf.ctx, newServerPublicKeyBuf.ctx)
@@ -287,11 +290,11 @@ func (obj *PheClient) RotateKeys(updateToken []byte) ([]byte, []byte, error) {
 * Updates EnrollmentRecord using server's update token
 */
 func (obj *PheClient) UpdateEnrollmentRecord(enrollmentRecord []byte, updateToken []byte) ([]byte, error) {
-    newEnrollmentRecordBuf, newEnrollmentRecordBufErr := bufferNewBuffer(int(obj.EnrollmentRecordLen() /* lg2 */))
+    newEnrollmentRecordBuf, newEnrollmentRecordBufErr := newBuffer(int(obj.EnrollmentRecordLen() /* lg2 */))
     if newEnrollmentRecordBufErr != nil {
         return nil, newEnrollmentRecordBufErr
     }
-    defer newEnrollmentRecordBuf.Delete()
+    defer newEnrollmentRecordBuf.delete()
     enrollmentRecordData := helperWrapData (enrollmentRecord)
     updateTokenData := helperWrapData (updateToken)
 

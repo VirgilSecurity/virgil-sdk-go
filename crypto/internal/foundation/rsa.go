@@ -41,7 +41,7 @@ func (obj *Rsa) SetupDefaults() error {
 * Generate new private key.
 * Note, this operation might be slow.
 */
-func (obj *Rsa) GenerateKey(bitlen uint32) (PrivateKey, error) {
+func (obj *Rsa) GenerateKey(bitlen uint) (PrivateKey, error) {
     var error C.vscf_error_t
     C.vscf_error_reset(&error)
 
@@ -109,46 +109,6 @@ func (obj *Rsa) Delete() {
 */
 func (obj *Rsa) delete() {
     C.vscf_rsa_delete(obj.cCtx)
-}
-
-/*
-* Provide algorithm identificator.
-*/
-func (obj *Rsa) AlgId() AlgId {
-    proxyResult := /*pr4*/C.vscf_rsa_alg_id(obj.cCtx)
-
-    runtime.KeepAlive(obj)
-
-    return AlgId(proxyResult) /* r8 */
-}
-
-/*
-* Produce object with algorithm information and configuration parameters.
-*/
-func (obj *Rsa) ProduceAlgInfo() (AlgInfo, error) {
-    proxyResult := /*pr4*/C.vscf_rsa_produce_alg_info(obj.cCtx)
-
-    runtime.KeepAlive(obj)
-
-    return FoundationImplementationWrapAlgInfo(proxyResult) /* r4 */
-}
-
-/*
-* Restore algorithm configuration from the given object.
-*/
-func (obj *Rsa) RestoreAlgInfo(algInfo AlgInfo) error {
-    proxyResult := /*pr4*/C.vscf_rsa_restore_alg_info(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(algInfo.Ctx())))
-
-    err := FoundationErrorHandleStatus(proxyResult)
-    if err != nil {
-        return err
-    }
-
-    runtime.KeepAlive(obj)
-
-    runtime.KeepAlive(algInfo)
-
-    return nil
 }
 
 /*
@@ -310,7 +270,7 @@ func (obj *Rsa) ExportPrivateKey(privateKey PrivateKey) (*RawPrivateKey, error) 
 /*
 * Check if algorithm can encrypt data with a given key.
 */
-func (obj *Rsa) CanEncrypt(publicKey PublicKey, dataLen uint32) bool {
+func (obj *Rsa) CanEncrypt(publicKey PublicKey, dataLen uint) bool {
     proxyResult := /*pr4*/C.vscf_rsa_can_encrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
@@ -323,25 +283,25 @@ func (obj *Rsa) CanEncrypt(publicKey PublicKey, dataLen uint32) bool {
 /*
 * Calculate required buffer length to hold the encrypted data.
 */
-func (obj *Rsa) EncryptedLen(publicKey PublicKey, dataLen uint32) uint32 {
+func (obj *Rsa) EncryptedLen(publicKey PublicKey, dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_rsa_encrypted_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(publicKey)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Encrypt data with a given public key.
 */
 func (obj *Rsa) Encrypt(publicKey PublicKey, data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.EncryptedLen(publicKey.(PublicKey), uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.EncryptedLen(publicKey.(PublicKey), uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_rsa_encrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), dataData, outBuf.ctx)
@@ -362,7 +322,7 @@ func (obj *Rsa) Encrypt(publicKey PublicKey, data []byte) ([]byte, error) {
 * Check if algorithm can decrypt data with a given key.
 * However, success result of decryption is not guaranteed.
 */
-func (obj *Rsa) CanDecrypt(privateKey PrivateKey, dataLen uint32) bool {
+func (obj *Rsa) CanDecrypt(privateKey PrivateKey, dataLen uint) bool {
     proxyResult := /*pr4*/C.vscf_rsa_can_decrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
@@ -375,25 +335,25 @@ func (obj *Rsa) CanDecrypt(privateKey PrivateKey, dataLen uint32) bool {
 /*
 * Calculate required buffer length to hold the decrypted data.
 */
-func (obj *Rsa) DecryptedLen(privateKey PrivateKey, dataLen uint32) uint32 {
+func (obj *Rsa) DecryptedLen(privateKey PrivateKey, dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_rsa_decrypted_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(privateKey)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Decrypt given data.
 */
 func (obj *Rsa) Decrypt(privateKey PrivateKey, data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.DecryptedLen(privateKey.(PrivateKey), uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.DecryptedLen(privateKey.(PrivateKey), uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_rsa_decrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), dataData, outBuf.ctx)
@@ -427,25 +387,25 @@ func (obj *Rsa) CanSign(privateKey PrivateKey) bool {
 * Return length in bytes required to hold signature.
 * Return zero if a given private key can not produce signatures.
 */
-func (obj *Rsa) SignatureLen(privateKey PrivateKey) uint32 {
+func (obj *Rsa) SignatureLen(privateKey PrivateKey) uint {
     proxyResult := /*pr4*/C.vscf_rsa_signature_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(privateKey)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Sign data digest with a given private key.
 */
 func (obj *Rsa) SignHash(privateKey PrivateKey, hashId AlgId, digest []byte) ([]byte, error) {
-    signatureBuf, signatureBufErr := bufferNewBuffer(int(obj.SignatureLen(privateKey.(PrivateKey)) /* lg2 */))
+    signatureBuf, signatureBufErr := newBuffer(int(obj.SignatureLen(privateKey.(PrivateKey)) /* lg2 */))
     if signatureBufErr != nil {
         return nil, signatureBufErr
     }
-    defer signatureBuf.Delete()
+    defer signatureBuf.delete()
     digestData := helperWrapData (digest)
 
     proxyResult := /*pr4*/C.vscf_rsa_sign_hash(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), C.vscf_alg_id_t(hashId) /*pa7*/, digestData, signatureBuf.ctx)

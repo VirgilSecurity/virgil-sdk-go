@@ -60,12 +60,6 @@ func TestEd25519_GenerateKey(t *testing.T) {
 	assert.Equal(t, AlgIdEd25519, edKey.AlgId())
 }
 
-func TestEd25519_AlgId(t *testing.T) {
-	ed := newEd25519()
-
-	assert.Equal(t, AlgIdEd25519, ed.AlgId())
-}
-
 func TestEd25519_CanSign(t *testing.T) {
 	ed := newEd25519()
 	privateKey, err := ed.GenerateKey()
@@ -162,13 +156,13 @@ func TestEd25519_Encrypt(t *testing.T) {
 	publicKey, err := privateKey.ExtractPublicKey()
 	assert.Nil(t, err)
 
-	assert.True(t, ed.CanEncrypt(publicKey, uint32(len(data))))
+	assert.True(t, ed.CanEncrypt(publicKey, uint(len(data))))
 
 	encryptedData, err := ed.Encrypt(publicKey, data)
 	assert.Nil(t, err)
 	assert.NotNil(t, encryptedData)
 
-	assert.True(t, ed.CanDecrypt(privateKey, uint32(len(encryptedData))))
+	assert.True(t, ed.CanDecrypt(privateKey, uint(len(encryptedData))))
 
 	decryptedData, err := ed.Decrypt(privateKey, encryptedData)
 	assert.Nil(t, err)
@@ -209,7 +203,7 @@ func TestEd25519_SignHash(t *testing.T) {
 	signature, err := ed.SignHash(privateKey, AlgIdSha512, data)
 	assert.Nil(t, err)
 	assert.NotNil(t, signature)
-	assert.Equal(t, ed.SignatureLen(privateKey), uint32(len(signature)))
+	assert.Equal(t, ed.SignatureLen(privateKey), uint(len(signature)))
 
 	assert.True(t, ed.VerifyHash(publicKey, AlgIdSha512, data, signature))
 }

@@ -12,12 +12,12 @@ type KeyCipher interface {
     /*
     * Check if algorithm can encrypt data with a given key.
     */
-    CanEncrypt (publicKey PublicKey, dataLen uint32) bool
+    CanEncrypt (publicKey PublicKey, dataLen uint) bool
 
     /*
     * Calculate required buffer length to hold the encrypted data.
     */
-    EncryptedLen (publicKey PublicKey, dataLen uint32) uint32
+    EncryptedLen (publicKey PublicKey, dataLen uint) uint
 
     /*
     * Encrypt data with a given public key.
@@ -28,12 +28,12 @@ type KeyCipher interface {
     * Check if algorithm can decrypt data with a given key.
     * However, success result of decryption is not guaranteed.
     */
-    CanDecrypt (privateKey PrivateKey, dataLen uint32) bool
+    CanDecrypt (privateKey PrivateKey, dataLen uint) bool
 
     /*
     * Calculate required buffer length to hold the decrypted data.
     */
-    DecryptedLen (privateKey PrivateKey, dataLen uint32) uint32
+    DecryptedLen (privateKey PrivateKey, dataLen uint) uint
 
     /*
     * Decrypt given data.

@@ -120,46 +120,6 @@ func (obj *Curve25519) delete() {
 }
 
 /*
-* Provide algorithm identificator.
-*/
-func (obj *Curve25519) AlgId() AlgId {
-    proxyResult := /*pr4*/C.vscf_curve25519_alg_id(obj.cCtx)
-
-    runtime.KeepAlive(obj)
-
-    return AlgId(proxyResult) /* r8 */
-}
-
-/*
-* Produce object with algorithm information and configuration parameters.
-*/
-func (obj *Curve25519) ProduceAlgInfo() (AlgInfo, error) {
-    proxyResult := /*pr4*/C.vscf_curve25519_produce_alg_info(obj.cCtx)
-
-    runtime.KeepAlive(obj)
-
-    return FoundationImplementationWrapAlgInfo(proxyResult) /* r4 */
-}
-
-/*
-* Restore algorithm configuration from the given object.
-*/
-func (obj *Curve25519) RestoreAlgInfo(algInfo AlgInfo) error {
-    proxyResult := /*pr4*/C.vscf_curve25519_restore_alg_info(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(algInfo.Ctx())))
-
-    err := FoundationErrorHandleStatus(proxyResult)
-    if err != nil {
-        return err
-    }
-
-    runtime.KeepAlive(obj)
-
-    runtime.KeepAlive(algInfo)
-
-    return nil
-}
-
-/*
 * Defines whether a public key can be imported or not.
 */
 func (obj *Curve25519) GetCanImportPublicKey() bool {
@@ -318,7 +278,7 @@ func (obj *Curve25519) ExportPrivateKey(privateKey PrivateKey) (*RawPrivateKey, 
 /*
 * Check if algorithm can encrypt data with a given key.
 */
-func (obj *Curve25519) CanEncrypt(publicKey PublicKey, dataLen uint32) bool {
+func (obj *Curve25519) CanEncrypt(publicKey PublicKey, dataLen uint) bool {
     proxyResult := /*pr4*/C.vscf_curve25519_can_encrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
@@ -331,25 +291,25 @@ func (obj *Curve25519) CanEncrypt(publicKey PublicKey, dataLen uint32) bool {
 /*
 * Calculate required buffer length to hold the encrypted data.
 */
-func (obj *Curve25519) EncryptedLen(publicKey PublicKey, dataLen uint32) uint32 {
+func (obj *Curve25519) EncryptedLen(publicKey PublicKey, dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_curve25519_encrypted_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(publicKey)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Encrypt data with a given public key.
 */
 func (obj *Curve25519) Encrypt(publicKey PublicKey, data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.EncryptedLen(publicKey.(PublicKey), uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.EncryptedLen(publicKey.(PublicKey), uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_curve25519_encrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), dataData, outBuf.ctx)
@@ -370,7 +330,7 @@ func (obj *Curve25519) Encrypt(publicKey PublicKey, data []byte) ([]byte, error)
 * Check if algorithm can decrypt data with a given key.
 * However, success result of decryption is not guaranteed.
 */
-func (obj *Curve25519) CanDecrypt(privateKey PrivateKey, dataLen uint32) bool {
+func (obj *Curve25519) CanDecrypt(privateKey PrivateKey, dataLen uint) bool {
     proxyResult := /*pr4*/C.vscf_curve25519_can_decrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
@@ -383,25 +343,25 @@ func (obj *Curve25519) CanDecrypt(privateKey PrivateKey, dataLen uint32) bool {
 /*
 * Calculate required buffer length to hold the decrypted data.
 */
-func (obj *Curve25519) DecryptedLen(privateKey PrivateKey, dataLen uint32) uint32 {
+func (obj *Curve25519) DecryptedLen(privateKey PrivateKey, dataLen uint) uint {
     proxyResult := /*pr4*/C.vscf_curve25519_decrypted_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), (C.size_t)(dataLen)/*pa10*/)
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(privateKey)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Decrypt given data.
 */
 func (obj *Curve25519) Decrypt(privateKey PrivateKey, data []byte) ([]byte, error) {
-    outBuf, outBufErr := bufferNewBuffer(int(obj.DecryptedLen(privateKey.(PrivateKey), uint32(len(data))) /* lg2 */))
+    outBuf, outBufErr := newBuffer(int(obj.DecryptedLen(privateKey.(PrivateKey), uint(len(data))) /* lg2 */))
     if outBufErr != nil {
         return nil, outBufErr
     }
-    defer outBuf.Delete()
+    defer outBuf.delete()
     dataData := helperWrapData (data)
 
     proxyResult := /*pr4*/C.vscf_curve25519_decrypt(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), dataData, outBuf.ctx)
@@ -423,11 +383,11 @@ func (obj *Curve25519) Decrypt(privateKey PrivateKey, data []byte) ([]byte, erro
 * Note, computed shared key can be used only within symmetric cryptography.
 */
 func (obj *Curve25519) ComputeSharedKey(publicKey PublicKey, privateKey PrivateKey) ([]byte, error) {
-    sharedKeyBuf, sharedKeyBufErr := bufferNewBuffer(int(obj.SharedKeyLen(privateKey.(Key)) /* lg2 */))
+    sharedKeyBuf, sharedKeyBufErr := newBuffer(int(obj.SharedKeyLen(privateKey.(Key)) /* lg2 */))
     if sharedKeyBufErr != nil {
         return nil, sharedKeyBufErr
     }
-    defer sharedKeyBuf.Delete()
+    defer sharedKeyBuf.delete()
 
 
     proxyResult := /*pr4*/C.vscf_curve25519_compute_shared_key(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), sharedKeyBuf.ctx)
@@ -450,12 +410,94 @@ func (obj *Curve25519) ComputeSharedKey(publicKey PublicKey, privateKey PrivateK
 * Return number of bytes required to hold shared key.
 * Expect Public Key or Private Key.
 */
-func (obj *Curve25519) SharedKeyLen(key Key) uint32 {
+func (obj *Curve25519) SharedKeyLen(key Key) uint {
     proxyResult := /*pr4*/C.vscf_curve25519_shared_key_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(key.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(key)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
+}
+
+/*
+* Return length in bytes required to hold encapsulated shared key.
+*/
+func (obj *Curve25519) KemSharedKeyLen(key Key) uint {
+    proxyResult := /*pr4*/C.vscf_curve25519_kem_shared_key_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(key.Ctx())))
+
+    runtime.KeepAlive(obj)
+
+    runtime.KeepAlive(key)
+
+    return uint(proxyResult) /* r9 */
+}
+
+/*
+* Return length in bytes required to hold encapsulated key.
+*/
+func (obj *Curve25519) KemEncapsulatedKeyLen(publicKey PublicKey) uint {
+    proxyResult := /*pr4*/C.vscf_curve25519_kem_encapsulated_key_len(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())))
+
+    runtime.KeepAlive(obj)
+
+    runtime.KeepAlive(publicKey)
+
+    return uint(proxyResult) /* r9 */
+}
+
+/*
+* Generate a shared key and a key encapsulated message.
+*/
+func (obj *Curve25519) KemEncapsulate(publicKey PublicKey) ([]byte, []byte, error) {
+    sharedKeyBuf, sharedKeyBufErr := newBuffer(int(obj.KemSharedKeyLen(publicKey.(Key)) /* lg2 */))
+    if sharedKeyBufErr != nil {
+        return nil, nil, sharedKeyBufErr
+    }
+    defer sharedKeyBuf.delete()
+
+    encapsulatedKeyBuf, encapsulatedKeyBufErr := newBuffer(int(obj.KemEncapsulatedKeyLen(publicKey.(PublicKey)) /* lg2 */))
+    if encapsulatedKeyBufErr != nil {
+        return nil, nil, encapsulatedKeyBufErr
+    }
+    defer encapsulatedKeyBuf.delete()
+
+
+    proxyResult := /*pr4*/C.vscf_curve25519_kem_encapsulate(obj.cCtx, (*C.vscf_impl_t)(unsafe.Pointer(publicKey.Ctx())), sharedKeyBuf.ctx, encapsulatedKeyBuf.ctx)
+
+    err := FoundationErrorHandleStatus(proxyResult)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    runtime.KeepAlive(obj)
+
+    runtime.KeepAlive(publicKey)
+
+    return sharedKeyBuf.getData() /* r7 */, encapsulatedKeyBuf.getData() /* r7 */, nil
+}
+
+/*
+* Decapsulate the shared key.
+*/
+func (obj *Curve25519) KemDecapsulate(encapsulatedKey []byte, privateKey PrivateKey) ([]byte, error) {
+    sharedKeyBuf, sharedKeyBufErr := newBuffer(int(obj.KemSharedKeyLen(privateKey.(Key)) /* lg2 */))
+    if sharedKeyBufErr != nil {
+        return nil, sharedKeyBufErr
+    }
+    defer sharedKeyBuf.delete()
+    encapsulatedKeyData := helperWrapData (encapsulatedKey)
+
+    proxyResult := /*pr4*/C.vscf_curve25519_kem_decapsulate(obj.cCtx, encapsulatedKeyData, (*C.vscf_impl_t)(unsafe.Pointer(privateKey.Ctx())), sharedKeyBuf.ctx)
+
+    err := FoundationErrorHandleStatus(proxyResult)
+    if err != nil {
+        return nil, err
+    }
+
+    runtime.KeepAlive(obj)
+
+    runtime.KeepAlive(privateKey)
+
+    return sharedKeyBuf.getData() /* r7 */, nil
 }
