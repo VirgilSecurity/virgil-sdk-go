@@ -114,23 +114,23 @@ func (obj *RatchetMessage) GetOneTimePublicKey() []byte {
 /*
 * Buffer len to serialize this class.
 */
-func (obj *RatchetMessage) SerializeLen() uint32 {
+func (obj *RatchetMessage) SerializeLen() uint {
     proxyResult := /*pr4*/C.vscr_ratchet_message_serialize_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Serializes instance.
 */
 func (obj *RatchetMessage) Serialize() []byte {
-    outputBuf, outputBufErr := bufferNewBuffer(int(obj.SerializeLen() /* lg2 */))
+    outputBuf, outputBufErr := newBuffer(int(obj.SerializeLen() /* lg2 */))
     if outputBufErr != nil {
         return nil
     }
-    defer outputBuf.Delete()
+    defer outputBuf.delete()
 
 
     C.vscr_ratchet_message_serialize(obj.cCtx, outputBuf.ctx)

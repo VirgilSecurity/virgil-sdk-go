@@ -273,25 +273,25 @@ func (obj *RatchetGroupSession) Encrypt(plainText []byte) (*RatchetGroupMessage,
 /*
 * Calculates size of buffer sufficient to store decrypted message
 */
-func (obj *RatchetGroupSession) DecryptLen(message *RatchetGroupMessage) uint32 {
+func (obj *RatchetGroupSession) DecryptLen(message *RatchetGroupMessage) uint {
     proxyResult := /*pr4*/C.vscr_ratchet_group_session_decrypt_len(obj.cCtx, (*C.vscr_ratchet_group_message_t)(unsafe.Pointer(message.Ctx())))
 
     runtime.KeepAlive(obj)
 
     runtime.KeepAlive(message)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Decrypts message
 */
 func (obj *RatchetGroupSession) Decrypt(message *RatchetGroupMessage, senderId []byte) ([]byte, error) {
-    plainTextBuf, plainTextBufErr := bufferNewBuffer(int(obj.DecryptLen(message) /* lg2 */))
+    plainTextBuf, plainTextBufErr := newBuffer(int(obj.DecryptLen(message) /* lg2 */))
     if plainTextBufErr != nil {
         return nil, plainTextBufErr
     }
-    defer plainTextBuf.Delete()
+    defer plainTextBuf.delete()
     senderIdData := helperWrapData (senderId)
 
     proxyResult := /*pr4*/C.vscr_ratchet_group_session_decrypt(obj.cCtx, (*C.vscr_ratchet_group_message_t)(unsafe.Pointer(message.Ctx())), senderIdData, plainTextBuf.ctx)

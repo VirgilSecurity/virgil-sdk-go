@@ -115,23 +115,23 @@ func (obj *RatchetGroupMessage) GetEpoch() uint32 {
 /*
 * Buffer len to serialize this class.
 */
-func (obj *RatchetGroupMessage) SerializeLen() uint32 {
+func (obj *RatchetGroupMessage) SerializeLen() uint {
     proxyResult := /*pr4*/C.vscr_ratchet_group_message_serialize_len(obj.cCtx)
 
     runtime.KeepAlive(obj)
 
-    return uint32(proxyResult) /* r9 */
+    return uint(proxyResult) /* r9 */
 }
 
 /*
 * Serializes instance.
 */
 func (obj *RatchetGroupMessage) Serialize() []byte {
-    outputBuf, outputBufErr := bufferNewBuffer(int(obj.SerializeLen() /* lg2 */))
+    outputBuf, outputBufErr := newBuffer(int(obj.SerializeLen() /* lg2 */))
     if outputBufErr != nil {
         return nil
     }
-    defer outputBuf.Delete()
+    defer outputBuf.delete()
 
 
     C.vscr_ratchet_group_message_serialize(obj.cCtx, outputBuf.ctx)
