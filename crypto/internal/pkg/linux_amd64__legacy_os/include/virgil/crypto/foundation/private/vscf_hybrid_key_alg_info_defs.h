@@ -47,19 +47,20 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Types of the 'chained key alg' implementation.
+//  Types of the 'hybrid key alg info' implementation.
 //  This types SHOULD NOT be used directly.
 //  The only purpose of including this module is to place implementation
 //  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_CHAINED_KEY_ALG_DEFS_H_INCLUDED
-#define VSCF_CHAINED_KEY_ALG_DEFS_H_INCLUDED
+#ifndef VSCF_HYBRID_KEY_ALG_INFO_DEFS_H_INCLUDED
+#define VSCF_HYBRID_KEY_ALG_INFO_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_impl_private.h"
-#include "vscf_chained_key_alg.h"
+#include "vscf_hybrid_key_alg_info.h"
 #include "vscf_atomic.h"
+#include "vscf_alg_id.h"
 #include "vscf_impl.h"
 
 // clang-format on
@@ -80,7 +81,7 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-struct vscf_chained_key_alg_t {
+struct vscf_hybrid_key_alg_info_t {
     //
     //  Compile-time known information about this implementation.
     //
@@ -90,9 +91,17 @@ struct vscf_chained_key_alg_t {
     //
     VSCF_ATOMIC size_t refcnt;
     //
-    //  Dependency to the interface 'random'.
+    //  Implementation specific context.
     //
-    vscf_impl_t *random;
+    vscf_alg_id_t alg_id;
+    //
+    //  Implementation specific context.
+    //
+    vscf_impl_t *first_key_alg_info;
+    //
+    //  Implementation specific context.
+    //
+    vscf_impl_t *second_key_alg_info;
 };
 
 
@@ -109,5 +118,5 @@ struct vscf_chained_key_alg_t {
 
 
 //  @footer
-#endif // VSCF_CHAINED_KEY_ALG_DEFS_H_INCLUDED
+#endif // VSCF_HYBRID_KEY_ALG_INFO_DEFS_H_INCLUDED
 //  @end

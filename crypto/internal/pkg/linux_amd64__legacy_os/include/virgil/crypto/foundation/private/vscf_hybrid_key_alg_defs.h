@@ -47,18 +47,18 @@
 
 //  @description
 // --------------------------------------------------------------------------
-//  Types of the 'chained public key' implementation.
+//  Types of the 'hybrid key alg' implementation.
 //  This types SHOULD NOT be used directly.
 //  The only purpose of including this module is to place implementation
 //  object in the stack memory.
 // --------------------------------------------------------------------------
 
-#ifndef VSCF_CHAINED_PUBLIC_KEY_DEFS_H_INCLUDED
-#define VSCF_CHAINED_PUBLIC_KEY_DEFS_H_INCLUDED
+#ifndef VSCF_HYBRID_KEY_ALG_DEFS_H_INCLUDED
+#define VSCF_HYBRID_KEY_ALG_DEFS_H_INCLUDED
 
 #include "vscf_library.h"
 #include "vscf_impl_private.h"
-#include "vscf_chained_public_key.h"
+#include "vscf_hybrid_key_alg.h"
 #include "vscf_atomic.h"
 #include "vscf_impl.h"
 
@@ -80,7 +80,7 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-struct vscf_chained_public_key_t {
+struct vscf_hybrid_key_alg_t {
     //
     //  Compile-time known information about this implementation.
     //
@@ -90,17 +90,17 @@ struct vscf_chained_public_key_t {
     //
     VSCF_ATOMIC size_t refcnt;
     //
-    //  Implementation specific context.
+    //  Dependency to the interface 'random'.
     //
-    vscf_impl_t *alg_info;
+    vscf_impl_t *random;
     //
-    //  Implementation specific context.
+    //  Dependency to the interface 'cipher auth'.
     //
-    vscf_impl_t *l1_key;
+    vscf_impl_t *cipher;
     //
-    //  Implementation specific context.
+    //  Dependency to the interface 'hash'.
     //
-    vscf_impl_t *l2_key;
+    vscf_impl_t *hash;
 };
 
 
@@ -117,5 +117,5 @@ struct vscf_chained_public_key_t {
 
 
 //  @footer
-#endif // VSCF_CHAINED_PUBLIC_KEY_DEFS_H_INCLUDED
+#endif // VSCF_HYBRID_KEY_ALG_DEFS_H_INCLUDED
 //  @end
