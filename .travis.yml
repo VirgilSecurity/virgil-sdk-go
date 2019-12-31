@@ -32,45 +32,6 @@ matrix:
     # GCC on Linux
     ##########################################################################
     - os: linux
-      dist: precise
-      go: stable
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9
-      env:
-        - CC=gcc-4.9
-        - CXX=g++-4.9
-        - LEGACY="true"
-    - os: linux
-      dist: trusty
-      go: stable
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9
-      env:
-        - CC=gcc-4.9
-        - CXX=g++-4.9
-        - LEGACY="true"
-    - os: linux
-      dist: xenial
-      go: stable
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9
-      env:
-        - CC=gcc-4.9
-        - CXX=g++-4.9
-        - LEGACY="true"
-    - os: linux
       go: stable
       addons:
         apt:
@@ -131,62 +92,6 @@ matrix:
     ##########################################################################
     # Clang on Linux
     ##########################################################################
-    - os: linux
-      dist: precise
-      go: stable
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-          packages:
-            - clang-3.6
-      env:
-        - CC=clang-3.6
-        - CXX=clang++-3.6
-        - LEGACY="true"
-    - os: linux
-      dist: trusty
-      go: stable
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-4.0
-          packages:
-            - clang-4.0
-      env:
-        - CC=clang-4.0
-        - CXX=clang++-4.0
-        - LEGACY="true"
-    - os: linux
-      dist: trusty
-      go: stable
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env:
-        - CC=clang-5.0
-        - CXX=clang++-5.0
-        - LEGACY="true"
-    - os: linux
-      dist: trusty
-      go: stable
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
-            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          packages:
-            - clang-6.0
-      env:
-        - CC=clang-6.0
-        - CXX=clang++-6.0
-        - LEGACY="true"
     - os: linux
       dist: xenial
       go: stable
@@ -249,8 +154,4 @@ script:
     go install github.com/golangci/golangci-lint/cmd/golangci-lint;
     golangci-lint run;
     fi"
-  - 'if [[ $LEGACY ]]; then
-    go test -tags "legacy_os integration" -mod=readonly -count 1 ./... ;
-    else
-    go test -tags integration -mod=readonly -count 1 ./... ;
-    fi'
+  - go test -tags integration -mod=readonly -count 1 ./...
