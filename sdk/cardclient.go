@@ -168,7 +168,7 @@ func (c CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool,
 	return rawCard, outdated, nil
 }
 
-func (_ CardClient) makeHeader(token string) http.Header {
+func (CardClient) makeHeader(token string) http.Header {
 	return http.Header{
 		"Authorization": []string{"Virgil " + token},
 	}

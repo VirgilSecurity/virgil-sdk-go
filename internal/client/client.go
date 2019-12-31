@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+
 	"github.com/VirgilSecurity/virgil-sdk-go"
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
@@ -114,7 +116,7 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 			return nil, err
 		}
 	}
-	r, err := http.NewRequest(req.Method, s.address+req.Endpoint, bytes.NewReader(reqBody))
+	r, err := http.NewRequestWithContext(ctx, req.Method, s.address+req.Endpoint, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +130,7 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 	r.Header.Set("Accept", cd.Name())
 	r.Header.Set(virgilAgentHeader, s.options.virgilAgent)
 
-	resp, err := s.options.httpClient.Do(r.WithContext(ctx))
+	resp, err := s.retry(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +156,56 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 		panic("HTTP client error handler should return non nil error")
 	}
 	return nil, err
+}
+
+func (s *Client) retry(ctx context.Context, r *http.Request) (*http.Response, error) {
+	var result *http.Response
+
+	operation := func() error {
+		cr := r.Clone(ctx)
+		resp, err := s.options.httpClient.Do(cr)
+		if err != nil {
+			return err
+		}
+
+		// catch 5xx so retry
+		if resp.StatusCode/100 == 5 {
+			// nolint: errcheck
+			defer resp.Body.Close()
+
+			respBody, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			result := &Response{
+				StatusCode: resp.StatusCode,
+				Header:     resp.Header,
+				Body:       respBody,
+				cd:         s.options.defaultCodec,
+			}
+			if err = s.options.errorHandler(result); err == nil {
+				panic("HTTP client error handler should return non nil error")
+			}
+			return err
+		}
+		result = resp
+		return nil
+	}
+
+	exp := backoff.NewExponentialBackOff()
+	exp.InitialInterval = 200 * time.Millisecond
+	exp.RandomizationFactor = 0.5
+	exp.MaxElapsedTime = 4 * time.Second
+	bs := backoff.WithMaxRetries(exp, 5)
+
+	err := backoff.RetryNotify(operation, bs, func(err error, d time.Duration) {
+
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 var DefaultHTTPClient = &http.Client{
