@@ -40,23 +40,12 @@ package virgil
 import (
 	"fmt"
 	"runtime"
-	"sync"
 )
 
-const (
-	// Version represents passw0rd SDK version
-	Version        = "v5"
-	headerTemplate = "sdk;go;%s;%s"
-)
+// Version current go sdk version
+const Version = "v6.0.0"
 
-var (
-	once   sync.Once
-	header string
-)
-
-func GetAgentHeader() string {
-	once.Do(func() {
-		header = fmt.Sprintf(headerTemplate, runtime.GOOS, Version)
-	})
-	return header
+// MakeVirgilAgent generate Virgil agent for identification client
+func MakeVirgilAgent(product string) string {
+	return fmt.Sprintf("%s;go;%s;%s", product, runtime.GOOS, Version)
 }

@@ -13,6 +13,8 @@ import (
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
+var virgilAgentHeader = "Virgil-Agent"
+
 //
 // Codec is interface for marshal/unmarshal
 //
@@ -46,6 +48,7 @@ type options struct {
 	httpClient   *http.Client
 	errorHandler func(resp *Response) error
 	defaultCodec Codec
+	virgilAgent  string
 }
 
 func HTTPClient(c *http.Client) Option {
@@ -66,11 +69,18 @@ func DefaultCodec(c Codec) Option {
 	}
 }
 
+func VirgilProduct(product string) Option {
+	return func(o *options) {
+		o.virgilAgent = virgil.MakeVirgilAgent(product)
+	}
+}
+
 func NewClient(address string, opts ...Option) *Client {
 	options := &options{
 		httpClient:   DefaultHTTPClient,
 		errorHandler: DefaultErrorHandler,
 		defaultCodec: JSONCodec{},
+		virgilAgent:  virgil.MakeVirgilAgent("unknown"),
 	}
 
 	for _, o := range opts {
@@ -116,7 +126,7 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 	}
 
 	r.Header.Set("Accept", cd.Name())
-	r.Header.Set("Virgil-Agent", virgil.GetAgentHeader())
+	r.Header.Set(virgilAgentHeader, s.options.virgilAgent)
 
 	resp, err := s.options.httpClient.Do(r.WithContext(ctx))
 	if err != nil {

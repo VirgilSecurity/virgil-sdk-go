@@ -39,9 +39,8 @@ package sdk
 
 import (
 	"context"
-	"net/http"
-
 	"encoding/hex"
+	"net/http"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 	"github.com/VirgilSecurity/virgil-sdk-go/internal/client"
@@ -80,7 +79,10 @@ func NewCardsClient(options ...CardClientOption) CardClient {
 	}
 
 	return CardClient{
-		client: client.NewClient(o.serviceURL, client.HTTPClient(o.httpClient)),
+		client: client.NewClient(o.serviceURL,
+			client.HTTPClient(o.httpClient),
+			client.VirgilProduct("sdk"),
+		),
 	}
 }
 
@@ -89,9 +91,7 @@ func (c CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSign
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5",
 		Payload:  rawCard,
-		Header: http.Header{
-			"Authorization": []string{"Virgil " + token},
-		},
+		Header:   c.makeHeader(token),
 	})
 
 	if err != nil {
@@ -111,9 +111,7 @@ func (c CardClient) SearchCards(identity string, token string) ([]*RawSignedMode
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5/actions/search",
 		Payload:  map[string]string{"identity": identity},
-		Header: http.Header{
-			"Authorization": []string{"Virgil " + token},
-		},
+		Header:   c.makeHeader(token),
 	})
 	if err != nil {
 		return nil, errors.NewSDKError(err, "action", "CardClient.SearchCards")
@@ -136,9 +134,7 @@ func (c CardClient) RevokeCard(cardID string, token string) error {
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5/actions/revoke/" + cardID,
 		Payload:  nil,
-		Header: http.Header{
-			"Authorization": []string{"Virgil " + token},
-		},
+		Header:   c.makeHeader(token),
 	})
 
 	return errors.NewSDKError(err, "action", "CardClient.RevokeCard")
@@ -158,9 +154,7 @@ func (c CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool,
 		Method:   http.MethodGet,
 		Endpoint: "/card/v5/" + cardID,
 		Payload:  nil,
-		Header: http.Header{
-			"Authorization": []string{"Virgil " + token},
-		},
+		Header:   c.makeHeader(token),
 	})
 	if err != nil {
 		return nil, false, errors.NewSDKError(err, "action", "CardClient.GetCard", "card_id", cardID)
@@ -172,4 +166,10 @@ func (c CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool,
 
 	outdated := resp.Header.Get(SupersededCardIDHTTPHeader) == SupersededCardIDHTTPHeaderValue
 	return rawCard, outdated, nil
+}
+
+func (_ CardClient) makeHeader(token string) http.Header {
+	return http.Header{
+		"Authorization": []string{"Virgil " + token},
+	}
 }
