@@ -38,171 +38,157 @@
 package sdk
 
 import (
-	"gopkg.in/virgil.v5/cryptoapi"
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
 )
 
 type CardVerifier interface {
 	VerifyCard(card *Card) error
 }
 
-type CardVerifierError struct {
-	errors.SDKError
-}
-
-func NewCardVerifierError(msg string) error {
-	return CardVerifierError{SDKError: errors.SDKError{
-		Message: msg,
-	}}
-}
-
-func ToCardVerifierError(err error) (CardVerifierError, bool) {
-	e, ok := errors.Cause(err).(CardVerifierError)
-	return e, ok
-}
-
 const (
-	VirgilPublicKey = "MCowBQYDK2VwAyEAljOYGANYiVq1WbvVvoYIKtvZi2ji9bAhxyu6iV/LF8M="
+	virgilCardServicePublicKey = "MCowBQYDK2VwAyEAljOYGANYiVq1WbvVvoYIKtvZi2ji9bAhxyu6iV/LF8M="
 )
 
+type VirgilCardVerifierOption func(v *VirgilCardVerifier)
+
+func VirgilCardVerifierSetCrypto(c Crypto) VirgilCardVerifierOption {
+	return func(v *VirgilCardVerifier) {
+		v.crypto = &CardCrypto{c}
+	}
+}
+
+func VirgilCardVerifierDisableSelfSignature() VirgilCardVerifierOption {
+	return func(v *VirgilCardVerifier) {
+		v.verifySelfSignature = false
+	}
+}
+
+func VirgilCardVerifierDisableVirgilSignature() VirgilCardVerifierOption {
+	return func(v *VirgilCardVerifier) {
+		v.verifyVirgilSignature = false
+	}
+}
+
+func VirgilCardVerifierAddWhitelist(wl Whitelist) VirgilCardVerifierOption {
+	return func(v *VirgilCardVerifier) {
+		v.whitelists = append(v.whitelists, wl)
+	}
+}
+
+func VirgilCardVerifierSetCardsServicePublicKey(ks string) VirgilCardVerifierOption {
+	return func(v *VirgilCardVerifier) {
+		v.virgilPublicKeySource = ks
+	}
+}
+
 type VirgilCardVerifier struct {
-	Crypto                cryptoapi.CardCrypto
-	VerifySelfSignature   bool
-	VerifyVirgilSignature bool
-	Whitelists            []*Whitelist
-	virgilPublicKey       cryptoapi.PublicKey
+	crypto                *CardCrypto
+	verifySelfSignature   bool
+	verifyVirgilSignature bool
+	whitelists            []Whitelist
+	virgilPublicKey       crypto.PublicKey
+
+	// virgilPublicKeySource is used to update Virgil Cards service public key
+	// it is needed only in the init step another cases use virgilPublicKey
+	virgilPublicKeySource string
 }
 
-func NewVirgilCardVerifier(crypto cryptoapi.CardCrypto, verifySelfSignature, verifyVirgilSignature bool, whitelists ...*Whitelist) (*VirgilCardVerifier, error) {
-
+func NewVirgilCardVerifier(options ...VirgilCardVerifierOption) *VirgilCardVerifier {
 	verifier := &VirgilCardVerifier{
-		Crypto:                crypto,
-		Whitelists:            whitelists,
-		VerifySelfSignature:   verifySelfSignature,
-		VerifyVirgilSignature: verifyVirgilSignature,
+		crypto:                &CardCrypto{},
+		verifySelfSignature:   true,
+		verifyVirgilSignature: true,
+
+		virgilPublicKeySource: virgilCardServicePublicKey,
 	}
 
-	if err := verifier.SelfCheck(); err != nil {
-		return nil, err
+	for _, opt := range options {
+		opt(verifier)
 	}
 
-	if verifyVirgilSignature {
-		if pub, err := verifier.GetPublicKeyFromBase64(VirgilPublicKey); err != nil {
-			return nil, err
-		} else {
-			verifier.virgilPublicKey = pub
+	if verifier.verifyVirgilSignature {
+		pub, err := verifier.GetPublicKeyFromBase64(verifier.virgilPublicKeySource)
+		if err != nil {
+			panic("NewVirgilCardVerifier: card crypto should support ed25519 because Virgil Cards service use this asymmetric key")
 		}
-
+		verifier.virgilPublicKey = pub
 	}
-	return verifier, nil
-}
 
-func (v *VirgilCardVerifier) SelfCheck() error {
-	if v.Crypto == nil {
-		return NewCardVerifierError("Crypto is not set")
-	}
-	return nil
-}
-
-func (v *VirgilCardVerifier) SetWhitelists(whitelists []*Whitelist) {
-	v.Whitelists = whitelists
+	return verifier
 }
 
 func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 	if card.PublicKey == nil {
-		return NewCardVerifierError("card public key is not set")
+		return ErrCardPublicKeyUnset
 	}
 
-	if v.VerifySelfSignature {
+	if v.verifySelfSignature {
 		if err := v.ValidateSignerSignature(card, SelfSigner, card.PublicKey); err != nil {
-			return errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
+			return errors.NewSDKError(err, "action", "VirgilCardVerifier.VerifyCard", "validate", "self")
 		}
 	}
 
-	if v.VerifyVirgilSignature {
-		if v.virgilPublicKey == nil {
-			return NewCardVerifierError("Virgil public key is not set")
-		}
+	if v.verifyVirgilSignature {
 		if err := v.ValidateSignerSignature(card, VirgilSigner, v.virgilPublicKey); err != nil {
-			return errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
+			return errors.NewSDKError(err, "action", "VirgilCardVerifier.VerifyCard", "validate", "virgil")
 		}
 	}
+	return v.verifyCardByWhitelist(card)
+}
 
-	if len(v.Whitelists) == 0 {
-		return nil
-	}
-
-	hasNil := false
-	hasNonNil := false
-
-	for _, whitelist := range v.Whitelists {
-
-		if whitelist == nil {
-			hasNil = true
-			continue
-		} else {
-			hasNonNil = true
-		}
-
-		ok := false
-		var lastErr error
-		for _, cred := range whitelist.VerifierCredentials {
-			err := v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey)
-			if err == nil {
-				ok = true
-				break
-			} else {
-				lastErr = errors.Wrap(CardValidationSignatureValidationFailedErr, err.Error())
-			}
-		}
-
-		if !ok {
-			if lastErr == nil {
-				lastErr = CardValidationExpectedSignerWasNotFoundErr
+func (v *VirgilCardVerifier) verifyCardByWhitelist(card *Card) error {
+	for _, whitelist := range v.whitelists {
+		signatureVerified := false
+		var err error
+		for i := range whitelist.VerifierCredentials {
+			var cred = whitelist.VerifierCredentials[i]
+			if err = v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey); err != nil {
+				continue
 			}
 
-			return lastErr
+			signatureVerified = true
+			break
 		}
-	}
-
-	if hasNil && hasNonNil {
-		return errors.New("can't mix nil and non nil whitelists")
+		if !signatureVerified {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (v *VirgilCardVerifier) GetPublicKeyFromBase64(str string) (cryptoapi.PublicKey, error) {
-	return v.Crypto.ImportPublicKey([]byte(str))
+func (v *VirgilCardVerifier) GetPublicKeyFromBase64(str string) (crypto.PublicKey, error) {
+	return v.crypto.ImportPublicKey([]byte(str))
 }
 
-func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, publicKey cryptoapi.PublicKey) error {
-	if err := v.SelfCheck(); err != nil {
-		return err
-	}
-	if len(card.Signatures) == 0 {
-		return CardValidationExpectedSignerWasNotFoundErr
-	}
+func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, publicKey crypto.PublicKey) error {
 	for _, s := range card.Signatures {
-
 		if s.Signer == signer {
 			snapshot := append(card.ContentSnapshot, s.Snapshot...)
-			err := v.Crypto.VerifySignature(snapshot, s.Signature, publicKey)
-			if err != nil {
-				return err
-			} else {
-				return nil
-			}
+			err := v.crypto.VerifySignature(snapshot, s.Signature, publicKey)
+
+			return errors.NewSDKError(err,
+				"action", "VirgilCardVerifier.ValidateSignerSignature",
+				"validate", "signer",
+				"signer", signer,
+			)
 		}
 	}
-	return CardValidationExpectedSignerWasNotFoundErr
+	return ErrSignerWasNotFound
 }
 
-func (v *VirgilCardVerifier) ReplaceVirgilPublicKey(newKey string) error {
-	if pub, err := v.GetPublicKeyFromBase64(newKey); err != nil {
-		return err
-	} else {
-		v.virgilPublicKey = pub
-		return nil
+type Whitelist struct {
+	VerifierCredentials []VerifierCredentials
+}
+
+func NewWhitelist(credentials ...VerifierCredentials) Whitelist {
+	return Whitelist{
+		VerifierCredentials: credentials,
 	}
+}
+
+type VerifierCredentials struct {
+	Signer    string
+	PublicKey crypto.PublicKey
 }

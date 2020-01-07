@@ -1,8 +1,157 @@
 language: go
-go:
- - stable
- - tip
+
+cache:
+  directories:
+    - $HOME/gopath/pkg/mod
+
+matrix:
+  include:
+    ##########################################################################
+    # Go versions
+    ##########################################################################
+    - os: linux
+      go: stable
+      env:
+        - LINT_ENABLE=ON
+    - os: linux
+      go: "1.x"
+    - os: linux
+      go: "1.12.x"
+
+    ##########################################################################
+    # Clang on OSX
+    # Travis seems to take longer to start OSX instances,
+    # so leave this first for the overall build to be faster
+    ##########################################################################
+    - os: osx
+      osx_image: xcode11
+      compiler: clang
+      go: stable
+
+    ##########################################################################
+    # GCC on Linux
+    ##########################################################################
+    - os: linux
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - CC=gcc-5
+        - CXX=g++-5
+    # works on Precise and Trusty
+    - os: linux
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - CC=gcc-6
+        - CXX=g++-6
+    # works on Precise and Trusty
+    - os: linux
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CC=gcc-7
+        - CXX=g++-7
+    - os: linux
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - CC=gcc-8
+        - CXX=g++-8
+    - os: linux
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - CC=gcc-9
+        - CXX=g++-9
+
+    ##########################################################################
+    # Clang on Linux
+    ##########################################################################
+    - os: linux
+      dist: xenial
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+      env:
+        - CC=clang-7
+        - CXX=clang++-7
+    - os: linux
+      dist: xenial
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-8
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - clang-8
+      env:
+        - CC=clang-8
+        - CXX=clang++-8
+    - os: linux
+      dist: xenial
+      go: stable
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - clang-9
+      env:
+        - CC=clang-9
+        - CXX=clang++-9
+
+    ##########################################################################
+    # Windows
+    ##########################################################################
+    - os: windows
+      go: stable
+
+env:
+  global:
+    - GO111MODULE=on
+
+install:
+  - go mod download
 
 script:
- - go get gopkg.in/virgil.v5/sdk
- - cd $GOPATH/src/gopkg.in/virgil.v5 && go test -v ./... -tags=integration
+  - "if [[ $LINT_ENABLE ]]; then
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint;
+    golangci-lint run;
+    fi"
+  - go test -tags integration -mod=readonly -count 1 ./...

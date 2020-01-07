@@ -37,85 +37,51 @@
 
 package errors
 
-import "fmt"
+import (
+	"strings"
+)
 
-// HTTPError stores HTTP Status error.
-type HTTPError struct {
-	code int
-}
+func NewSDKError(err error, params ...string) error {
+	if err == nil {
+		return nil
+	}
 
-// GetCode gets HTTP status code.
-func (httpError HTTPError) HTTPErrorCode() int {
-	return httpError.code
-}
-
-// ServiceError stores Service errors.
-type ServiceError struct {
-	code int
-}
-
-// GetCode gets Service error code.
-func (serviceError ServiceError) ServiceErrorCode() int {
-	return serviceError.code
+	m := make(map[string]string)
+	for i := 0; i < len(params); i++ {
+		var val = "val_is_missed"
+		if i+1 < len(params) {
+			val = params[i+1]
+		}
+		m[params[i]] = val
+		i++
+	}
+	return SDKError{
+		Params:   m,
+		InnerErr: err,
+	}
 }
 
 type SDKError struct {
-	HTTPError
-	ServiceError
-	Message string
+	Params   map[string]string
+	InnerErr error
 }
 
+// nolint:gosec
 func (e SDKError) Error() string {
-	if e.IsServiceError() {
-		return fmt.Sprintf("http status code %d, service code: %d, message: %s", e.HTTPErrorCode(), e.ServiceErrorCode(), e.Message)
+	var b strings.Builder
+	b.WriteString("sdk error { ")
+	for k, v := range e.Params {
+		b.WriteString(k + ": " + v)
 	}
-	if e.IsHTTPError() {
-		return fmt.Sprintf("http error %d", e.HTTPErrorCode())
-	}
-	return e.Message
+	b.WriteString("}: ")
+	b.WriteString(e.InnerErr.Error())
+	return b.String()
 }
 
-// IsHTTPError checks if an error is HTTP status code based error.
-func (e SDKError) IsHTTPError() bool {
-	return e.HTTPError.code != 0
+func (e SDKError) Unwrap() error {
+	return e.InnerErr
 }
 
-// IsServiceError checks if an error is Service error.
-func (e SDKError) IsServiceError() bool {
-	return e.ServiceError.code != 0
-}
-
-// New returns an error that formats as the given text.
-func New(message string) error {
-	return SDKError{
-		Message: message,
-	}
-}
-
-// NewServiceError returns an Service error.
-func NewServiceError(serviceErrorCode int, httpCode int, message string) error {
-	return SDKError{
-		Message: message,
-		ServiceError: ServiceError{
-			code: serviceErrorCode,
-		},
-		HTTPError: HTTPError{
-			code: httpCode,
-		},
-	}
-}
-
-// NewHttpError returns an error based on HTTP status code.
-func NewHttpError(httpCode int, message string) error {
-	return SDKError{
-		Message: message,
-		HTTPError: HTTPError{
-			code: httpCode,
-		},
-	}
-}
-
-func ToSdkError(err error) (SDKError, bool) {
-	e, ok := Cause(err).(SDKError)
-	return e, ok
+func (e SDKError) Cause() error {
+	return e.InnerErr
 }

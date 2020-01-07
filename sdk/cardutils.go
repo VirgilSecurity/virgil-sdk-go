@@ -38,50 +38,42 @@
 package sdk
 
 import (
+	"bytes"
+	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 
 	"time"
-
-	"gopkg.in/virgil.v5/cryptoapi"
-	"gopkg.in/virgil.v5/errors"
 )
 
-func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
-
+func ParseRawCard(crypto Crypto, model *RawSignedModel, isOutdated bool) (*Card, error) {
 	if crypto == nil {
-		return nil, errors.New("crypto is mandatory")
+		return nil, ErrCryptoIsMandatory
 	}
 	if model == nil {
-		return nil, errors.New("model is mandatory")
+		return nil, ErrRawSignedModelIsMandatory
 	}
 
-	var content *RawCardContent
+	var content RawCardContent
 	err := ParseSnapshot(model.ContentSnapshot, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	var signatures []*CardSignature
-	for _, signature := range model.Signatures {
-
+	signatures := make([]*CardSignature, len(model.Signatures))
+	for i, signature := range model.Signatures {
 		var extraFields map[string]string
 		if len(signature.Snapshot) > 0 {
-			err := ParseSnapshot(signature.Snapshot, &extraFields)
-			if err != nil {
+			if nil != ParseSnapshot(signature.Snapshot, &extraFields) {
 				extraFields = nil
 			}
 		}
-		signatures = append(signatures, &CardSignature{
+		signatures[i] = &CardSignature{
 			Snapshot:    signature.Snapshot,
 			Signer:      signature.Signer,
 			Signature:   signature.Signature,
 			ExtraFields: extraFields,
-		})
-	}
-
-	id, err := GenerateCardId(crypto, model.ContentSnapshot)
-	if err != nil {
-		return nil, err
+		}
 	}
 
 	publicKey, err := crypto.ImportPublicKey(content.PublicKey)
@@ -90,7 +82,7 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 	}
 
 	return &Card{
-		Id:              id,
+		Id:              GenerateCardID(model.ContentSnapshot),
 		ContentSnapshot: model.ContentSnapshot,
 		Signatures:      signatures,
 		Version:         content.Version,
@@ -102,40 +94,26 @@ func ParseRawCard(crypto cryptoapi.CardCrypto, model *RawSignedModel, isOutdated
 	}, nil
 }
 
-func GenerateCardId(crypto cryptoapi.CardCrypto, data []byte) (string, error) {
-	if crypto == nil {
-		return "", errors.New("crypto is mandatory")
-	}
-
-	return hex.EncodeToString(crypto.GenerateSHA512(data)[:32]), nil
+func GenerateCardID(data []byte) string {
+	h := sha512.Sum512(data)
+	return hex.EncodeToString(h[:32])
 }
 
-func ParseRawCards(crypto cryptoapi.CardCrypto, models ...*RawSignedModel) ([]*Card, error) {
-
-	if crypto == nil {
-		return nil, errors.New("crypto is mandatory")
-	}
-	if models == nil {
-		return nil, errors.New("model is mandatory")
-	}
-
-	var cards []*Card
-
-	for _, model := range models {
-
+func ParseRawCards(crypto Crypto, models ...*RawSignedModel) ([]*Card, error) {
+	cards := make([]*Card, len(models))
+	for i, model := range models {
 		card, err := ParseRawCard(crypto, model, false)
 		if err != nil {
 			return nil, err
 		}
-		cards = append(cards, card)
-
+		cards[i] = card
 	}
 	return cards, nil
 }
 
 func LinkCards(cards ...*Card) []*Card {
 	unsortedCards := make(map[string]*Card)
-	var result []*Card
+
 	for _, card := range cards {
 		unsortedCards[card.Id] = card
 	}
@@ -151,8 +129,19 @@ func LinkCards(cards ...*Card) []*Card {
 		}
 	}
 
+	result := make([]*Card, 0, len(unsortedCards))
 	for _, card := range unsortedCards {
 		result = append(result, card)
 	}
 	return result
+}
+
+func TakeSnapshot(obj interface{}) ([]byte, error) {
+	return json.Marshal(obj)
+}
+
+func ParseSnapshot(data []byte, obj interface{}) error {
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(obj)
 }

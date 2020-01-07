@@ -40,13 +40,13 @@ package sdk
 import (
 	"time"
 
-	"gopkg.in/virgil.v5/cryptoapi"
+	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
 )
 
 type Card struct {
 	Id             string
 	Identity       string
-	PublicKey      cryptoapi.PublicKey
+	PublicKey      crypto.PublicKey
 	Version        string
 	CreatedAt      time.Time
 	PreviousCardId string
@@ -57,16 +57,17 @@ type Card struct {
 	ContentSnapshot []byte
 }
 
+type CardSignature struct {
+	Signer      string
+	Signature   []byte
+	ExtraFields map[string]string
+	Snapshot    []byte
+}
+
 type Cards []*Card
 
-func (c Cards) ExtractPublicKeys() []interface {
-	IsPublic() bool
-	Identifier() []byte
-} {
-	var publicKeys []interface {
-		IsPublic() bool
-		Identifier() []byte
-	}
+func (c Cards) ExtractPublicKeys() []crypto.PublicKey {
+	var publicKeys []crypto.PublicKey
 	for _, card := range c {
 		if !card.IsOutdated {
 			publicKeys = append(publicKeys, card.PublicKey)

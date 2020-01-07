@@ -38,106 +38,138 @@
 package sdk
 
 import (
+	"context"
+	"encoding/hex"
 	"net/http"
 
-	"sync"
-
-	"encoding/hex"
-
-	"gopkg.in/virgil.v5/common"
-	"gopkg.in/virgil.v5/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/internal/client"
 )
 
+type cardClientOption struct {
+	serviceURL string
+	httpClient *http.Client
+}
+
+type CardClientOption func(c *cardClientOption)
+
+func SetCardClientURL(serviceURL string) CardClientOption {
+	return func(c *cardClientOption) {
+		c.serviceURL = serviceURL
+	}
+}
+
+func SetCardClientHTTPClient(httpClient *http.Client) CardClientOption {
+	return func(c *cardClientOption) {
+		c.httpClient = httpClient
+	}
+}
+
 type CardClient struct {
-	ServiceURL       string
-	VirgilHttpClient *common.VirgilHttpClient
-	HttpClient       common.HttpClient
-	once             sync.Once
+	client *client.Client
 }
 
-func NewCardsClient(serviceURL string) *CardClient {
-	return &CardClient{ServiceURL: serviceURL}
-}
-
-func (c *CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSignedModel, error) {
-	var returnedRawCard *RawSignedModel
-	_, err := c.send(http.MethodPost, "/card/v5", token, rawCard, &returnedRawCard)
-	return returnedRawCard, err
-}
-
-func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
-	var rawCards []*RawSignedModel
-	_, err := c.send(http.MethodPost, "/card/v5/actions/search", token, map[string]string{"identity": identity}, &rawCards)
-	if err != nil {
-		return nil, err
+func NewCardsClient(options ...CardClientOption) CardClient {
+	o := &cardClientOption{
+		serviceURL: "https://api.virgilsecurity.com",
+		httpClient: client.DefaultHTTPClient,
+	}
+	for _, opt := range options {
+		opt(o)
 	}
 
-	return rawCards, err
+	return CardClient{
+		client: client.NewClient(o.serviceURL,
+			client.HTTPClient(o.httpClient),
+			client.VirgilProduct("sdk"),
+		),
+	}
 }
 
-func (c *CardClient) RevokeCard(cardId string, token string) error {
-	_, err := c.send(http.MethodPost, "/card/v5/actions/revoke/"+cardId, token, nil, nil)
-	return err
+func (c CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSignedModel, error) {
+	resp, err := c.client.Send(context.TODO(), &client.Request{
+		Method:   http.MethodPost,
+		Endpoint: "/card/v5",
+		Payload:  rawCard,
+		Header:   c.makeHeader(token),
+	})
+
+	if err != nil {
+		return nil, errors.NewSDKError(err, "action", "CardClient.PublishCard")
+	}
+
+	returnedRawCard := new(RawSignedModel)
+	if err = resp.Unmarshal(returnedRawCard); err != nil {
+		return nil, errors.NewSDKError(err, "action", "CardClient.PublishCard")
+	}
+
+	return returnedRawCard, nil
 }
 
-func (c *CardClient) GetCard(cardId string, token string) (*RawSignedModel, bool, error) {
+func (c CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
+	resp, err := c.client.Send(context.TODO(), &client.Request{
+		Method:   http.MethodPost,
+		Endpoint: "/card/v5/actions/search",
+		Payload:  map[string]string{"identity": identity},
+		Header:   c.makeHeader(token),
+	})
+	if err != nil {
+		return nil, errors.NewSDKError(err, "action", "CardClient.SearchCards")
+	}
 
+	var rawCards []*RawSignedModel
+	if err = resp.Unmarshal(&rawCards); err != nil {
+		return nil, errors.NewSDKError(err, "action", "CardClient.SearchCards")
+	}
+
+	return rawCards, nil
+}
+
+func (c CardClient) RevokeCard(cardID string, token string) error {
+	if _, err := hex.DecodeString(cardID); err != nil || len(cardID) != 64 {
+		return errors.NewSDKError(ErrInvalidCardID, "action", "CardClient.RevokeCard")
+	}
+
+	_, err := c.client.Send(context.TODO(), &client.Request{
+		Method:   http.MethodPost,
+		Endpoint: "/card/v5/actions/revoke/" + cardID,
+		Payload:  nil,
+		Header:   c.makeHeader(token),
+	})
+
+	return errors.NewSDKError(err, "action", "CardClient.RevokeCard")
+}
+
+func (c CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool, error) {
 	const (
 		SupersededCardIDHTTPHeader      = "X-Virgil-Is-Superseeded"
 		SupersededCardIDHTTPHeaderValue = "true"
 	)
 
-	if _, err := hex.DecodeString(cardId); err != nil || len(cardId) != 64 {
-		return nil, false, errors.New("invalid card id")
+	if _, err := hex.DecodeString(cardID); err != nil || len(cardID) != 64 {
+		return nil, false, errors.NewSDKError(ErrInvalidCardID, "action", "CardClient.GetCard", "card_id", cardID)
 	}
 
-	var rawCard *RawSignedModel
-	headers, err := c.send(http.MethodGet, "/card/v5/"+cardId, token, nil, &rawCard)
-
-	var outdated bool
-	if headers != nil {
-		outdated = headers.Get(SupersededCardIDHTTPHeader) == SupersededCardIDHTTPHeaderValue
-	}
-
-	return rawCard, outdated, err
-}
-
-func (c *CardClient) send(method string, url string, token string, payload interface{}, respObj interface{}) (headers http.Header, err error) {
-	client := c.getVirgilClient()
-	headers, httpCode, err := client.Send(method, url, token, payload, respObj)
-	if err != nil {
-		if apiErr, ok := err.(common.VirgilAPIError); ok {
-			return headers, errors.NewServiceError(apiErr.Code, httpCode, apiErr.Message)
-		}
-		return headers, errors.NewServiceError(0, httpCode, err.Error())
-	}
-	return headers, nil
-}
-
-func (c *CardClient) getUrl() string {
-	if c.ServiceURL != "" {
-		return c.ServiceURL
-	}
-	return "https://api.virgilsecurity.com"
-}
-
-func (c *CardClient) getHttpClient() common.HttpClient {
-	if c.HttpClient != nil {
-		return c.HttpClient
-	}
-	return http.DefaultClient
-}
-
-func (c *CardClient) getVirgilClient() *common.VirgilHttpClient {
-
-	c.once.Do(func() {
-		if c.VirgilHttpClient == nil {
-			c.VirgilHttpClient = &common.VirgilHttpClient{
-				Address: c.getUrl(),
-				Client:  c.getHttpClient(),
-			}
-		}
+	resp, err := c.client.Send(context.TODO(), &client.Request{
+		Method:   http.MethodGet,
+		Endpoint: "/card/v5/" + cardID,
+		Payload:  nil,
+		Header:   c.makeHeader(token),
 	})
+	if err != nil {
+		return nil, false, errors.NewSDKError(err, "action", "CardClient.GetCard", "card_id", cardID)
+	}
+	rawCard := new(RawSignedModel)
+	if err = resp.Unmarshal(rawCard); err != nil {
+		return nil, false, errors.NewSDKError(err, "action", "CardClient.GetCard", "card_id", cardID)
+	}
 
-	return c.VirgilHttpClient
+	outdated := resp.Header.Get(SupersededCardIDHTTPHeader) == SupersededCardIDHTTPHeaderValue
+	return rawCard, outdated, nil
+}
+
+func (CardClient) makeHeader(token string) http.Header {
+	return http.Header{
+		"Authorization": []string{"Virgil " + token},
+	}
 }

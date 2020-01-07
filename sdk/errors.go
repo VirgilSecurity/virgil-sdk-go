@@ -39,24 +39,25 @@ package sdk
 
 import (
 	"errors"
-
-	"gopkg.in/virgil.v5/common"
 )
 
-type CardsAPIError common.VirgilAPIError
-
-func (err CardsAPIError) Error() string {
-	return common.VirgilAPIError(err).Error()
-}
-
 var (
+	ErrInvalidCardID         = errors.New("invalid card id")
+	ErrIdentityIsMandatory   = errors.New("identity is mandatory")
+	ErrPrivateKeyIsMandatory = errors.New("private key is mandatory")
+	ErrCryptoIsMandatory     = errors.New("crypto is mandatory")
+	ErrCardIsMandatory       = errors.New("card is mandatory")
+	ErrCardPublicKeyUnset    = errors.New("card public key is not set")
+
 	CSRIdentityEmptyErr        = errors.New("Identity field in CSR is mandatory")
 	CSRSignParamIncorrectErr   = errors.New("CSR signature params incorrect")
 	CSRPublicKeyEmptyErr       = errors.New("Public key field in CSR is mandatory")
 	CSRSelfSignAlreadyExistErr = errors.New("The CSR already has a self signature")
 	CSRAppSignAlreadyExistErr  = errors.New("The CSR already has an application signature")
 
-	CardValidationSignerTypeIncorrectErr       = NewCardVerifierError("Card validation: signer type incorrect")
-	CardValidationExpectedSignerWasNotFoundErr = NewCardVerifierError("Card validation: expected signer was not found")
-	CardValidationSignatureValidationFailedErr = NewCardVerifierError("Card validation: signature validation failed")
+	ErrRawSignedModelIsMandatory = errors.New("raw signerd model is mandatory")
+	ErrDuplicateSigner           = errors.New("duplicate signer")
+
+	ErrValidationSignature = errors.New("signature validation error")
+	ErrSignerWasNotFound   = errors.New("signer was not found")
 )
