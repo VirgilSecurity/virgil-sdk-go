@@ -83,7 +83,7 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 
 	h := JwtHeaderContent{
 		Algorithm:   j.getAccessTokenSigner().GetAlgorithm(),
-		APIKeyID:    j.AppKeyID,
+		AppKeyID:    j.AppKeyID,
 		ContentType: VirgilContentType,
 		Type:        JwtType,
 	}

@@ -208,5 +208,5 @@ type JwtHeaderContent struct {
 	Algorithm   string `json:"alg"`
 	Type        string `json:"typ"`
 	ContentType string `json:"cty"`
-	APIKeyID    string `json:"kid"`
+	AppKeyID    string `json:"kid"`
 }

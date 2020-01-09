@@ -45,16 +45,16 @@ import (
 )
 
 type JwtVerifier struct {
-	APIPublicKey      crypto.PublicKey
-	APIPublicKeyID    string
+	AppPublicKey      crypto.PublicKey
+	AppPublicKeyID    string
 	AccessTokenSigner AccessTokenSigner
 }
 
-func NewJwtVerifier(apiPublicKey crypto.PublicKey, apiPublicKeyID string, accessTokenSigner AccessTokenSigner) *JwtVerifier {
+func NewJwtVerifier(appPublicKey crypto.PublicKey, appPublicKeyID string, accessTokenSigner AccessTokenSigner) *JwtVerifier {
 	v := &JwtVerifier{
 		AccessTokenSigner: accessTokenSigner,
-		APIPublicKeyID:    apiPublicKeyID,
-		APIPublicKey:      apiPublicKey,
+		AppPublicKeyID:    appPublicKeyID,
+		AppPublicKey:      appPublicKey,
 	}
 	if err := v.Validate(); err != nil {
 		panic(err)
@@ -67,14 +67,14 @@ func (j *JwtVerifier) VerifyToken(jwtToken *Jwt) error {
 		return ErrJWTTokenIsMandatory
 	}
 
-	if jwtToken.HeaderContent.APIKeyID != j.APIPublicKeyID ||
+	if jwtToken.HeaderContent.AppKeyID != j.AppPublicKeyID ||
 		jwtToken.HeaderContent.Algorithm != j.AccessTokenSigner.GetAlgorithm() ||
 		jwtToken.HeaderContent.ContentType != VirgilContentType ||
 		jwtToken.HeaderContent.Type != JwtType {
 		return ErrJWTInvalid
 	}
 
-	return jwtToken.Verify(j.AccessTokenSigner, j.APIPublicKey)
+	return jwtToken.Verify(j.AccessTokenSigner, j.AppPublicKey)
 }
 
 func (j JwtVerifier) Validate() error {
@@ -82,11 +82,11 @@ func (j JwtVerifier) Validate() error {
 		return errors.New("JwtVerifier: access token signer is not set")
 	}
 
-	if j.APIPublicKey == nil {
+	if j.AppPublicKey == nil {
 		return errors.New("JwtVerifier: api public key is not set")
 	}
 
-	if strings.Replace(j.APIPublicKeyID, " ", "", -1) == "" {
+	if strings.Replace(j.AppPublicKeyID, " ", "", -1) == "" {
 		return errors.New("JwtVerifier: api public key id is not set")
 	}
 	return nil
