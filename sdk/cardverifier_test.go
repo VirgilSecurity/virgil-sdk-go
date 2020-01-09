@@ -62,7 +62,7 @@ func TestWhitelist(t *testing.T) {
 	}
 
 	pk, cardCreds := makeRandomCredentials()
-	model, err := GenerateRawCard(cryptoNative, CardParams{
+	model, err := GenerateRawCard(cryptoNative, &CardParams{
 		Identity:   cardCreds.Signer,
 		PrivateKey: pk,
 	}, time.Now())

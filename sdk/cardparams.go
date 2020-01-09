@@ -51,6 +51,9 @@ type CardParams struct {
 }
 
 func (c *CardParams) Validate() error {
+	if c == nil {
+		return ErrIdentityIsMandatory
+	}
 	if strings.Replace(c.Identity, " ", "", -1) == "" {
 		return ErrIdentityIsMandatory
 	}

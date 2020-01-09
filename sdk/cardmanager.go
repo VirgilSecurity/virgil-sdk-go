@@ -99,7 +99,7 @@ func NewCardManager(accessTokenProvider session.AccessTokenProvider, options ...
 	return cm
 }
 
-func (c *CardManager) GenerateRawCard(cardParams CardParams) (*RawSignedModel, error) {
+func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, error) {
 	model, err := GenerateRawCard(c.crypto, cardParams, time.Now().UTC().Truncate(time.Second))
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func (c *CardManager) PublishRawCard(rawSignedModel *RawSignedModel) (card *Card
 	return card, nil
 }
 
-func (c *CardManager) PublishCard(cardParams CardParams) (*Card, error) {
+func (c *CardManager) PublishCard(cardParams *CardParams) (*Card, error) {
 	rawSignedModel, err := c.GenerateRawCard(cardParams)
 	if err != nil {
 		return nil, err
