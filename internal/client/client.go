@@ -222,10 +222,10 @@ func DefaultErrorHandler(resp *Response) error {
 		}
 	}
 
-	var apiErr errors.VirgilAPIError
+	apiErr := &errors.VirgilAPIError{}
 	if len(resp.Body) != 0 {
-		if err := resp.Unmarshal(&apiErr); err != nil {
-			return Error{
+		if err := resp.Unmarshal(apiErr); err != nil {
+			return &Error{
 				StatusCode: resp.StatusCode,
 				ierr:       err,
 			}
@@ -240,14 +240,14 @@ type Error struct {
 	ierr       error
 }
 
-func (e Error) Error() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("http client error {status code: %d message: %s}: %v", e.StatusCode, e.Message, e.ierr)
 }
 
-func (e Error) Unwrap() error {
+func (e *Error) Unwrap() error {
 	return e.ierr
 }
 
-func (e Error) Cause() error {
+func (e *Error) Cause() error {
 	return e.ierr
 }

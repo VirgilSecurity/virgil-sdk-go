@@ -103,7 +103,7 @@ func initCardManagerWithIdentityName(identityName string) (*CardManager, error) 
 }
 
 func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
-	var expectedError = errors.VirgilAPIError{Code: 10001, Message: "Requested card entity not found."}
+	var expectedError = &errors.VirgilAPIError{Code: 10001, Message: "Requested card entity not found."}
 
 	manager, err := initCardManager()
 	assert.NoError(t, err)

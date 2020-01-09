@@ -4,13 +4,13 @@ import "fmt"
 
 var (
 	// ErrEntityNotFound return when service return 404 HTTP status code and body is empty
-	ErrEntityNotFound = VirgilAPIError{
+	ErrEntityNotFound = &VirgilAPIError{
 		Code:    10001,
 		Message: "entity was not found",
 	}
 
 	// ErrInternalServerError return when service return 5xx HTTP status code and body is empty
-	ErrInternalServerError = VirgilAPIError{
+	ErrInternalServerError = &VirgilAPIError{
 		Code:    10000,
 		Message: "internal server error",
 	}
@@ -22,6 +22,14 @@ type VirgilAPIError struct {
 	Message string `json:"message"`
 }
 
-func (err VirgilAPIError) Error() string {
+func (err *VirgilAPIError) Error() string {
 	return fmt.Sprintf("Virgil API error {code: %v message: %v}", err.Code, err.Message)
+}
+
+func (e *VirgilAPIError) Is(err error) bool {
+	ve, ok := err.(*VirgilAPIError)
+	if !ok {
+		return false
+	}
+	return ve.Code == e.Code
 }
