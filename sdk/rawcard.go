@@ -47,7 +47,7 @@ const (
 	CardVersion = "5.0"
 )
 
-func GenerateRawCard(crypto Crypto, cardParams *CardParams, createdAt time.Time) (*RawSignedModel, error) {
+func GenerateRawCard(crypto Crypto, cardParams CardParams, createdAt time.Time) (*RawSignedModel, error) {
 	if crypto == nil {
 		return nil, ErrCryptoIsMandatory
 	}

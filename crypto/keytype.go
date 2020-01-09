@@ -76,7 +76,7 @@ var keyTypeMap = map[KeyType]keyGen{
 	EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
 	EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
 	FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
-	PQC:             pqcKeyType{},
+	PQC:             &pqcKeyType{},
 }
 
 type keyType foundation.AlgId
@@ -94,6 +94,6 @@ func (t rsaKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.P
 
 type pqcKeyType struct{}
 
-func (t pqcKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+func (t *pqcKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
 	return kp.GeneratePostQuantumPrivateKey()
 }

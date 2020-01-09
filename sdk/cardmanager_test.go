@@ -200,7 +200,7 @@ func PublishCard(t *testing.T, manager *CardManager, identity string, previousCa
 	key, err := cryptoNative.GenerateKeypair()
 	assert.NoError(t, err)
 
-	cardParams := &CardParams{
+	cardParams := CardParams{
 		PrivateKey:     key,
 		Identity:       identity,
 		PreviousCardId: previousCardID,

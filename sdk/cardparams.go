@@ -50,7 +50,7 @@ type CardParams struct {
 	ExtraFields    map[string]string
 }
 
-func (c CardParams) Validate() error {
+func (c *CardParams) Validate() error {
 	if strings.Replace(c.Identity, " ", "", -1) == "" {
 		return ErrIdentityIsMandatory
 	}
