@@ -59,7 +59,7 @@ type JwtGenerator struct {
 	TTL               time.Duration
 }
 
-func (j JwtGenerator) Validate() error {
+func (j *JwtGenerator) Validate() error {
 	if j.AppKey == nil {
 		return errors.New("JwtGenerator: api private key is not set")
 	}
@@ -73,7 +73,7 @@ func (j JwtGenerator) Validate() error {
 	return nil
 }
 
-func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]interface{}) (*Jwt, error) {
+func (j *JwtGenerator) GenerateToken(identity string, additionalData map[string]interface{}) (*Jwt, error) {
 	if strings.Replace(identity, " ", "", -1) == "" {
 		return nil, ErrIdentityIsMandatory
 	}
@@ -106,7 +106,7 @@ func (j JwtGenerator) GenerateToken(identity string, additionalData map[string]i
 
 func (j JwtGenerator) getAccessTokenSigner() AccessTokenSigner {
 	if j.AccessTokenSigner == nil {
-		return VirgilAccessTokenSigner{}
+		return &VirgilAccessTokenSigner{}
 	}
 	return j.AccessTokenSigner
 }

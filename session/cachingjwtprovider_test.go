@@ -61,7 +61,7 @@ func TestCachingJwtProvider(t *testing.T) {
 		AppKey:            key,
 		AppKeyID:          hex.EncodeToString(key.Identifier()),
 		TTL:               6 * time.Second,
-		AccessTokenSigner: VirgilAccessTokenSigner{},
+		AccessTokenSigner: &VirgilAccessTokenSigner{},
 		AppID:             "app_id",
 	}
 

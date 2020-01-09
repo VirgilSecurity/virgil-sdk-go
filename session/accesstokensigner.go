@@ -42,8 +42,8 @@ import (
 )
 
 var (
-	DefaultCrypto Crypto            = crypto.Crypto{}
-	_             AccessTokenSigner = VirgilAccessTokenSigner{}
+	DefaultCrypto Crypto            = &crypto.Crypto{}
+	_             AccessTokenSigner = &VirgilAccessTokenSigner{}
 )
 
 type Crypto interface {
@@ -55,19 +55,19 @@ type VirgilAccessTokenSigner struct {
 	Crypto Crypto
 }
 
-func (t VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
+func (t *VirgilAccessTokenSigner) GenerateTokenSignature(data []byte, privateKey crypto.PrivateKey) ([]byte, error) {
 	return t.getCrypto().Sign(data, privateKey)
 }
 
-func (t VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
+func (t *VirgilAccessTokenSigner) VerifyTokenSignature(data []byte, signature []byte, publicKey crypto.PublicKey) error {
 	return t.getCrypto().VerifySignature(data, signature, publicKey)
 }
 
-func (t VirgilAccessTokenSigner) GetAlgorithm() string {
+func (t *VirgilAccessTokenSigner) GetAlgorithm() string {
 	return "VEDS512"
 }
 
-func (t VirgilAccessTokenSigner) getCrypto() Crypto {
+func (t *VirgilAccessTokenSigner) getCrypto() Crypto {
 	if t.Crypto != nil {
 		return t.Crypto
 	}

@@ -45,7 +45,7 @@ import (
 
 type CardManagerOption func(c *CardManager)
 
-func CardManagerSetModelSigner(ms ModelSigner) CardManagerOption {
+func CardManagerSetModelSigner(ms *ModelSigner) CardManagerOption {
 	return func(c *CardManager) {
 		c.modelSigner = ms
 	}
@@ -63,7 +63,7 @@ func CardManagerSetCardVerifier(cv CardVerifier) CardManagerOption {
 	}
 }
 
-func CardManagerSetCardClient(cc CardClient) CardManagerOption {
+func CardManagerSetCardClient(cc *CardClient) CardManagerOption {
 	return func(c *CardManager) {
 		c.cardClient = cc
 	}
@@ -76,11 +76,11 @@ func CardManagerSetSignCallback(callback func(model *RawSignedModel) (signedCard
 }
 
 type CardManager struct {
-	modelSigner         ModelSigner
+	modelSigner         *ModelSigner
 	crypto              Crypto
 	accessTokenProvider session.AccessTokenProvider
 	cardVerifier        CardVerifier
-	cardClient          CardClient
+	cardClient          *CardClient
 	signCallback        func(model *RawSignedModel) (signedCard *RawSignedModel, err error)
 }
 
@@ -89,6 +89,7 @@ func NewCardManager(accessTokenProvider session.AccessTokenProvider, options ...
 		crypto:              DefaultCrypto,
 		accessTokenProvider: accessTokenProvider,
 		cardClient:          NewCardsClient(),
+		modelSigner:         &ModelSigner{},
 	}
 
 	for _, opt := range options {

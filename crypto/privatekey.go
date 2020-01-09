@@ -43,15 +43,15 @@ type privateKey struct {
 	key        foundation.PrivateKey
 }
 
-func (k privateKey) Identifier() []byte {
+func (k *privateKey) Identifier() []byte {
 	return k.receiverID
 }
 
-func (k privateKey) PublicKey() PublicKey {
+func (k *privateKey) PublicKey() PublicKey {
 	pk, err := k.key.ExtractPublicKey()
 	if err != nil {
 		panic(fmt.Errorf("PrivateKey.PublicKey: unexpected error: %v", err))
 	}
 
-	return publicKey{k.Identifier(), pk}
+	return &publicKey{k.Identifier(), pk}
 }

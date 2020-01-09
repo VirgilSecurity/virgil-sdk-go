@@ -41,11 +41,11 @@ type publicKey struct {
 	key        foundation.PublicKey
 }
 
-func (k publicKey) Identifier() []byte {
+func (k *publicKey) Identifier() []byte {
 	return k.receiverID
 }
 
-func (k publicKey) Export() ([]byte, error) {
+func (k *publicKey) Export() ([]byte, error) {
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 

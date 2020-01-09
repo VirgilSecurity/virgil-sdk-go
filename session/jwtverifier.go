@@ -77,7 +77,7 @@ func (j *JwtVerifier) VerifyToken(jwtToken *Jwt) error {
 	return jwtToken.Verify(j.AccessTokenSigner, j.AppPublicKey)
 }
 
-func (j JwtVerifier) Validate() error {
+func (j *JwtVerifier) Validate() error {
 	if j.AccessTokenSigner == nil {
 		return errors.New("JwtVerifier: access token signer is not set")
 	}
