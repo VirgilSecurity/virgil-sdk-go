@@ -6,10 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
-	"net/textproto"
-	"net/url"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -119,21 +116,10 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 			return nil, err
 		}
 	}
-	r, err := http.NewRequest(req.Method, s.address+req.Endpoint, bytes.NewReader(reqBody))
-	if err != nil {
-		return nil, err
-	}
+	req.Header.Set("Accept", cd.Name())
+	req.Header.Set(virgilAgentHeader, s.options.virgilAgent)
 
-	for k, v := range req.Header {
-		if len(v) != 0 {
-			r.Header.Set(k, v[0])
-		}
-	}
-
-	r.Header.Set("Accept", cd.Name())
-	r.Header.Set(virgilAgentHeader, s.options.virgilAgent)
-
-	resp, err := s.retry(ctx, r)
+	resp, err := s.retry(ctx, req.Method, req.Endpoint, req.Header, reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -161,12 +147,16 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 	return nil, err
 }
 
-func (s *Client) retry(ctx context.Context, r *http.Request) (*http.Response, error) {
+func (s *Client) retry(ctx context.Context, method string, endpoint string, header http.Header, reqBody []byte) (*http.Response, error) {
 	var result *http.Response
 
 	operation := func() error {
-		cr := httpClone(r)
-		resp, err := s.options.httpClient.Do(cr.WithContext(ctx))
+		r, err := http.NewRequest(method, s.address+endpoint, bytes.NewReader(reqBody))
+		if err != nil {
+			return err
+		}
+		r.Header = header
+		resp, err := s.options.httpClient.Do(r.WithContext(ctx))
 		if err != nil {
 			return err
 		}
@@ -260,106 +250,4 @@ func (e Error) Unwrap() error {
 
 func (e Error) Cause() error {
 	return e.ierr
-}
-
-// copy methods from net/http 1.13
-
-// Clone returns a deep copy of r with its context changed to ctx.
-// The provided ctx must be non-nil.
-//
-// For an outgoing client request, the context controls the entire
-// lifetime of a request and its response: obtaining a connection,
-// sending the request, and reading the response headers and body.
-func httpClone(r *http.Request) *http.Request {
-	r2 := new(http.Request)
-	*r2 = *r
-	r2.URL = cloneURL(r.URL)
-	if r.Header != nil {
-		r2.Header = cloneHeader(r.Header)
-	}
-	if r.Trailer != nil {
-		r2.Trailer = cloneHeader(r.Trailer)
-	}
-	if s := r.TransferEncoding; s != nil {
-		s2 := make([]string, len(s))
-		copy(s2, s)
-		r2.TransferEncoding = s
-	}
-	r2.Form = cloneURLValues(r.Form)
-	r2.PostForm = cloneURLValues(r.PostForm)
-	r2.MultipartForm = cloneMultipartForm(r.MultipartForm)
-	return r2
-}
-
-func cloneURL(u *url.URL) *url.URL {
-	if u == nil {
-		return nil
-	}
-	u2 := new(url.URL)
-	*u2 = *u
-	if u.User != nil {
-		u2.User = new(url.Userinfo)
-		*u2.User = *u.User
-	}
-	return u2
-}
-
-func cloneURLValues(v url.Values) url.Values {
-	if v == nil {
-		return nil
-	}
-	// http.Header and url.Values have the same representation, so temporarily
-	// treat it like http.Header, which does have a clone:
-	return url.Values(cloneHeader(http.Header(v)))
-}
-
-func cloneMultipartForm(f *multipart.Form) *multipart.Form {
-	if f == nil {
-		return nil
-	}
-	f2 := &multipart.Form{
-		Value: (map[string][]string)(cloneHeader(http.Header(f.Value))),
-	}
-	if f.File != nil {
-		m := make(map[string][]*multipart.FileHeader)
-		for k, vv := range f.File {
-			vv2 := make([]*multipart.FileHeader, len(vv))
-			for i, v := range vv {
-				vv2[i] = cloneMultipartFileHeader(v)
-			}
-			m[k] = vv2
-		}
-		f2.File = m
-	}
-	return f2
-}
-
-func cloneMultipartFileHeader(fh *multipart.FileHeader) *multipart.FileHeader {
-	if fh == nil {
-		return nil
-	}
-	fh2 := new(multipart.FileHeader)
-	*fh2 = *fh
-	fh2.Header = textproto.MIMEHeader(cloneHeader(http.Header(fh.Header)))
-	return fh2
-}
-
-func cloneHeader(h http.Header) http.Header {
-	if h == nil {
-		return nil
-	}
-
-	// Find total number of values.
-	nv := 0
-	for _, vv := range h {
-		nv += len(vv)
-	}
-	sv := make([]string, nv) // shared backing array for headers' values
-	h2 := make(http.Header, len(h))
-	for k, vv := range h {
-		n := copy(sv, vv)
-		h2[k] = sv[:n:n]
-		sv = sv[n:]
-	}
-	return h2
 }
