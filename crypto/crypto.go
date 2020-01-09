@@ -61,7 +61,7 @@ var (
 	signerIDKey  = []byte("VIRGIL-DATA-SIGNER-ID")
 )
 
-func (c Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, error) {
+func (c *Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, error) {
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
@@ -82,10 +82,10 @@ func (c Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, er
 		return nil, err
 	}
 
-	return privateKey{receiverID: id, key: sk}, nil
+	return &privateKey{receiverID: id, key: sk}, nil
 }
 
-func (c Crypto) GenerateKeypairForType(t KeyType) (PrivateKey, error) {
+func (c *Crypto) GenerateKeypairForType(t KeyType) (PrivateKey, error) {
 	keyType, ok := keyTypeMap[t]
 	if !ok {
 		return nil, ErrUnsupportedKeyType
@@ -93,11 +93,11 @@ func (c Crypto) GenerateKeypairForType(t KeyType) (PrivateKey, error) {
 	return c.generateKeypair(keyType, random)
 }
 
-func (c Crypto) GenerateKeypair() (PrivateKey, error) {
+func (c *Crypto) GenerateKeypair() (PrivateKey, error) {
 	return c.GenerateKeypairForType(c.KeyType)
 }
 
-func (c Crypto) GenerateKeypairFromKeyMaterialForType(t KeyType, keyMaterial []byte) (PrivateKey, error) {
+func (c *Crypto) GenerateKeypairFromKeyMaterialForType(t KeyType, keyMaterial []byte) (PrivateKey, error) {
 	l := uint(len(keyMaterial))
 	if l < foundation.KeyMaterialRngKeyMaterialLenMin || l > foundation.KeyMaterialRngKeyMaterialLenMax {
 		return nil, ErrInvalidSeedSize
@@ -115,15 +115,15 @@ func (c Crypto) GenerateKeypairFromKeyMaterialForType(t KeyType, keyMaterial []b
 	return c.generateKeypair(keyType, rnd)
 }
 
-func (c Crypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (PrivateKey, error) {
+func (c *Crypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (PrivateKey, error) {
 	return c.GenerateKeypairFromKeyMaterialForType(c.KeyType, keyMaterial)
 }
 
-func (c Crypto) Random(len int) ([]byte, error) {
+func (c *Crypto) Random(len int) ([]byte, error) {
 	return random.Random(uint(len))
 }
 
-func (c Crypto) ImportPrivateKey(data []byte) (PrivateKey, error) {
+func (c *Crypto) ImportPrivateKey(data []byte) (PrivateKey, error) {
 	data = unwrapKey(data)
 
 	kp := foundation.NewKeyProvider()
@@ -149,10 +149,10 @@ func (c Crypto) ImportPrivateKey(data []byte) (PrivateKey, error) {
 		return nil, err
 	}
 
-	return privateKey{receiverID: id, key: sk}, nil
+	return &privateKey{receiverID: id, key: sk}, nil
 }
 
-func (c Crypto) ImportPublicKey(data []byte) (PublicKey, error) {
+func (c *Crypto) ImportPublicKey(data []byte) (PublicKey, error) {
 	data = unwrapKey(data)
 
 	kp := foundation.NewKeyProvider()
@@ -172,11 +172,11 @@ func (c Crypto) ImportPublicKey(data []byte) (PublicKey, error) {
 		return nil, err
 	}
 
-	return publicKey{receiverID: id, key: pk}, nil
+	return &publicKey{receiverID: id, key: pk}, nil
 }
 
-func (c Crypto) ExportPrivateKey(key PrivateKey) ([]byte, error) {
-	sk, ok := key.(privateKey)
+func (c *Crypto) ExportPrivateKey(key PrivateKey) ([]byte, error) {
+	sk, ok := key.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -190,15 +190,15 @@ func (c Crypto) ExportPrivateKey(key PrivateKey) ([]byte, error) {
 	return kp.ExportPrivateKey(sk.key)
 }
 
-func (c Crypto) ExportPublicKey(key PublicKey) ([]byte, error) {
-	pk, ok := key.(publicKey)
+func (c *Crypto) ExportPublicKey(key PublicKey) ([]byte, error) {
+	pk, ok := key.(*publicKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
 	return pk.Export()
 }
 
-func (c Crypto) calculateFingerprint(key foundation.PublicKey) ([]byte, error) {
+func (c *Crypto) calculateFingerprint(key foundation.PublicKey) ([]byte, error) {
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
@@ -221,7 +221,7 @@ func (c Crypto) calculateFingerprint(key foundation.PublicKey) ([]byte, error) {
 	return hash[:8], nil
 }
 
-func (c Crypto) Encrypt(data []byte, recipients ...PublicKey) ([]byte, error) {
+func (c *Crypto) Encrypt(data []byte, recipients ...PublicKey) ([]byte, error) {
 	cipher, err := c.setupEncryptCipher(recipients)
 	if err != nil {
 		return nil, err
@@ -244,8 +244,8 @@ func (c Crypto) Encrypt(data []byte, recipients ...PublicKey) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (c Crypto) Decrypt(data []byte, key PrivateKey) ([]byte, error) {
-	sk, ok := key.(privateKey)
+func (c *Crypto) Decrypt(data []byte, key PrivateKey) ([]byte, error) {
+	sk, ok := key.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -266,7 +266,7 @@ func (c Crypto) Decrypt(data []byte, key PrivateKey) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (c Crypto) EncryptStream(in io.Reader, out io.Writer, recipients ...PublicKey) (err error) {
+func (c *Crypto) EncryptStream(in io.Reader, out io.Writer, recipients ...PublicKey) (err error) {
 	cipher, err := c.setupEncryptCipher(recipients)
 	if err != nil {
 		return err
@@ -285,8 +285,8 @@ func (c Crypto) EncryptStream(in io.Reader, out io.Writer, recipients ...PublicK
 	return nil
 }
 
-func (c Crypto) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) (err error) {
-	sk, ok := key.(privateKey)
+func (c *Crypto) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) (err error) {
+	sk, ok := key.(*privateKey)
 	if !ok {
 		return ErrUnsupportedParameter
 	}
@@ -306,8 +306,8 @@ func (c Crypto) DecryptStream(in io.Reader, out io.Writer, key PrivateKey) (err 
 	return nil
 }
 
-func (c Crypto) Sign(data []byte, signer PrivateKey) ([]byte, error) {
-	sk, ok := signer.(privateKey)
+func (c *Crypto) Sign(data []byte, signer PrivateKey) ([]byte, error) {
+	sk, ok := signer.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -324,8 +324,8 @@ func (c Crypto) Sign(data []byte, signer PrivateKey) ([]byte, error) {
 	return s.Sign(sk.key)
 }
 
-func (c Crypto) VerifySignature(data []byte, signature []byte, key PublicKey) error {
-	pk, ok := key.(publicKey)
+func (c *Crypto) VerifySignature(data []byte, signature []byte, key PublicKey) error {
+	pk, ok := key.(*publicKey)
 	if !ok {
 		return ErrUnsupportedParameter
 	}
@@ -344,8 +344,8 @@ func (c Crypto) VerifySignature(data []byte, signature []byte, key PublicKey) er
 	return ErrSignVerification
 }
 
-func (c Crypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, error) {
-	sk, ok := signer.(privateKey)
+func (c *Crypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, error) {
+	sk, ok := signer.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -364,8 +364,8 @@ func (c Crypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, error) {
 	return s.Sign(sk.key)
 }
 
-func (c Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) error {
-	pk, ok := key.(publicKey)
+func (c *Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) error {
+	pk, ok := key.(*publicKey)
 	if !ok {
 		return ErrUnsupportedParameter
 	}
@@ -386,8 +386,8 @@ func (c Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) erro
 	return ErrSignVerification
 }
 
-func (c Crypto) SignThenEncrypt(data []byte, signer PrivateKey, recipients ...PublicKey) ([]byte, error) {
-	sk, ok := signer.(privateKey)
+func (c *Crypto) SignThenEncrypt(data []byte, signer PrivateKey, recipients ...PublicKey) ([]byte, error) {
+	sk, ok := signer.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -427,12 +427,12 @@ func (c Crypto) SignThenEncrypt(data []byte, signer PrivateKey, recipients ...Pu
 	return buffer.Bytes(), nil
 }
 
-func (c Crypto) DecryptThenVerify(
+func (c *Crypto) DecryptThenVerify(
 	data []byte,
 	decryptionKey PrivateKey,
 	verifierKeys ...PublicKey,
 ) (_ []byte, err error) {
-	sk, ok := decryptionKey.(privateKey)
+	sk, ok := decryptionKey.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -454,7 +454,7 @@ func (c Crypto) DecryptThenVerify(
 	return buffer.Bytes(), nil
 }
 
-func (c Crypto) SignThenEncryptStream(
+func (c *Crypto) SignThenEncryptStream(
 	in io.Reader,
 	out io.Writer,
 	streamSize int,
@@ -465,7 +465,7 @@ func (c Crypto) SignThenEncryptStream(
 		return ErrStreamSizeIncorrect
 	}
 
-	sk, ok := signer.(privateKey)
+	sk, ok := signer.(*privateKey)
 	if !ok {
 		return ErrUnsupportedParameter
 	}
@@ -506,13 +506,13 @@ func (c Crypto) SignThenEncryptStream(
 	return nil
 }
 
-func (c Crypto) DecryptThenVerifyStream(
+func (c *Crypto) DecryptThenVerifyStream(
 	in io.Reader,
 	out io.Writer,
 	decryptionKey PrivateKey,
 	verifierKeys ...PublicKey,
 ) error {
-	sk, ok := decryptionKey.(privateKey)
+	sk, ok := decryptionKey.(*privateKey)
 	if !ok {
 		return ErrUnsupportedParameter
 	}
@@ -531,7 +531,7 @@ func (c Crypto) DecryptThenVerifyStream(
 	return c.verifyCipherSign(cipher, verifierKeys)
 }
 
-func (c Crypto) SignAndEncrypt(data []byte, signer PrivateKey, recipients ...PublicKey) (_ []byte, err error) {
+func (c *Crypto) SignAndEncrypt(data []byte, signer PrivateKey, recipients ...PublicKey) (_ []byte, err error) {
 	var (
 		cipher *foundation.RecipientCipher
 		params *foundation.MessageInfoCustomParams
@@ -568,8 +568,8 @@ func (c Crypto) SignAndEncrypt(data []byte, signer PrivateKey, recipients ...Pub
 	return buffer.Bytes(), nil
 }
 
-func (c Crypto) DecryptAndVerify(data []byte, decryptionKey PrivateKey, verifierKeys ...PublicKey) (_ []byte, err error) {
-	sk, ok := decryptionKey.(privateKey)
+func (c *Crypto) DecryptAndVerify(data []byte, decryptionKey PrivateKey, verifierKeys ...PublicKey) (_ []byte, err error) {
+	sk, ok := decryptionKey.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -612,8 +612,8 @@ func (c Crypto) DecryptAndVerify(data []byte, decryptionKey PrivateKey, verifier
 	return buffer.Bytes(), nil
 }
 
-func (c Crypto) ExtractPublicKey(key PrivateKey) (PublicKey, error) {
-	sk, ok := key.(privateKey)
+func (c *Crypto) ExtractPublicKey(key PrivateKey) (PublicKey, error) {
+	sk, ok := key.(*privateKey)
 	if !ok {
 		return nil, ErrUnsupportedParameter
 	}
@@ -621,7 +621,7 @@ func (c Crypto) ExtractPublicKey(key PrivateKey) (PublicKey, error) {
 	return sk.PublicKey(), nil
 }
 
-func (c Crypto) Hash(data []byte, t HashType) ([]byte, error) {
+func (c *Crypto) Hash(data []byte, t HashType) ([]byte, error) {
 	hf, ok := hashMap[t]
 	if !ok {
 		return nil, ErrUnsupportedHashType
@@ -631,7 +631,7 @@ func (c Crypto) Hash(data []byte, t HashType) ([]byte, error) {
 	return hash, nil
 }
 
-func (c Crypto) verifyCipherSign(cipher *foundation.RecipientCipher, verifierKeys []PublicKey) error {
+func (c *Crypto) verifyCipherSign(cipher *foundation.RecipientCipher, verifierKeys []PublicKey) error {
 	var (
 		signerInfoList *foundation.SignerInfoList
 		signInfo       *foundation.SignerInfo
@@ -652,7 +652,7 @@ func (c Crypto) verifyCipherSign(cipher *foundation.RecipientCipher, verifierKey
 	if err != nil {
 		return err
 	}
-	pk, ok := k.(publicKey)
+	pk, ok := k.(*publicKey)
 	if !ok {
 		return ErrUnsupportedParameter
 	}
@@ -673,7 +673,7 @@ func findVerifyKey(signerID []byte, verifierKeys []PublicKey) (PublicKey, error)
 	return nil, ErrSignNotFound
 }
 
-func (c Crypto) setupCipher() *foundation.RecipientCipher {
+func (c *Crypto) setupCipher() *foundation.RecipientCipher {
 	aesGcm := foundation.NewAes256Gcm()
 	cipher := foundation.NewRecipientCipher()
 	defer delete(aesGcm)
@@ -684,7 +684,7 @@ func (c Crypto) setupCipher() *foundation.RecipientCipher {
 	return cipher
 }
 
-func (c Crypto) setupEncryptCipher(recipients []PublicKey) (*foundation.RecipientCipher, error) {
+func (c *Crypto) setupEncryptCipher(recipients []PublicKey) (*foundation.RecipientCipher, error) {
 	cipher := c.setupCipher()
 
 	if err := c.setupRecipients(cipher, recipients); err != nil {
@@ -693,9 +693,9 @@ func (c Crypto) setupEncryptCipher(recipients []PublicKey) (*foundation.Recipien
 	return cipher, nil
 }
 
-func (c Crypto) setupRecipients(cipher *foundation.RecipientCipher, recipients []PublicKey) error {
+func (c *Crypto) setupRecipients(cipher *foundation.RecipientCipher, recipients []PublicKey) error {
 	for _, r := range recipients {
-		pk, ok := r.(publicKey)
+		pk, ok := r.(*publicKey)
 		if !ok {
 			return ErrUnsupportedParameter
 		}

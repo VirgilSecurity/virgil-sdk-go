@@ -52,10 +52,11 @@ func TestJwtVerifier_VerifyToken(t *testing.T) {
 		jwtSource    = "eyJhbGciOiJWRURTNTEyIiwiY3R5IjoidmlyZ2lsLWp3dDt2PTEiLCJraWQiOiJhMmFlMjZmOWVkMDQ1M2NiNDllODNlOGVkMDQ1ZTgwMWU3NWM3N2VmYjE2MmNhMTUyZjYyZjY5OWNmOTVmZjhiNTg4NDhkYTM5NjhhMDVmYTI5NDllMTJjMjI1ZWY2ZmEwZTk5OWI4M2U2YmMxNWFhOGUzYTUzMGU0NDgzN2Q3YyIsInR5cCI6IkpXVCJ9.eyJhZGEiOnsidXNlcm5hbWUiOiJzb21lX3VzZXJuYW1lIn0sImV4cCI6MTUxODQyNjQzOSwiaWF0IjoxNTE4NDI1ODM5LCJpc3MiOiJ2aXJnaWwtZDI5YWQxZTkwODFmMzQ5Njg3M2QxM2NmZDg2YzViZGYwMTk2MDRhODM5MDkxZmIyZmMyMzUwZDY2N2ViMDI0NSIsInN1YiI6ImlkZW50aXR5LXNvbWVfaWRlbnRpdHkifQ.MFEwDQYJYIZIAWUDBAIDBQAEQFUGKh0Y07eRHWv_ThNJsQ-0mxfVAx86BYdcnr1LBSK9MOxzPZMhdu0kg3RcALnHZWPPIlKHZ8g_AtHXIynM5gg"
 	)
 
-	pub, err := crypto.Crypto{}.ImportPublicKey([]byte(apiKeySource))
+	c := &crypto.Crypto{}
+	pub, err := c.ImportPublicKey([]byte(apiKeySource))
 	assert.NoError(t, err)
 
-	verifier := NewJwtVerifier(pub, apiKeyID, VirgilAccessTokenSigner{})
+	verifier := NewJwtVerifier(pub, apiKeyID, &VirgilAccessTokenSigner{})
 
 	jwt, err := JwtFromString(jwtSource)
 	assert.NoError(t, err)

@@ -69,7 +69,7 @@ type CardClient struct {
 	client *client.Client
 }
 
-func NewCardsClient(options ...CardClientOption) CardClient {
+func NewCardsClient(options ...CardClientOption) *CardClient {
 	o := &cardClientOption{
 		serviceURL: "https://api.virgilsecurity.com",
 		httpClient: client.DefaultHTTPClient,
@@ -78,7 +78,7 @@ func NewCardsClient(options ...CardClientOption) CardClient {
 		opt(o)
 	}
 
-	return CardClient{
+	return &CardClient{
 		client: client.NewClient(o.serviceURL,
 			client.HTTPClient(o.httpClient),
 			client.VirgilProduct("sdk"),
@@ -86,7 +86,7 @@ func NewCardsClient(options ...CardClientOption) CardClient {
 	}
 }
 
-func (c CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSignedModel, error) {
+func (c *CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSignedModel, error) {
 	resp, err := c.client.Send(context.TODO(), &client.Request{
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5",
@@ -106,7 +106,7 @@ func (c CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSign
 	return returnedRawCard, nil
 }
 
-func (c CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
+func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
 	resp, err := c.client.Send(context.TODO(), &client.Request{
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5/actions/search",
@@ -125,7 +125,7 @@ func (c CardClient) SearchCards(identity string, token string) ([]*RawSignedMode
 	return rawCards, nil
 }
 
-func (c CardClient) RevokeCard(cardID string, token string) error {
+func (c *CardClient) RevokeCard(cardID string, token string) error {
 	if _, err := hex.DecodeString(cardID); err != nil || len(cardID) != 64 {
 		return errors.NewSDKError(ErrInvalidCardID, "action", "CardClient.RevokeCard")
 	}
@@ -140,7 +140,7 @@ func (c CardClient) RevokeCard(cardID string, token string) error {
 	return errors.NewSDKError(err, "action", "CardClient.RevokeCard")
 }
 
-func (c CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool, error) {
+func (c *CardClient) GetCard(cardID string, token string) (*RawSignedModel, bool, error) {
 	const (
 		SupersededCardIDHTTPHeader      = "X-Virgil-Is-Superseeded"
 		SupersededCardIDHTTPHeaderValue = "true"
