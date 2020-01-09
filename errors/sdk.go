@@ -55,7 +55,7 @@ func NewSDKError(err error, params ...string) error {
 		m[params[i]] = val
 		i++
 	}
-	return SDKError{
+	return &SDKError{
 		Params:   m,
 		InnerErr: err,
 	}
@@ -67,7 +67,7 @@ type SDKError struct {
 }
 
 // nolint:gosec
-func (e SDKError) Error() string {
+func (e *SDKError) Error() string {
 	var b strings.Builder
 	b.WriteString("sdk error { ")
 	for k, v := range e.Params {
@@ -78,10 +78,10 @@ func (e SDKError) Error() string {
 	return b.String()
 }
 
-func (e SDKError) Unwrap() error {
+func (e *SDKError) Unwrap() error {
 	return e.InnerErr
 }
 
-func (e SDKError) Cause() error {
+func (e *SDKError) Cause() error {
 	return e.InnerErr
 }

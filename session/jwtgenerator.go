@@ -104,14 +104,14 @@ func (j *JwtGenerator) GenerateToken(identity string, additionalData map[string]
 	return jwt, nil
 }
 
-func (j JwtGenerator) getAccessTokenSigner() AccessTokenSigner {
+func (j *JwtGenerator) getAccessTokenSigner() AccessTokenSigner {
 	if j.AccessTokenSigner == nil {
 		return &VirgilAccessTokenSigner{}
 	}
 	return j.AccessTokenSigner
 }
 
-func (j JwtGenerator) getTTL() time.Duration {
+func (j *JwtGenerator) getTTL() time.Duration {
 	if j.TTL == 0 {
 		return time.Hour
 	}

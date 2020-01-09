@@ -179,10 +179,10 @@ func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, 
 }
 
 type Whitelist struct {
-	VerifierCredentials []VerifierCredentials
+	VerifierCredentials []*VerifierCredentials
 }
 
-func NewWhitelist(credentials ...VerifierCredentials) Whitelist {
+func NewWhitelist(credentials ...*VerifierCredentials) Whitelist {
 	return Whitelist{
 		VerifierCredentials: credentials,
 	}

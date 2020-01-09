@@ -49,8 +49,8 @@ import (
 )
 
 type testCredentials struct {
-	VerifierCredentials
-	PrivateKey crypto.PrivateKey
+	VerifierCredentials *VerifierCredentials
+	PrivateKey          crypto.PrivateKey
 }
 
 func TestWhitelist(t *testing.T) {
@@ -126,24 +126,24 @@ func addRawSign(t *testing.T, model *RawSignedModel, credentials testCredentials
 	_, err := rand.Read(snapshot)
 	assert.NoError(t, err)
 
-	err = modelSigner.SignRaw(model, credentials.Signer, credentials.PrivateKey, snapshot)
+	err = modelSigner.SignRaw(model, credentials.VerifierCredentials.Signer, credentials.PrivateKey, snapshot)
 	assert.NoError(t, err)
 }
 
 func addSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
 	modelSigner := &ModelSigner{Crypto: cryptoNative}
 
-	err := modelSigner.Sign(model, credentials.Signer, credentials.PrivateKey, map[string]string{
+	err := modelSigner.Sign(model, credentials.VerifierCredentials.Signer, credentials.PrivateKey, map[string]string{
 		"a": "b",
 		"b": "c",
 		"x": "y",
-		"z": credentials.Signer,
+		"z": credentials.VerifierCredentials.Signer,
 	})
 
 	assert.NoError(t, err)
 }
 
-func makeRandomCredentials() (crypto.PrivateKey, VerifierCredentials) {
+func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {
 	key, err := cryptoNative.GenerateKeypair()
 	if err != nil {
 		panic(err)
@@ -155,7 +155,7 @@ func makeRandomCredentials() (crypto.PrivateKey, VerifierCredentials) {
 		panic(err)
 	}
 
-	return key, VerifierCredentials{
+	return key, &VerifierCredentials{
 		Signer:    hex.EncodeToString(id),
 		PublicKey: key.PublicKey(),
 	}
