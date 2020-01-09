@@ -26,10 +26,10 @@ func (err *VirgilAPIError) Error() string {
 	return fmt.Sprintf("Virgil API error {code: %v message: %v}", err.Code, err.Message)
 }
 
-func (e *VirgilAPIError) Is(err error) bool {
-	ve, ok := err.(*VirgilAPIError)
+func (err *VirgilAPIError) Is(e error) bool {
+	ve, ok := e.(*VirgilAPIError)
 	if !ok {
 		return false
 	}
-	return ve.Code == e.Code
+	return ve.Code == err.Code
 }
