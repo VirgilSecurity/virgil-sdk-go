@@ -357,7 +357,7 @@ func (c *Crypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, error) {
 	s.SetRandom(random)
 	s.SetHash(h)
 	s.Reset()
-	if _, err := io.Copy(appenderWriter{s}, in); err != nil {
+	if _, err := io.Copy(&appenderWriter{s}, in); err != nil {
 		return nil, err
 	}
 
@@ -376,7 +376,7 @@ func (c *Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) err
 	if err := v.Reset(signature); err != nil {
 		return err
 	}
-	if _, err := io.Copy(appenderWriter{v}, in); err != nil {
+	if _, err := io.Copy(&appenderWriter{v}, in); err != nil {
 		return err
 	}
 
@@ -723,7 +723,7 @@ type appenderWriter struct {
 	a appender
 }
 
-func (aw appenderWriter) Write(d []byte) (int, error) {
+func (aw *appenderWriter) Write(d []byte) (int, error) {
 	aw.a.AppendData(d)
 	return len(d), nil
 }
