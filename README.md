@@ -70,6 +70,7 @@ var (
 
 func main() {
 	var crypto crypto.Crypto
+	const identity = "Alice"
 
 	// generate a key pair
 	keypair, err := crypto.GenerateKeypair()
@@ -79,7 +80,7 @@ func main() {
 
 	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 	// save a private key into key storage
-	err = privateKeyStorage.Store(keypair, "Alice", nil)
+	err = privateKeyStorage.Store(keypair, identity, nil)
 	if err != nil {
 		//handle error
 	}
@@ -98,7 +99,7 @@ func main() {
 	// publish user's on the Cards Service
 	card, err := cardManager.PublishCard(&sdk.CardParams{
 		PrivateKey: keypair,
-		Identity:   "Alice",
+		Identity:   identity,
 	})
 	if err != nil {
 		//handle error
@@ -119,12 +120,12 @@ import (
 	"github.com/VirgilSecurity/virgil-sdk-go/sdk/storage"
 )
 
-var crypto crypto.Crypto
 
 func main() {
+	var crypto crypto.Crypto
 	messageToEncrypt := []byte("Hello, Bob!")
 
-	privateKeyStorage := storage.NewPrivateKeyStorage(storage.FileStorage{})
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 
 	// prepare a user's private key from a device storage
 	alicePrivateKey, _, err := privateKeyStorage.Load("Alice")
@@ -132,17 +133,14 @@ func main() {
 		//handle error
 	}
 
-
 	// using cardManager search for Bob's cards on Cards Service
 	cards, err := cardManager.SearchCards("Bob")
-
 	if err != nil{
 		//handle error
 	}
 
 	// sign a message with a private key then encrypt using Bob's public keys
 	encryptedMessage, err := crypto.SignThenEncrypt(messageToEncrypt, alicePrivateKey, cards.ExtractPublicKeys()...)
-
 	if err != nil{
 		//handle error
 	}
@@ -156,10 +154,11 @@ Once the Users receive the signed and encrypted message, they can decrypt it wit
 ```go
 import "github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
 
-var crypto crypto.Crypto
 
 func main() {
-	privateKeyStorage := storage.NewPrivateKeyStorage(storage.FileStorage{})
+	var crypto crypto.Crypto
+
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 
 	// prepare a user's private key
 	bobPrivateKey, err := privateKeyStorage.Load("Bob")
