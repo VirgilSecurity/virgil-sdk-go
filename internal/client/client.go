@@ -81,7 +81,7 @@ func NewClient(address string, opts ...Option) *Client {
 	options := &options{
 		httpClient:   DefaultHTTPClient,
 		errorHandler: DefaultErrorHandler,
-		defaultCodec: JSONCodec{},
+		defaultCodec: &JSONCodec{},
 		virgilAgent:  virgil.MakeVirgilAgent("unknown"),
 	}
 

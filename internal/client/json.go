@@ -6,14 +6,14 @@ import (
 
 type JSONCodec struct{}
 
-func (JSONCodec) Marshal(obj interface{}) (body []byte, err error) {
+func (c *JSONCodec) Marshal(obj interface{}) (body []byte, err error) {
 	return json.Marshal(obj)
 }
 
-func (JSONCodec) Unmarshal(data []byte, obj interface{}) error {
+func (c *JSONCodec) Unmarshal(data []byte, obj interface{}) error {
 	return json.Unmarshal(data, obj)
 }
 
-func (JSONCodec) Name() string {
+func (c *JSONCodec) Name() string {
 	return "application/json"
 }
