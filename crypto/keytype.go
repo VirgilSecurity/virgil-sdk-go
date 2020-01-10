@@ -60,7 +60,8 @@ const (
 	EC_CURVE25519
 	FAST_EC_X25519
 	FAST_EC_ED25519
-	PQC
+	CURVE25519_ED25519
+	CURVE25519Round5_ED25519Falcon
 )
 
 type keyGen interface {
@@ -76,7 +77,18 @@ var keyTypeMap = map[KeyType]keyGen{
 	EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
 	EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
 	FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
-	PQC:             &pqcKeyType{},
+	CURVE25519_ED25519: &compoundHybridKeyType{
+		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
+		cipherSecondKeyAlgId: foundation.AlgIdNone,
+		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
+		signerSecondKeyAlgId: foundation.AlgIdNone,
+	},
+	CURVE25519Round5_ED25519Falcon: &compoundHybridKeyType{
+		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
+		cipherSecondKeyAlgId: foundation.AlgIdRound5Nd5kem5d,
+		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
+		signerSecondKeyAlgId: foundation.AlgIdFalcon,
+	},
 }
 
 type keyType foundation.AlgId
@@ -92,8 +104,18 @@ func (t rsaKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.P
 	return kp.GeneratePrivateKey(foundation.AlgIdRsa)
 }
 
-type pqcKeyType struct{}
+type compoundHybridKeyType struct {
+	cipherFirstKeyAlgId  foundation.AlgId
+	cipherSecondKeyAlgId foundation.AlgId
+	signerFirstKeyAlgId  foundation.AlgId
+	signerSecondKeyAlgId foundation.AlgId
+}
 
-func (t *pqcKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
-	return kp.GeneratePostQuantumPrivateKey()
+func (t *compoundHybridKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+	return kp.GenerateCompoundHybridPrivateKey(
+		t.cipherFirstKeyAlgId,
+		t.cipherSecondKeyAlgId,
+		t.signerFirstKeyAlgId,
+		t.signerSecondKeyAlgId,
+	)
 }

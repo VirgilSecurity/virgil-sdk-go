@@ -287,6 +287,8 @@ func TestKeyTypes(t *testing.T) {
 		{crypto.EC_SECP256R1, nil},
 		{crypto.EC_CURVE25519, nil},
 		{crypto.FAST_EC_ED25519, nil},
+		{crypto.CURVE25519_ED25519, nil},
+		{crypto.CURVE25519Round5_ED25519Falcon, nil},
 		{crypto.KeyType(100), crypto.ErrUnsupportedKeyType},
 	}
 
