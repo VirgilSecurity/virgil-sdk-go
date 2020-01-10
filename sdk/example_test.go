@@ -58,7 +58,6 @@ func Example_encryptDecrypt() {
 	registerCard(bob)
 	encryptedMsg := encrypt(alice, bob, []byte(text))
 	decryptedMsg := decrypt(alice, bob, encryptedMsg)
-	fmt.Printf("len(origin): %v len(encrypt): %v len(decrypt): %v\n", len(text), len(encryptedMsg), len(decryptedMsg))
 
 	fmt.Printf("%s\n", decryptedMsg)
 	// Output: Hello, Bob!
@@ -82,7 +81,6 @@ func encrypt(from string, to string, messageToEncrypt []byte) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("cards: %v\n", len(cards))
 
 	// sign a message with a private key then encrypt using Bob's public keys
 	encryptedMessage, err := crypto.SignThenEncrypt(messageToEncrypt, fromPrivateKey, cards.ExtractPublicKeys()...)
