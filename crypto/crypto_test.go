@@ -79,6 +79,24 @@ func TestEncryptDecrypt(t *testing.T) {
 	assert.Equal(t, data, actualData)
 }
 
+func TestEncryptWithPaddingDecrypt(t *testing.T) {
+	var vcrypto crypto.Crypto
+
+	//make random data
+	data := make([]byte, 257)
+	rand.Read(data)
+
+	encryptKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	cipherText, err := vcrypto.EncryptWithPadding(data, true, encryptKey.PublicKey())
+	require.NoError(t, err)
+
+	actualData, err := vcrypto.Decrypt(cipherText, encryptKey)
+	assert.NoError(t, err)
+	assert.Equal(t, data, actualData)
+}
+
 func TestStreamCipher(t *testing.T) {
 	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypair()
@@ -194,6 +212,26 @@ func TestSignAndEncryptAndDecryptAndVerify(t *testing.T) {
 	require.Equal(t, data, plaintext)
 }
 
+func TestSignAndEncryptWithPaddingAndDecryptAndVerify(t *testing.T) {
+	var vcrypto crypto.Crypto
+
+	signKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	encryptKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	data := make([]byte, 257)
+	rand.Read(data)
+
+	cipherText, err := vcrypto.SignAndEncryptWithPadding(data, signKey, true, encryptKey.PublicKey())
+	require.NoError(t, err)
+
+	plaintext, err := vcrypto.DecryptAndVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
+	require.NoError(t, err)
+	require.Equal(t, data, plaintext)
+}
+
 func TestSignThenEncryptAndDecryptThenVerify(t *testing.T) {
 	var vcrypto crypto.Crypto
 
@@ -207,6 +245,26 @@ func TestSignThenEncryptAndDecryptThenVerify(t *testing.T) {
 	rand.Read(data)
 
 	cipherText, err := vcrypto.SignThenEncrypt(data, signKey, encryptKey.PublicKey())
+	require.NoError(t, err)
+
+	plaintext, err := vcrypto.DecryptThenVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
+	require.NoError(t, err)
+	require.Equal(t, data, plaintext)
+}
+
+func TestSignThenEncryptWithPaddingAndDecryptThenVerify(t *testing.T) {
+	var vcrypto crypto.Crypto
+
+	signKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	encryptKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	data := make([]byte, 257)
+	rand.Read(data)
+
+	cipherText, err := vcrypto.SignThenEncryptWithPadding(data, signKey, true, encryptKey.PublicKey())
 	require.NoError(t, err)
 
 	plaintext, err := vcrypto.DecryptThenVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())

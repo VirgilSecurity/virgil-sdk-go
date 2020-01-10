@@ -112,7 +112,7 @@ func (dr *DecryptReader) Read(d []byte) (int, error) {
 		dr.finished = true
 		return copy(d, buf), nil
 	}
-	return 0, err
+	return 0, io.EOF
 }
 
 func NopWriteCloser(w io.Writer) io.WriteCloser {
