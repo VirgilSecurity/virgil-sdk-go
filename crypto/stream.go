@@ -116,11 +116,11 @@ func (dr *DecryptReader) Read(d []byte) (int, error) {
 }
 
 func NopWriteCloser(w io.Writer) io.WriteCloser {
-	return nopCloser{w}
+	return &nopCloser{w}
 }
 
 type nopCloser struct {
 	io.Writer
 }
 
-func (nopCloser) Close() error { return nil }
+func (c *nopCloser) Close() error { return nil }
