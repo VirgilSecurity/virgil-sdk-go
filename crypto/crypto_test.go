@@ -79,6 +79,24 @@ func TestEncryptDecrypt(t *testing.T) {
 	assert.Equal(t, data, actualData)
 }
 
+func TestEncryptWithPaddingDecrypt(t *testing.T) {
+	var vcrypto crypto.Crypto
+
+	//make random data
+	data := make([]byte, 257)
+	rand.Read(data)
+
+	encryptKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	cipherText, err := vcrypto.EncryptWithPadding(data, true, encryptKey.PublicKey())
+	require.NoError(t, err)
+
+	actualData, err := vcrypto.Decrypt(cipherText, encryptKey)
+	assert.NoError(t, err)
+	assert.Equal(t, data, actualData)
+}
+
 func TestStreamCipher(t *testing.T) {
 	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypair()
@@ -100,6 +118,37 @@ func TestStreamCipher(t *testing.T) {
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
 	assert.NoError(t, err, "decrypt with correct key")
 	assert.Equal(t, plainBuf, plainOutBuffer.Bytes(), "decrypt with correct key: plain & decrypted buffers do not match")
+
+	//decrypt with wrong id must fail
+	wrongKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	cipheredInputStream = bytes.NewReader(cipheredStream.Bytes())
+	plainOutBuffer = bytes.NewBuffer(nil)
+
+	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, wrongKey)
+	assert.Error(t, err, "decrypt with incorrect key")
+}
+
+func TestStreamCipherWithPadding(t *testing.T) {
+	var vcrypto crypto.Crypto
+	key, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	plainBuf := make([]byte, 102301)
+	rand.Read(plainBuf)
+
+	plain := bytes.NewReader(plainBuf)
+	cipheredStream := bytes.NewBuffer(nil)
+	err = vcrypto.EncryptStreamWithPadding(plain, cipheredStream, true, key.PublicKey())
+	require.NoError(t, err)
+
+	//decrypt with key
+	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
+	plainOutBuffer := bytes.NewBuffer(nil)
+	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
+	assert.NoError(t, err, "decrypt with correct key")
+	assert.Equal(t, plainBuf, plainOutBuffer.Bytes())
 
 	//decrypt with wrong id must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
@@ -194,6 +243,26 @@ func TestSignAndEncryptAndDecryptAndVerify(t *testing.T) {
 	require.Equal(t, data, plaintext)
 }
 
+func TestSignAndEncryptWithPaddingAndDecryptAndVerify(t *testing.T) {
+	var vcrypto crypto.Crypto
+
+	signKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	encryptKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	data := make([]byte, 257)
+	rand.Read(data)
+
+	cipherText, err := vcrypto.SignAndEncryptWithPadding(data, signKey, true, encryptKey.PublicKey())
+	require.NoError(t, err)
+
+	plaintext, err := vcrypto.DecryptAndVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
+	require.NoError(t, err)
+	require.Equal(t, data, plaintext)
+}
+
 func TestSignThenEncryptAndDecryptThenVerify(t *testing.T) {
 	var vcrypto crypto.Crypto
 
@@ -207,6 +276,26 @@ func TestSignThenEncryptAndDecryptThenVerify(t *testing.T) {
 	rand.Read(data)
 
 	cipherText, err := vcrypto.SignThenEncrypt(data, signKey, encryptKey.PublicKey())
+	require.NoError(t, err)
+
+	plaintext, err := vcrypto.DecryptThenVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
+	require.NoError(t, err)
+	require.Equal(t, data, plaintext)
+}
+
+func TestSignThenEncryptWithPaddingAndDecryptThenVerify(t *testing.T) {
+	var vcrypto crypto.Crypto
+
+	signKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	encryptKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	data := make([]byte, 257)
+	rand.Read(data)
+
+	cipherText, err := vcrypto.SignThenEncryptWithPadding(data, signKey, true, encryptKey.PublicKey())
 	require.NoError(t, err)
 
 	plaintext, err := vcrypto.DecryptThenVerify(cipherText, encryptKey, signKey.PublicKey(), encryptKey.PublicKey())
@@ -287,6 +376,8 @@ func TestKeyTypes(t *testing.T) {
 		{crypto.EC_SECP256R1, nil},
 		{crypto.EC_CURVE25519, nil},
 		{crypto.FAST_EC_ED25519, nil},
+		{crypto.CURVE25519_ED25519, nil},
+		{crypto.CURVE25519Round5_ED25519Falcon, nil},
 		{crypto.KeyType(100), crypto.ErrUnsupportedKeyType},
 	}
 

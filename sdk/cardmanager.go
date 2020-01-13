@@ -113,7 +113,7 @@ func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, 
 }
 
 func (c *CardManager) PublishRawCard(rawSignedModel *RawSignedModel) (card *Card, err error) {
-	model := &RawCardContent{}
+	var model RawCardContent
 	if err = ParseSnapshot(rawSignedModel.ContentSnapshot, &model); err != nil {
 		return nil, err
 	}

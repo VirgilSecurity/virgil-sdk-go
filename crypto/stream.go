@@ -33,6 +33,7 @@
 package crypto
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
@@ -83,6 +84,7 @@ func (sw *EncryptWriter) Close() error {
 func NewDecryptReader(r io.Reader, cipher *foundation.RecipientCipher) *DecryptReader {
 	return &DecryptReader{
 		r:        r,
+		buf:      bytes.NewBuffer(nil),
 		cipher:   cipher,
 		finished: false,
 	}
@@ -90,6 +92,7 @@ func NewDecryptReader(r io.Reader, cipher *foundation.RecipientCipher) *DecryptR
 
 type DecryptReader struct {
 	r        io.Reader
+	buf      *bytes.Buffer
 	finished bool
 	cipher   *foundation.RecipientCipher
 }
@@ -102,17 +105,27 @@ func (dr *DecryptReader) Read(d []byte) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		return copy(d, buf), nil
-	}
-	if err == io.EOF && !dr.finished {
+	} else if err == io.EOF && !dr.finished {
 		buf, err = dr.cipher.FinishDecryption()
 		if err != nil {
 			return 0, err
 		}
 		dr.finished = true
-		return copy(d, buf), nil
 	}
-	return 0, err
+
+	if _, err = dr.buf.Write(buf); err != nil {
+		return 0, err
+	}
+
+	if dr.buf.Len() > 0 {
+		return dr.buf.Read(d)
+	}
+
+	// check if cipher return 0 bytes
+	if n > 0 {
+		return 0, nil
+	}
+	return 0, io.EOF
 }
 
 func NopWriteCloser(w io.Writer) io.WriteCloser {
