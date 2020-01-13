@@ -1,4 +1,4 @@
-//  Copyright (C) 2015-2019 Virgil Security, Inc.
+//  Copyright (C) 2015-2020 Virgil Security, Inc.
 //
 //  All rights reserved.
 //
@@ -150,4 +150,10 @@ func TestRecipientCipher_Encrypt_RSA(t *testing.T) {
 
 	decryptedData := append(processDecryptionData, finishDecryptionData...)
 	assert.Equal(t, data, decryptedData)
+}
+
+func TestRecipientCipher_SetPaddingParams(t *testing.T) {
+	paddingParams := NewPaddingParams()
+	recipientCipher := NewRecipientCipher()
+	recipientCipher.SetPaddingParams(paddingParams)
 }
