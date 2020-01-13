@@ -30,6 +30,19 @@ matrix:
     # GCC on Linux
     ##########################################################################
     - os: linux
+      dist: precise
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.8
+      env:
+        - CC=gcc-4.8
+        - CXX=g++-4.8
+        - LEGACY="true"
+    - os: linux
       go: stable
       addons:
         apt:
@@ -40,6 +53,17 @@ matrix:
       env:
         - CC=gcc-5
         - CXX=g++-5
+    - os: linux
+      go: stable
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - CC=gcc-9
+        - CXX=g++-9
     ##########################################################################
     # Windows
     ##########################################################################
@@ -58,4 +82,8 @@ script:
     go install github.com/golangci/golangci-lint/cmd/golangci-lint;
     golangci-lint run;
     fi"
-  - go test -tags integration -mod=readonly -count 1 ./...
+  - 'if [[ $LEGACY ]]; then
+    go test -tags "legacy integration" -mod=readonly -count 1 ./... ;
+    else
+    go test -tags integration -mod=readonly -count 1 ./... ;
+    fi'
