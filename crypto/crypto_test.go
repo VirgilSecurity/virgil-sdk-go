@@ -130,6 +130,37 @@ func TestStreamCipher(t *testing.T) {
 	assert.Error(t, err, "decrypt with incorrect key")
 }
 
+func TestStreamCipherWithPadding(t *testing.T) {
+	var vcrypto crypto.Crypto
+	key, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	plainBuf := make([]byte, 102301)
+	rand.Read(plainBuf)
+
+	plain := bytes.NewReader(plainBuf)
+	cipheredStream := bytes.NewBuffer(nil)
+	err = vcrypto.EncryptStreamWithPadding(plain, cipheredStream, true, key.PublicKey())
+	require.NoError(t, err)
+
+	//decrypt with key
+	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
+	plainOutBuffer := bytes.NewBuffer(nil)
+	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
+	assert.NoError(t, err, "decrypt with correct key")
+	assert.Equal(t, plainBuf, plainOutBuffer.Bytes())
+
+	//decrypt with wrong id must fail
+	wrongKey, err := vcrypto.GenerateKeypair()
+	require.NoError(t, err)
+
+	cipheredInputStream = bytes.NewReader(cipheredStream.Bytes())
+	plainOutBuffer = bytes.NewBuffer(nil)
+
+	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, wrongKey)
+	assert.Error(t, err, "decrypt with incorrect key")
+}
+
 func TestStreamSigner(t *testing.T) {
 	var vcrypto crypto.Crypto
 	key, err := vcrypto.GenerateKeypair()

@@ -96,7 +96,7 @@ type DecryptReader struct {
 
 func (dr *DecryptReader) Read(d []byte) (int, error) {
 	var buf []byte
-	n, err := dr.r.Read(d)
+	n, err := dr.r.Read(d[:len(d)-16]) //hack because cipher ProcessDecryption can return more then read on 16 bytes
 	if n > 0 {
 		buf, err = dr.cipher.ProcessDecryption(d[:n])
 		if err != nil {
