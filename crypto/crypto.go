@@ -715,7 +715,7 @@ func (c *Crypto) setupCipher(padding bool) *foundation.RecipientCipher {
 		padding.SetRandom(random)
 		cipher.SetEncryptionPadding(padding)
 		paddingParams := foundation.NewPaddingParamsWithConstraints(paddingLen, paddingLen)
-		cipher.SetPaddingParams(*paddingParams)
+		cipher.SetPaddingParams(paddingParams)
 		delete(padding)
 	}
 	return cipher
