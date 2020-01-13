@@ -42,7 +42,7 @@ import (
 )
 
 func BenchmarkSign(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -61,7 +61,7 @@ func BenchmarkSign(b *testing.B) {
 }
 
 func BenchmarkVerify(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -83,7 +83,7 @@ func BenchmarkVerify(b *testing.B) {
 }
 
 func BenchmarkEncrypt(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -102,7 +102,7 @@ func BenchmarkEncrypt(b *testing.B) {
 }
 
 func BenchmarkDecrypt(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -123,7 +123,7 @@ func BenchmarkDecrypt(b *testing.B) {
 }
 
 func BenchmarkSignAndEncrypt(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -145,7 +145,7 @@ func BenchmarkSignAndEncrypt(b *testing.B) {
 }
 
 func BenchmarkDecryptAndVerify(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -171,7 +171,7 @@ func BenchmarkDecryptAndVerify(b *testing.B) {
 }
 
 func BenchmarkSignThenEncrypt(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
@@ -193,7 +193,7 @@ func BenchmarkSignThenEncrypt(b *testing.B) {
 }
 
 func BenchmarkDecryptThenVerify(b *testing.B) {
-	var vcrypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 257)
