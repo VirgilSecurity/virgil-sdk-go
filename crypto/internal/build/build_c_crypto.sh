@@ -28,11 +28,11 @@ cmake \
     -DVIRGIL_POST_QUANTUM=ON \
     -DED25519_REF10=OFF \
     -DED25519_AMD64_RADIX_64_24K=ON \
-    -DCMAKE_INSTALL_PREFIX=../wrappers/go/binaries .. && \
+    -DCMAKE_INSTALL_PREFIX=../wrappers/go/pkg/${OS}_${ARCH} .. && \
 make -j10 && make -j10 install && \
 cd $TEMPDIR/wrappers/go && \
-if [[ -d "./binaries/lib64" ]]; then
-  mv ./binaries/lib64 ./binaries/lib
+if [[ -d "./pkg/${OS}_${ARCH}/lib64" ]]; then
+  mv ./pkg/${OS}_${ARCH}/lib64 ./pkg/${OS}_${ARCH}/lib
 fi && \
 go test ./...
 
@@ -41,9 +41,7 @@ echo $RETRES
 if [ "$RETRES" == "0" ]; then
   rm -rf $SCRIPT_FOLDER/../pkg/$PREBUILD_FOLDER;
   mkdir -p $SCRIPT_FOLDER/../pkg/$PREBUILD_FOLDER/{lib,include};
-  cp -R $TEMPDIR/wrappers/go/binaries/include/* $SCRIPT_FOLDER/../pkg/$PREBUILD_FOLDER/include;
-  cp -R $TEMPDIR/wrappers/go/binaries/lib/* $SCRIPT_FOLDER/../pkg/$PREBUILD_FOLDER/lib;
+  cp -R $TEMPDIR/wrappers/go/pkg/${OS}_${ARCH}/include/* $SCRIPT_FOLDER/../pkg/$PREBUILD_FOLDER/include;
+  cp -R $TEMPDIR/wrappers/go/pkg/${OS}_${ARCH}/lib/* $SCRIPT_FOLDER/../pkg/$PREBUILD_FOLDER/lib;
 fi
 rm -rf $TEMPDIR
-
-# /Users/tochka/gowork/crypto/go/v5
