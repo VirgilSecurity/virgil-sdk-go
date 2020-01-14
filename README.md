@@ -5,10 +5,7 @@
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/VirgilSecurity/virgil-sdk-go)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/VirgilSecurity/virgil-sdk-go)
 
-
 [Introduction](#introduction) | [SDK Features](#sdk-features) | [Library purposes](#library-purposes) | [Installation](#installation) | [Configure SDK](#configure-sdk) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
-
-
 
 ## Introduction
 
@@ -87,7 +84,6 @@ func main() {
 	// Setup AccessTokenProvider
 	accessTokenProvider := sdk.NewCachingStringJwtProvider(authenticatedQueryToServerSide)
 }
-
 ```
 
 #### Generate JWT on Server side
@@ -109,10 +105,13 @@ Here is an example of how to generate a JWT:
 	// use your App Credentials you got at Virgil Dashboard:
 	appId := "be00e10e4e1f4bf58f9b4dc85d79c77a" // App ID
 	appKeyId := "70b447e321f3a0fd"           	// App Key ID
-	ttl := time.Hour                            // 1 hour (JWT's lifetime)
 
 	// setup JWT generator with necessary parameters:
-	jwtGenerator := sdk.NewJwtGenerator(privateKey, appKeyId, tokenSigner, appId, ttl)
+	jwtGenerator := session.JwtGenerator{
+		AppKey: privateKey,
+		AppKeyID: appKeyId,
+		AppID: appId,
+	}
 
 	// generate JWT for a user
 	// remember that you must provide each user with his unique JWT
@@ -154,13 +153,12 @@ This subsection shows how to set up a Card Manager module to help you manage use
 
 With Card Manager you can:
 - specify an access Token (JWT) Provider.
-- specify a Crypto Library that you’re planning to use for crypto operations.
 - specify a Card Verifier used to verify signatures of your users, your App Server, Virgil Services (optional).
 
 Use the following lines of code to set up the Card Manager:
 
 ```go
-cardManager := sdk.NewCardManager(accessTokenProvider)
+cardManager := sdk.NewCardManager(accessTokenProvider,sdk.CardManagerSetCardVerifier(cardVerifier))
 ```
 
 ### Setup Key storage to store private keys
@@ -177,7 +175,7 @@ Here is an example of how to set up the `VSSKeyStorage` class:
 	}
 
 	// Setup PrivateKeyStorage
-	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{Root:"~/keys/"})
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{RootDir:"~/keys/"})
 
 	// Store a private key with a name, for example Alice
 	err = privateKeyStorage.Store(privateKey,"Alice", nil)
