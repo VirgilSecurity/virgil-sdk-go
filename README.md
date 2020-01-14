@@ -1,7 +1,9 @@
-# Virgil Security Go SDK
+ # Virgil Security Go SDK
 
-[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-sdk-go.png?branch=v5)](https://travis-ci.com/VirgilSecurity/virgil-sdk-go)
+[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-sdk-go.svg?branch=master)](https://travis-ci.com/VirgilSecurity/virgil-sdk-go)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/VirgilSecurity/virgil-sdk-go)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/VirgilSecurity/virgil-sdk-go)
 
 
 [Introduction](#introduction) | [SDK Features](#sdk-features) | [Library purposes](#library-purposes) | [Installation](#installation) | [Configure SDK](#configure-sdk) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
@@ -45,7 +47,7 @@ Virgil Crypto library is a wrapper for [C Crypto library](https://github.com/Vir
 - MacOS amd64 with X Code 11
 - Windows amd64 with mingw64
 - Linux amd64 gcc >= 5 and clang >=7
-- For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel use tag `legacy_os`
+- For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel use tag `legacy`
 
 ## Configure SDK
 
@@ -73,7 +75,7 @@ Use these lines of code to specify which JWT generation source you prefer to use
 package main
 
 import (
-	"gopkg.in/virgil.v5/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
 )
 
 func main() {
@@ -134,23 +136,6 @@ For this subsection we've created a sample backend that demonstrates how you can
 [Node.js](https://github.com/VirgilSecurity/sample-backend-nodejs) | [Golang](https://github.com/VirgilSecurity/sample-backend-go) | [PHP](https://github.com/VirgilSecurity/sample-backend-php) | [Java](https://github.com/VirgilSecurity/sample-backend-java) | [Python](https://github.com/VirgilSecurity/virgil-sdk-python/tree/master#sample-backend-for-jwt-generation)
  and follow the instructions in README.
  
-### Set up Crypto library
-
-You can choose to use your own Crypto Library to perform cryptographic operations.
-
-Use the following lines of code to specify which crypto library (Virgil or your own) you prefer to use in your project:
-
-```go
-import (
-	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
-)
-
-// initialize Crypto Library
-var (
-	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
-)
-```
-
 ### Setup Card Verifier
 
 Virgil Card Verifier helps you automatically verify signatures of a user's Card, for example when you get a Card from Virgil Cards Service.
@@ -160,10 +145,7 @@ By default, `VirgilCardVerifier` verifies only two signatures - those of a Card 
 Set up `VirgilCardVerifier` with the following lines of code:
 
 ```go
-	cardVerifier, err := sdk.NewVirgilCardVerifier(cardCrypto, true, true)
-	if err != nil {
-		//handle error
-	}
+	cardVerifier:= sdk.NewVirgilCardVerifier()
 ```
 
 ### Set up Card Manager
@@ -178,14 +160,7 @@ With Card Manager you can:
 Use the following lines of code to set up the Card Manager:
 
 ```go
-// initialize cardManager and specify accessTokenProvider, cardVerifier
-mgrParams := &sdk.CardManagerParams{
-	Crypto:              cardCrypto,
-	CardVerifier:        cardVerifier,
-	AccessTokenProvider: accessTokenProvider,
-}
-
-cardManager, err := sdk.NewCardManager(mgrParams)
+cardManager := sdk.NewCardManager(accessTokenProvider)
 ```
 
 ### Setup Key storage to store private keys
@@ -196,15 +171,13 @@ Here is an example of how to set up the `VSSKeyStorage` class:
 
 ```go
 	// Generate a private key
-	keypair, err := crypto.GenerateKeypair()
+	privateKey, err := crypto.GenerateKeypair()
 	if err != nil {
 		//handle error
 	}
-	privateKey := keypair.PrivateKey()
 
 	// Setup PrivateKeyStorage
-	exporter := virgil_crypto_go.NewPrivateKeyExporter("passw0rd")
-	privateKeyStorage := sdk.NewVirgilPrivateKeyStorage(exporter, "~/keys/")
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{Root:"~/keys/"})
 
 	// Store a private key with a name, for example Alice
 	err = privateKeyStorage.Store(privateKey,"Alice", nil)
