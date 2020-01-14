@@ -90,7 +90,6 @@ func NewCardManager(accessTokenProvider session.AccessTokenProvider, options ...
 		accessTokenProvider: accessTokenProvider,
 		cardClient:          NewCardsClient(),
 		modelSigner:         &ModelSigner{},
-		cardVerifier:        NewVirgilCardVerifier(),
 	}
 
 	for _, opt := range options {
