@@ -42,7 +42,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
 )
 
 func TestJwtVerifier_VerifyToken(t *testing.T) {

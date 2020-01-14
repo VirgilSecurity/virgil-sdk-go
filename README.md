@@ -36,7 +36,7 @@ The package is available for Go 1.12 or newer.
 
 Installing the package:
 
-- go get -u github.com/VirgilSecurity/virgil-sdk-go/sdk
+- go get -u github.com/VirgilSecurity/virgil-sdk-go/v6/sdk
 
 ### Virgil Crypto Library
 
@@ -229,10 +229,10 @@ Use the following lines of code to create a user's Card with a public key inside
 
 ```go
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/session"
-	"github.com/VirgilSecurity/virgil-sdk-go/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
 )
 
 var (
@@ -288,9 +288,9 @@ In the following example, we load a private key from a customized Key Storage an
 
 ```go
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk/storage"
 )
 
 
@@ -326,7 +326,7 @@ func main() {
 Once the user receives the signed and encrypted message, they can decrypt it with their own private key and verify the signature with the sender's Card:
 
 ```go
-import "github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
+import "github.com/VirgilSecurity/virgil-sdk-go/v6/sdk/crypto"
 
 
 func main() {

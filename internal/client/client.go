@@ -11,8 +11,8 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	"github.com/VirgilSecurity/virgil-sdk-go"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
 )
 
 var virgilAgentHeader = "Virgil-Agent"

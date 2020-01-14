@@ -40,7 +40,7 @@ package sdk
 import (
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
 )
 
 type CardManagerOption func(c *CardManager)

@@ -48,8 +48,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/xerrors"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
-	"github.com/VirgilSecurity/virgil-sdk-go/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
 )
 
 func initCardManager() (*CardManager, error) {

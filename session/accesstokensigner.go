@@ -38,7 +38,7 @@
 package session
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
 )
 
 var (

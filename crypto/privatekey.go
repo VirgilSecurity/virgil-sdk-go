@@ -35,7 +35,7 @@ package crypto
 import (
 	"fmt"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/internal/foundation"
 )
 
 type privateKey struct {
