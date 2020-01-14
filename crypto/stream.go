@@ -36,7 +36,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto/internal/foundation"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/internal/foundation"
 )
 
 func NewEncryptWriter(w io.WriteCloser, cipher *foundation.RecipientCipher) *EncryptWriter {

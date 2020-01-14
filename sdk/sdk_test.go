@@ -37,7 +37,7 @@
 
 package sdk
 
-import "github.com/VirgilSecurity/virgil-sdk-go/crypto"
+import "github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
 
 var (
 	cryptoNative = &crypto.Crypto{}

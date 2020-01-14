@@ -1,4 +1,4 @@
-module github.com/VirgilSecurity/virgil-sdk-go
+module github.com/VirgilSecurity/virgil-sdk-go/v6
 
 go 1.12
 

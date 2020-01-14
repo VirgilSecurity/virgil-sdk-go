@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/session"
-	"github.com/VirgilSecurity/virgil-sdk-go/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
 )
 
 func ExampleCardManager_PublishCard() {

@@ -43,8 +43,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
 )
 
 type Jwt struct {

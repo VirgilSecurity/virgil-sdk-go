@@ -42,8 +42,8 @@ import (
 	"encoding/hex"
 	"net/http"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/errors"
-	"github.com/VirgilSecurity/virgil-sdk-go/internal/client"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/internal/client"
 )
 
 type cardClientOption struct {

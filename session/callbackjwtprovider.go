@@ -37,7 +37,7 @@
 
 package session
 
-import "github.com/VirgilSecurity/virgil-sdk-go/errors"
+import "github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
 
 type CallbackJwtProvider struct {
 	GetTokenCallback func(context *TokenContext) (*Jwt, error)
