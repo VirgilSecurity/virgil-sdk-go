@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 
 
-[Introduction](#introduction) | [SDK Features](#sdk-features) | [Installation](#installation) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
+[Introduction](#introduction) | [SDK Features](#sdk-features) | [Library purposes](#library-purposes) | [Installation](#installation) | [Configure SDK](#configure-sdk) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
 
 
 
@@ -15,16 +15,22 @@
 The Virgil SDK allows developers to get up and running with Virgil API quickly and add full end-to-end security to their existing digital solutions to become HIPAA and GDPR compliant and more.
 
 ## SDK Features
-- communicate with [Virgil Cards Service][_cards_service]
-- manage users' Public Keys
-- store private keys in secure local storage
-- use Virgil [Crypto library][_virgil_crypto]
-- use your own Crypto
+- Communicate with [Virgil Cards Service][_cards_service]
+- Manage users' public keys
+- Encrypt, sign, decrypt and verify data
+- Store private keys in secure local storage
+- Use Virgil [Crypto library][_virgil_crypto]
+- Use your own Crypto
 
+## Library purposes
+* Asymmetric Key Generation
+* Encryption/Decryption of data and streams
+* Generation/Verification of digital signatures
+* PFS (Perfect Forward Secrecy)
 
 ## Installation
 
-The Virgil Go SDK is provided as a package named virgil. The package is distributed via github. Also in this guide, you find one more package called Virgil Crypto (Virgil Crypto Library) that is used by the SDK to perform cryptographic operations.
+The Virgil Go SDK is provided as a package named virgil. The package is distributed via github. Also in this guide, you will find one more package called Virgil Crypto (Virgil Crypto Library) that is used by the SDK to perform cryptographic operations.
 
 The package is available for Go 1.12 or newer.
 
@@ -34,25 +40,192 @@ Installing the package:
 
 ### Virgil Crypto Library
 
-Virgil crypto library is a wrapper on [C crypto library](https://github.com/VirgilSecurity/virgil-crypto-c). Virgil crypto library use prebuild C library for better experience for most popular operation system:
+Virgil Crypto library is a wrapper for [C Crypto library](https://github.com/VirgilSecurity/virgil-crypto-c). Virgil Crypto library uses prebuilded C library for better experience for the most popular operation system:
 
 - MacOS amd64 with X Code 11
 - Windows amd64 with mingw64
 - Linux amd64 gcc >= 5 and clang >=7
 - For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel use tag `legacy_os`
 
-## Library purposes
-* Asymmetric Key Generation
-* Encryption/Decryption of data and streams
-* Generation/Verification of digital signatures
-* PFS (Perfect Forward Secrecy)
+## Configure SDK
+
+This section contains guides on how to set up Virgil Core SDK modules for authenticating users, managing Virgil Cards and storing private keys.
+
+### Setup authentication
+
+Set up user authentication with tokens that are based on the [JSON Web Token standard](https://jwt.io/) with some Virgil modifications.
+
+In order to make calls to Virgil Services (for example, to publish user's Card on Virgil Cards Service), you need to have a JSON Web Token ("JWT") that contains the user's `identity`, which is a string that uniquely identifies each user in your application.
+
+Credentials that you'll need:
+
+|Parameter|Description|
+|--- |--- |
+|App ID|ID of your Application at [Virgil Dashboard](https://dashboard.virgilsecurity.com)|
+|App Key ID|A unique string value that identifies your account at the Virgil developer portal|
+|App Key|A Private Key that is used to sign API calls to Virgil Services. For security, you will only be shown the App Key when the key is created. Don't forget to save it in a secure location for the next step|
+
+#### Set up JWT provider on Client side
+
+Use these lines of code to specify which JWT generation source you prefer to use in your project:
+
+```go
+package main
+
+import (
+	"gopkg.in/virgil.v5/sdk"
+)
+
+func main() {
+	authenticatedQueryToServerSide := func(context *sdk.TokenContext) (string, error) {
+		// Get generated token from server-side
+		return "eyJraWQiOiI3MGI0NDdlMzIxZjNhMGZkIiwidHlwIjoiSldUIiwiYWxnIjoiVkVEUzUxMiIsImN0eSI6InZpcmdpbC1qd3Q7dj0xIn0.eyJleHAiOjE1MTg2OTg5MTcsImlzcyI6InZpcmdpbC1iZTAwZTEwZTRlMWY0YmY1OGY5YjRkYzg1ZDc5Yzc3YSIsInN1YiI6ImlkZW50aXR5LUFsaWNlIiwiaWF0IjoxNTE4NjEyNTE3fQ.MFEwDQYJYIZIAWUDBAIDBQAEQP4Yo3yjmt8WWJ5mqs3Yrqc_VzG6nBtrW2KIjP-kxiIJL_7Wv0pqty7PDbDoGhkX8CJa6UOdyn3rBWRvMK7p7Ak", nil
+	}
+
+	// Setup AccessTokenProvider
+	accessTokenProvider := sdk.NewCachingStringJwtProvider(authenticatedQueryToServerSide)
+}
+
+```
+
+#### Generate JWT on Server side
+
+Next, you'll need to set up the `JwtGenerator` and generate a JWT using the Virgil SDK.
+
+Here is an example of how to generate a JWT:
+
+```go
+	// App Key (you got this Key at Virgil Dashboard)
+	privateKeyStr := []byte("MIGhMF0GCSqGSIb3DQEFDTBQMC8GCSqGSIb3DQEFDDAiBBC7Sg/DbNzhJ/uakTva")
+
+	// Crypto library imports a private key into a necessary format
+	privateKey, err := crypto.ImportPrivateKey(privateKeyStr, "")
+	if err != nil {
+		//handle error
+	}
+
+	// use your App Credentials you got at Virgil Dashboard:
+	appId := "be00e10e4e1f4bf58f9b4dc85d79c77a" // App ID
+	appKeyId := "70b447e321f3a0fd"           	// App Key ID
+	ttl := time.Hour                            // 1 hour (JWT's lifetime)
+
+	// setup JWT generator with necessary parameters:
+	jwtGenerator := sdk.NewJwtGenerator(privateKey, appKeyId, tokenSigner, appId, ttl)
+
+	// generate JWT for a user
+	// remember that you must provide each user with his unique JWT
+	// each JWT contains unique user's identity (in this case - Alice)
+	// identity can be any value: name, email, some id etc.
+	identity := "Alice"
+	token, err := jwtGenerator.GenerateToken(identity, nil)
+
+	if err != nil {
+		//handle error
+	}
+
+	// as result you get users JWT, it looks like this: "eyJraWQiOiI3MGI0NDdlMzIxZjNhMGZkIiwidHlwIjoiSldUIiwiYWxnIjoiVkVEUzUxMiIsImN0eSI6InZpcmdpbC1qd3Q7dj0xIn0.eyJleHAiOjE1MTg2OTg5MTcsImlzcyI6InZpcmdpbC1iZTAwZTEwZTRlMWY0YmY1OGY5YjRkYzg1ZDc5Yzc3YSIsInN1YiI6ImlkZW50aXR5LUFsaWNlIiwiaWF0IjoxNTE4NjEyNTE3fQ.MFEwDQYJYIZIAWUDBAIDBQAEQP4Yo3yjmt8WWJ5mqs3Yrqc_VzG6nBtrW2KIjP-kxiIJL_7Wv0pqty7PDbDoGhkX8CJa6UOdyn3rBWRvMK7p7Ak"
+	// you can provide users with JWT at registration or authorization steps
+	// Send a JWT to client-side
+	jwtString := token.String()
+```
+
+For this subsection we've created a sample backend that demonstrates how you can set up your backend to generate the JWTs. To set up and run the sample backend locally, head over to your GitHub repo of choice:
+
+[Node.js](https://github.com/VirgilSecurity/sample-backend-nodejs) | [Golang](https://github.com/VirgilSecurity/sample-backend-go) | [PHP](https://github.com/VirgilSecurity/sample-backend-php) | [Java](https://github.com/VirgilSecurity/sample-backend-java) | [Python](https://github.com/VirgilSecurity/virgil-sdk-python/tree/master#sample-backend-for-jwt-generation)
+ and follow the instructions in README.
+ 
+### Set up Crypto library
+
+You can choose to use your own Crypto Library to perform cryptographic operations.
+
+Use the following lines of code to specify which crypto library (Virgil or your own) you prefer to use in your project:
+
+```go
+import (
+	"gopkg.in/virgilsecurity/virgil-crypto-go.v5"
+)
+
+// initialize Crypto Library
+var (
+	cardCrypto  = virgil_crypto_go.NewVirgilCardCrypto()
+)
+```
+
+### Setup Card Verifier
+
+Virgil Card Verifier helps you automatically verify signatures of a user's Card, for example when you get a Card from Virgil Cards Service.
+
+By default, `VirgilCardVerifier` verifies only two signatures - those of a Card owner and Virgil Cards Service.
+
+Set up `VirgilCardVerifier` with the following lines of code:
+
+```go
+	cardVerifier, err := sdk.NewVirgilCardVerifier(cardCrypto, true, true)
+	if err != nil {
+		//handle error
+	}
+```
+
+### Set up Card Manager
+
+This subsection shows how to set up a Card Manager module to help you manage users' public keys.
+
+With Card Manager you can:
+- specify an access Token (JWT) Provider.
+- specify a Crypto Library that you’re planning to use for crypto operations.
+- specify a Card Verifier used to verify signatures of your users, your App Server, Virgil Services (optional).
+
+Use the following lines of code to set up the Card Manager:
+
+```go
+// initialize cardManager and specify accessTokenProvider, cardVerifier
+mgrParams := &sdk.CardManagerParams{
+	Crypto:              cardCrypto,
+	CardVerifier:        cardVerifier,
+	AccessTokenProvider: accessTokenProvider,
+}
+
+cardManager, err := sdk.NewCardManager(mgrParams)
+```
+
+### Setup Key storage to store private keys
+
+This subsection shows how to set up a `VSSKeyStorage` using Virgil SDK in order to save private keys after their generation.
+
+Here is an example of how to set up the `VSSKeyStorage` class:
+
+```go
+	// Generate a private key
+	keypair, err := crypto.GenerateKeypair()
+	if err != nil {
+		//handle error
+	}
+	privateKey := keypair.PrivateKey()
+
+	// Setup PrivateKeyStorage
+	exporter := virgil_crypto_go.NewPrivateKeyExporter("passw0rd")
+	privateKeyStorage := sdk.NewVirgilPrivateKeyStorage(exporter, "~/keys/")
+
+	// Store a private key with a name, for example Alice
+	err = privateKeyStorage.Store(privateKey,"Alice", nil)
+	if err != nil {
+		//handle error
+	}
+
+	// To load Alice private key use the following code lines:
+	key, meta, err := privateKeyStorage.Load("Alice")
+
+	// Delete a private key
+	err = privateKeyStorage.Delete("Alice")
+```
 
 ## Usage Examples
 
-Before start practicing with the usage examples be sure that the SDK is configured. Check out our [SDK configuration guides][_configure_sdk] for more information.
+Before you start practicing with the usage examples, make sure that the SDK is configured. Check out our [SDK configuration guides][#configure-sdk] for more information.
 
-#### Generate and publish user's Cards with Public Keys inside on Cards Service
-Use the following lines of code to create and publish a user's Card with Public Key inside on Virgil Cards Service:
+### Generate and publish user's Cards with public keys inside at Cards Service
+
+Use the following lines of code to create a user's Card with a public key inside and publish it at Virgil Cards Service:
 
 ```go
 import (
@@ -107,11 +280,11 @@ func main() {
 }
 ```
 
-#### Sign then encrypt data
+### Sign then encrypt data
 
-Virgil SDK lets you use a user's Private key and his or her Cards to sign, then encrypt any kind of data.
+Virgil SDK allows you to use a user's private key and their Virgil Cards to sign and encrypt any kind of data.
 
-In the following example, we load a Private Key from a customized Key Storage and get recipient's Card from the Virgil Cards Services. Recipient's Card contains a Public Key on which we will encrypt the data and verify a signature.
+In the following example, we load a private key from a customized Key Storage and get recipient's Card from the Virgil Cards Service. Recipient's Card contains a public key which we will use to encrypt the data and verify a signature.
 
 ```go
 import (
@@ -148,8 +321,9 @@ func main() {
 
 ```
 
-#### Decrypt then verify data
-Once the Users receive the signed and encrypted message, they can decrypt it with their own Private Key and verify signature with a Sender's Card:
+### Decrypt data and verify signature
+
+Once the user receives the signed and encrypted message, they can decrypt it with their own private key and verify the signature with the sender's Card:
 
 ```go
 import "github.com/VirgilSecurity/virgil-sdk-go/sdk/crypto"
@@ -180,46 +354,45 @@ func main() {
 }
 ```
 
+### Get a Card by its ID
+
+Use the following lines of code to get a user's card from Virgil Cloud by its ID:
+
+```go
+card, err := cardManager.GetCard("f4bf9f7fcbedaba0392f108c59d8f4a38b3838efb64877380171b54475c2ade8")
+if err != nil {
+	//handle error
+}
+```
+
+### Get a Card by user's identity
+
+For a single user, use the following lines of code to get a user's Card by a user's `identity`:
+
+```go
+cards, err := cardManager.SearchCards("Bob")
+if err != nil {
+	//handle error
+}
+```
+
 ## Docs
-Virgil Security has a powerful set of APIs, and the documentation below can get you started today.
 
-In order to use the Virgil SDK with your application, you will need to first configure your application. By default, the SDK will attempt to look for Virgil-specific settings in your application but you can change it during SDK configuration.
+Virgil Security has a powerful set of APIs, and the [Developer Documentation](https://developer.virgilsecurity.com/) can get you started today.
 
-* [Configure the SDK][_configure_sdk] documentation
-  * [Setup authentication][_setup_authentication] to make API calls to Virgil Services
-  * [Setup Card Manager][_card_manager] to manage user's Public Keys
-  * [Setup Card Verifier][_card_verifier] to verify signatures inside of user's Card
-  * [Setup Key storage][_key_storage] to store Private Keys
-  * [Setup your own Crypto library][_own_crypto] inside of the SDK
-* [More usage examples][_more_examples]
-  * [Create & publish a Card][_create_card] that has a Public Key on Virgil Cards Service
-  * [Search user's Card by user's identity][_search_card]
-  * [Get user's Card by its ID][_get_card]
-  * [Use Card for crypto operations][_use_card]
-
+In order to use the Virgil Core SDK with your application, you will need to first configure your application. By default, the SDK will attempt to look for Virgil-specific settings in your application but you can change it during SDK configuration.
 
 ## License
 
 This library is released under the [3-clause BSD License](LICENSE).
 
 ## Support
+
 Our developer support team is here to help you. Find out more information on our [Help Center](https://help.virgilsecurity.com/).
 
 You can find us on [Twitter](https://twitter.com/VirgilSecurity) or send us email support@VirgilSecurity.com.
 
-Also, get extra help from our support team on [Slack](https://virgilsecurity.slack.com/join/shared_invite/enQtMjg4MDE4ODM3ODA4LTc2OWQwOTQ3YjNhNTQ0ZjJiZDc2NjkzYjYxNTI0YzhmNTY2ZDliMGJjYWQ5YmZiOGU5ZWEzNmJiMWZhYWVmYTM).
+Also, get extra help from our support team on [Slack](https://virgilsecurity.com/join-community).
 
 [_virgil_crypto]: https://github.com/VirgilSecurity/virgil-crypto-go/tree/master
-[_cards_service]: https://developer.virgilsecurity.com/docs/api-reference/card-service/v5
-[_use_card]: https://developer.virgilsecurity.com/docs/go/how-to/public-key-management/v5/use-card-for-crypto-operation
-[_get_card]: https://developer.virgilsecurity.com/docs/go/how-to/public-key-management/v5/get-card
-[_search_card]: https://developer.virgilsecurity.com/docs/go/how-to/public-key-management/v5/search-card
-[_create_card]: https://developer.virgilsecurity.com/docs/go/how-to/public-key-management/v5/create-card
-[_own_crypto]: https://developer.virgilsecurity.com/docs/go/how-to/setup/v5/setup-own-crypto-library
-[_key_storage]: https://developer.virgilsecurity.com/docs/go/how-to/setup/v5/setup-key-storage
-[_card_verifier]: https://developer.virgilsecurity.com/docs/go/how-to/setup/v5/setup-card-verifier
-[_card_manager]: https://developer.virgilsecurity.com/docs/go/how-to/setup/v5/setup-card-manager
-[_setup_authentication]: https://developer.virgilsecurity.com/docs/go/how-to/setup/v5/setup-authentication
-[_reference_api]: https://developer.virgilsecurity.com/docs/api-reference
-[_configure_sdk]: https://developer.virgilsecurity.com/docs/how-to#sdk-configuration
-[_more_examples]: https://developer.virgilsecurity.com/docs/how-to#public-key-management
+[_cards_service]: https://developer.virgilsecurity.com/docs/api-reference/cards-service
