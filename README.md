@@ -205,7 +205,11 @@ Before you start practicing with the usage examples, make sure that the SDK is c
 Use the following lines of code to create a user's Card with a public key inside and publish it at Virgil Cards Service:
 
 ```go
+package main
+
 import (
+	"log"
+
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
@@ -215,29 +219,29 @@ import (
 var (
 	AppKey   = "{YOUR_APP_KEY}"
 	AppKeyID = "{YOUR_APP_KEY_ID}"
-	AppID    = "{YOU_APP_ID}"
+	AppID    = "{YOUR_APP_ID}"
+	Identity = "Alice"
 )
 
 func main() {
-	var crypto crypto.Crypto
-	const identity = "Alice"
+	vcrypto := &crypto.Crypto{}
 
 	// generate a key pair
-	keypair, err := crypto.GenerateKeypair()
+	keypair, err := vcrypto.GenerateKeypair()
 	if err != nil {
-		//handle error
+		log.Fatal(err)
 	}
 
 	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 	// save a private key into key storage
-	err = privateKeyStorage.Store(keypair, identity, nil)
+	err = privateKeyStorage.Store(keypair, Identity, nil)
 	if err != nil {
-		//handle error
+		log.Fatal(err)
 	}
 
-	appKey, err := crypto.ImportPrivateKey([]byte(AppKey))
+	appKey, err := vcrypto.ImportPrivateKey([]byte(AppKey))
 	if err != nil {
-		//handle error
+		log.Fatal(err)
 	}
 
 	cardManager := sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
@@ -249,11 +253,12 @@ func main() {
 	// publish user's on the Cards Service
 	card, err := cardManager.PublishCard(&sdk.CardParams{
 		PrivateKey: keypair,
-		Identity:   identity,
+		Identity:   Identity,
 	})
 	if err != nil {
-		//handle error
+		log.Fatal(err)
 	}
+	log.Println("Card ID:", card.Id)
 }
 ```
 
@@ -264,15 +269,26 @@ Virgil SDK allows you to use a user's private key and their Virgil Cards to sign
 In the following example, we load a private key from a customized Key Storage and get recipient's Card from the Virgil Cards Service. Recipient's Card contains a public key which we will use to encrypt the data and verify a signature.
 
 ```go
+package main
+
 import (
+	"encoding/base64"
+	"log"
+
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
 )
 
+var (
+	AppKey   = "{YOUR_APP_KEY}"
+	AppKeyID = "{YOUR_APP_KEY_ID}"
+	AppID    = "{YOUR_APP_ID}"
+)
 
 func main() {
-	var crypto crypto.Crypto
+	vcrypto:= &crypto.Crypto{}
 	messageToEncrypt := []byte("Hello, Bob!")
 
 	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
@@ -280,22 +296,33 @@ func main() {
 	// prepare a user's private key from a device storage
 	alicePrivateKey, _, err := privateKeyStorage.Load("Alice")
 	if err != nil{
-		//handle error
+		log.Fatal(err)
 	}
+
+	appKey, err := vcrypto.ImportPrivateKey([]byte(AppKey))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cardManager := sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
+		AppKeyID: AppKeyID,
+		AppKey:   appKey,
+		AppID:    AppID,
+	}))
 
 	// using cardManager search for Bob's cards on Cards Service
 	cards, err := cardManager.SearchCards("Bob")
 	if err != nil{
-		//handle error
+		log.Fatal(err)
 	}
 
 	// sign a message with a private key then encrypt using Bob's public keys
-	encryptedMessage, err := crypto.SignThenEncrypt(messageToEncrypt, alicePrivateKey, cards.ExtractPublicKeys()...)
+	encryptedMessage, err := vcrypto.SignThenEncrypt(messageToEncrypt, alicePrivateKey, cards.ExtractPublicKeys()...)
 	if err != nil{
-		//handle error
+		log.Fatal(err)
 	}
+	log.Println("Encrypted message:",base64.StdEncoding.EncodeToString(encryptedMessage))
 }
-
 ```
 
 ### Decrypt data and verify signature
@@ -303,31 +330,63 @@ func main() {
 Once the user receives the signed and encrypted message, they can decrypt it with their own private key and verify the signature with the sender's Card:
 
 ```go
-import "github.com/VirgilSecurity/virgil-sdk-go/v6/sdk/crypto"
+package main
 
+import (
+	"encoding/base64"
+	"log"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
+)
+
+var (
+	AppKey   = "{YOUR_APP_KEY}"
+	AppKeyID = "{YOUR_APP_KEY_ID}"
+	AppID    = "{YOUR_APP_ID}"
+	EncryptedMessage = "{YOUR_ENCRYPTED_MESSAGE}"
+)
 
 func main() {
-	var crypto crypto.Crypto
+	vcrypto := &crypto.Crypto{}
 
 	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 
 	// prepare a user's private key
-	bobPrivateKey, err := privateKeyStorage.Load("Bob")
-	if err != nil{
-		//handle error
+	bobPrivateKey, _, err := privateKeyStorage.Load("Bob")
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	appKey, err := vcrypto.ImportPrivateKey([]byte(AppKey))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cardManager := sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
+		AppKeyID: AppKeyID,
+		AppKey:   appKey,
+		AppID:    AppID,
+	}))
 
 	// using cardManager search for Alice's cards on Cards Service
-	aliceCards, err := cardManager.SearchCards("Alice")
-	if err != nil{
-		//handle error
+	cards, err := cardManager.SearchCards("Alice")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	// decrypt with a private key and verify using one of Alice's public keys
-	decryptedMessage, err := crypto.DecryptThenVerify(encryptedMessage, bobPrivateKey, cards.ExtractPublicKeys()...)
-	if err != nil{
-		//handle error
+	encryptedMessage, err := base64.StdEncoding.DecodeString(EncryptedMessage)
+	if err != nil {
+		log.Fatal(err)
 	}
+	// decrypt with a private key and verify using one of Alice's public keys
+	decryptedMessage, err := vcrypto.DecryptThenVerify(encryptedMessage, bobPrivateKey, cards.ExtractPublicKeys()...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Plain text: %s\n", decryptedMessage)
 }
 ```
 
