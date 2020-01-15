@@ -115,10 +115,16 @@ func LinkCards(cards ...*Card) []*Card {
 	unsortedCards := make(map[string]*Card)
 
 	for _, card := range cards {
+		if card == nil {
+			continue
+		}
 		unsortedCards[card.Id] = card
 	}
 
 	for _, card := range cards {
+		if card == nil {
+			continue
+		}
 		if card.PreviousCardId != "" {
 			prev, ok := unsortedCards[card.PreviousCardId]
 			if ok {

@@ -69,9 +69,12 @@ var (
 	_ Storage = &SymmetricEncryptStorage{}
 )
 
-func NewSymmetricEncryptStorage(key []byte, storage Storage) *SymmetricEncryptStorage {
+func NewSymmetricEncryptStorage(key [KeyLength]byte, storage Storage) *SymmetricEncryptStorage {
+	if storage == nil {
+		panic("NewSymmetricEncryptStorage: storage is nil")
+	}
 	return &SymmetricEncryptStorage{
-		key:     key,
+		key:     key[:],
 		storage: storage,
 	}
 }
