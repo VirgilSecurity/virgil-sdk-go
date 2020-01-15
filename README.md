@@ -73,16 +73,19 @@ package main
 
 import (
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
 )
 
 func main() {
-	authenticatedQueryToServerSide := func(context *sdk.TokenContext) (string, error) {
+	authenticatedQueryToServerSide := func(context *session.TokenContext) (string, error) {
 		// Get generated token from server-side
 		return "eyJraWQiOiI3MGI0NDdlMzIxZjNhMGZkIiwidHlwIjoiSldUIiwiYWxnIjoiVkVEUzUxMiIsImN0eSI6InZpcmdpbC1qd3Q7dj0xIn0.eyJleHAiOjE1MTg2OTg5MTcsImlzcyI6InZpcmdpbC1iZTAwZTEwZTRlMWY0YmY1OGY5YjRkYzg1ZDc5Yzc3YSIsInN1YiI6ImlkZW50aXR5LUFsaWNlIiwiaWF0IjoxNTE4NjEyNTE3fQ.MFEwDQYJYIZIAWUDBAIDBQAEQP4Yo3yjmt8WWJ5mqs3Yrqc_VzG6nBtrW2KIjP-kxiIJL_7Wv0pqty7PDbDoGhkX8CJa6UOdyn3rBWRvMK7p7Ak", nil
 	}
 
 	// Setup AccessTokenProvider
-	accessTokenProvider := sdk.NewCachingStringJwtProvider(authenticatedQueryToServerSide)
+	accessTokenProvider := session.NewCachingStringJwtProvider(authenticatedQueryToServerSide)
 }
 ```
 
@@ -95,9 +98,10 @@ Here is an example of how to generate a JWT:
 ```go
 	// App Key (you got this Key at Virgil Dashboard)
 	privateKeyStr := []byte("MIGhMF0GCSqGSIb3DQEFDTBQMC8GCSqGSIb3DQEFDDAiBBC7Sg/DbNzhJ/uakTva")
+	vcrypto := &crypto.Crypto{}	
 
 	// Crypto library imports a private key into a necessary format
-	privateKey, err := crypto.ImportPrivateKey(privateKeyStr, "")
+	privateKey, err := vcrypto.ImportPrivateKey(privateKeyStr)
 	if err != nil {
 		//handle error
 	}
@@ -168,8 +172,10 @@ This subsection shows how to set up a `VSSKeyStorage` using Virgil SDK in order 
 Here is an example of how to set up the `VSSKeyStorage` class:
 
 ```go
+	vcrypto := &crypto.Crypto{}
+	
 	// Generate a private key
-	privateKey, err := crypto.GenerateKeypair()
+	privateKey, err := vcrypto.GenerateKeypair()
 	if err != nil {
 		//handle error
 	}
