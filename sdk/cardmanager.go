@@ -257,10 +257,6 @@ func (c *CardManager) ImportCard(model *RawSignedModel) (*Card, error) {
 }
 
 func (c *CardManager) verifyCards(cards ...*Card) error {
-	if c.cardVerifier == nil {
-		return nil
-	}
-
 	for _, card := range cards {
 		if err := c.cardVerifier.VerifyCard(card); err != nil {
 			return err
