@@ -119,6 +119,9 @@ func NewVirgilCardVerifier(options ...VirgilCardVerifierOption) *VirgilCardVerif
 }
 
 func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
+	if card == nil {
+		return ErrCardIsMandatory
+	}
 	if card.PublicKey == nil {
 		return ErrCardPublicKeyUnset
 	}

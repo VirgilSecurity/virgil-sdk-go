@@ -38,6 +38,7 @@
 package sdk
 
 import (
+	"errors"
 	"time"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
@@ -90,13 +91,37 @@ func NewCardManager(accessTokenProvider session.AccessTokenProvider, options ...
 		accessTokenProvider: accessTokenProvider,
 		cardClient:          NewCardsClient(),
 		modelSigner:         &ModelSigner{},
+		cardVerifier:        NewVirgilCardVerifier(),
 	}
 
 	for _, opt := range options {
 		opt(cm)
 	}
 
+	if err := cm.Validate(); err != nil {
+		panic(err)
+	}
+
 	return cm
+}
+
+func (c *CardManager) Validate() error {
+	if c.crypto == nil {
+		return errors.New("CardManager: crypto is nil")
+	}
+	if c.accessTokenProvider == nil {
+		return errors.New("CardManager: access token provider is nil")
+	}
+	if c.cardClient == nil {
+		return errors.New("CardManager: card client is nil")
+	}
+	if c.modelSigner == nil {
+		return errors.New("CardManager: model signer is nil")
+	}
+	if c.cardVerifier == nil {
+		return errors.New("CardManager: card verifier is nil")
+	}
+	return nil
 }
 
 func (c *CardManager) GenerateRawCard(cardParams *CardParams) (*RawSignedModel, error) {
@@ -256,10 +281,6 @@ func (c *CardManager) ImportCard(model *RawSignedModel) (*Card, error) {
 }
 
 func (c *CardManager) verifyCards(cards ...*Card) error {
-	if c.cardVerifier == nil {
-		return nil
-	}
-
 	for _, card := range cards {
 		if err := c.cardVerifier.VerifyCard(card); err != nil {
 			return err
