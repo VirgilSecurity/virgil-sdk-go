@@ -1,4 +1,3 @@
-github.com/VirgilSecurity/virgil-sdk-go v5.2.0+incompatible h1:7PYeGG3p8DOTaXcb2enRj2KpUS59DsCP3x3g8GcOOKo=
 github.com/cenkalti/backoff/v4 v4.0.0 h1:6VeaLF9aI+MAUQ95106HwWzYZgJJpZ4stumjj6RFYAU=
 github.com/cenkalti/backoff/v4 v4.0.0/go.mod h1:eEew/i+1Q6OrCDZh3WiXYv3+nJwBASZ8Bog/87DQnVg=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
