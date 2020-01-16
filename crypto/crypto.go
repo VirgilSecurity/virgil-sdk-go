@@ -39,7 +39,7 @@ import (
 	"crypto/subtle"
 	"io"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/internal/foundation"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 )
 
 type PrivateKey interface {

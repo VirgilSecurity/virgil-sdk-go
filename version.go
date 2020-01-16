@@ -43,7 +43,7 @@ import (
 )
 
 // Version current go sdk version
-const Version = "v6.0.0"
+const Version = "v6.0.1"
 
 // MakeVirgilAgent generate Virgil agent for identification client
 func MakeVirgilAgent(product string) string {
