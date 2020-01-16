@@ -33,7 +33,7 @@
 package crypto
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/internal/foundation"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 )
 
 type publicKey struct {
