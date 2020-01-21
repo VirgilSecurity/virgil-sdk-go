@@ -12,7 +12,7 @@ This README describes how to manage a new version of Virgil crypto.
 
 ## Update auto generated libraries
 
-Copy everything from the `./wrapper/go/*` and https://github.com/VirgilSecurity/virgil-crypto-c folders and paste it into the `./crypto/wrapper`.
+Copy everything from the `./wrapper/go/*` folder in https://github.com/VirgilSecurity/virgil-crypto-c and paste it into the `./crypto/wrapper`.
 
 ## Update pre-build libraries
 
