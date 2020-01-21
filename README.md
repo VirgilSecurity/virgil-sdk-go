@@ -26,6 +26,7 @@ The Virgil SDK allows developers to get up and running with Virgil API quickly a
 * Encryption/Decryption of data and streams
 * Generation/Verification of digital signatures
 * PFS (Perfect Forward Secrecy)
+* **Post quantum algorithms support**. [Round5](https://round5.org/) (ecnryption) and [Falcon](https://falcon-sign.info/) (signature) 
 
 ## Installation
 
