@@ -43,7 +43,7 @@ For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux ker
 Execute script from the root the project
 
 ```bash
-> BRANCH={VIRGIL_CRYPTO_C_BRANCH} ./crypto/wrapper/build/build_c_crypto.sh
+> BRANCH={VIRGIL_CRYPTO_C_BRANCH} PREBUILD_SUFIX=__legacy_os ./crypto/wrapper/build/build_c_crypto.sh
 ```
 
 ##### Via docker
@@ -53,6 +53,7 @@ Execute script from the root the project
 	- build image `docker build -t ccrypto -f Dockerfile_legacy.`
 - Build pre-build libraries
 	- run docker from root project `docker run -it --rm -v $PWD:/app ccrypto bash`
+	- inside docker container `pip install protobuf`
 	- inside docker container `BRANCH={VIRGIL_CRYPTO_C_BRANCH} /app/crypto/wrapper/build/build_c_crypto.sh`
 
 #### Modern linux
