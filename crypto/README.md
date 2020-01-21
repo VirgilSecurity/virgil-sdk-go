@@ -1,22 +1,22 @@
 # Virgil crypto
 
-There are described how to manage new version of crypto.
+This README describes how to manage a new version of Virgil crypto.
 
 ## Package structure
 
-- Current folder contain adopted cryptography functions for common cases.
-- `wrapper` folder contains C wrapper, pre-build libraries and build scripts.
+- The current folder contains adopted cryptography functions for common cases.
+- The wrapper folder contains the C wrapper, pre-build libraries and build scripts.
 	- `foundation`, `phe`, `ratchet` are auto generated libraries from [Virgil crypto C](https://github.com/VirgilSecurity/virgil-crypto-c).
 	- `build` folder contains docker files and scripts for build pre-build C libs.
 	- `pkg` folder contains pre-build C libs for different platforms.
 
 ## Update auto generated libraries
 
-Copy past from `./wrapper/go/*` folders from https://github.com/VirgilSecurity/virgil-crypto-c into `./crypto/wrapper`
+Copy everything from the `./wrapper/go/*` and https://github.com/VirgilSecurity/virgil-crypto-c folders and paste it into the `./crypto/wrapper`.
 
 ## Update pre-build libraries
 
-The following command only update local version of the Virgil GO SDK. After you need run tests and commit changes.
+The following command only updates a local version of the Virgil GO SDK. After, you have to run tests and commit changes.
 
 ### Requirements
 
@@ -25,7 +25,7 @@ The following command only update local version of the Virgil GO SDK. After you 
 
 ### Mac OS
 
-Execute script from the root the project
+Execute the script from the root of the project
 
 ```bash
 > BRANCH={VIRGIL_CRYPTO_C_BRANCH} ./crypto/wrapper/build/build_c_crypto.sh
@@ -33,14 +33,15 @@ Execute script from the root the project
 
 ### Linux
 
-Support two versions for old linux kernel (old version of compiler) and modern linux version.
+Supports two versions:
+- for old linux kernel (old version of compiler)
+- and modern linux version.
 
 #### Legacy linux
 
 ##### Native
 
-For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel
-Execute script from the root the project
+To support older version amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel, execute the following script from the root of project
 
 ```bash
 > BRANCH={VIRGIL_CRYPTO_C_BRANCH} PREBUILD_SUFIX=__legacy_os ./crypto/wrapper/build/build_c_crypto.sh
@@ -49,17 +50,17 @@ Execute script from the root the project
 ##### Via docker
 
 - Build docker image
-	- Go to `./crypto/wrapper/build`
-	- build image `docker build -t ccrypto -f Dockerfile_legacy.`
+	- navigate to `./crypto/wrapper/build`
+	- build `docker build -t ccrypto -f Dockerfile_legacy.` image 
 - Build pre-build libraries
-	- run docker from root project `docker run -it --rm -v $PWD:/app ccrypto bash`
-	- inside docker container `pip install protobuf`
-	- inside docker container `BRANCH={VIRGIL_CRYPTO_C_BRANCH} /app/crypto/wrapper/build/build_c_crypto.sh`
+	- run docker from the root project `docker run -it --rm -v $PWD:/app ccrypto bash`
+	- run `pip install protobuf` command inside a docker container
+	- run `BRANCH={VIRGIL_CRYPTO_C_BRANCH} /app/crypto/wrapper/build/build_c_crypto.sh` script inside a docker container
 
 #### Modern linux
 
 ##### Native
-Execute script from the root the project
+Execute the following script from the root of the project
 
 ```bash
 > BRANCH={VIRGIL_CRYPTO_C_BRANCH} ./crypto/wrapper/build/build_c_crypto.sh
@@ -76,7 +77,7 @@ Execute script from the root the project
 
 ### Windows
 
-Execute script from the root the project
+Execute the following script from the root of the project
 
 ```bash
 > ./crypto/wrapper/build/build_c_crypto.ps1 -branch={VIRGIL_CRYPTO_C_BRANCH}
