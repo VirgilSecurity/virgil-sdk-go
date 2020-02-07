@@ -35,14 +35,16 @@
 package phe
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 )
 
 func TestNewPheCipher(t *testing.T) {
 	cipher := NewPheCipher()
-    assert.NotNil(t, cipher)
+	assert.NotNil(t, cipher)
 
 	cipher.Delete()
 }
