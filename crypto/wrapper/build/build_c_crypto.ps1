@@ -34,7 +34,7 @@ $result=$(git clone -b $branch https://github.com/VirgilSecurity/virgil-crypto-c
             -DVIRGIL_POST_QUANTUM=ON `
             -DED25519_REF10=ON `
             -DED25519_AMD64_RADIX_64_24K=OFF `
-            -DCMAKE_INSTALL_PREFIX="..\wrappers\go\binaries" .. | Out-Host;$?
+            -DCMAKE_INSTALL_PREFIX="..\wrappers\go\pkg\$($os)_$($arch)" .. | Out-Host;$?
         ) -and
         $(mingw32-make -j5  | Out-Host;$?) -and $(mingw32-make -j5 install  | Out-Host;$?) -and
         $(Push-Location (Join-Path $tmpDir \wrappers\go) -ev err | Out-Host;!$err) -and
@@ -46,7 +46,7 @@ Pop-Location
 if ($result) 
 { 
     Remove-Item -Path (Join-Path $scriptFolder "..\pkg\$prebuildFolder\*") -Recurse -Force
-    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\binaries\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder")
+    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder")
 }
 
 Remove-Item -Recurse -Force  -Path $tmpDir
