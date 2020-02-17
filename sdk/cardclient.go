@@ -42,8 +42,9 @@ import (
 	"encoding/hex"
 	"net/http"
 
+	"github.com/VirgilSecurity/virgil-sdk-go/v6"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/common/client"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/internal/client"
 )
 
 type cardClientOption struct {
@@ -81,7 +82,7 @@ func NewCardsClient(options ...CardClientOption) *CardClient {
 	return &CardClient{
 		client: client.NewClient(o.serviceURL,
 			client.HTTPClient(o.httpClient),
-			client.VirgilProduct("sdk"),
+			client.VirgilProduct("sdk", virgil.Version),
 		),
 	}
 }

@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
 )
 
@@ -71,10 +71,15 @@ func DefaultCodec(c Codec) Option {
 	}
 }
 
-func VirgilProduct(product string) Option {
+func VirgilProduct(product string, version string) Option {
 	return func(o *options) {
-		o.virgilAgent = virgil.MakeVirgilAgent(product)
+		o.virgilAgent = makeVirgilAgent(product, version)
 	}
+}
+
+// makeVirgilAgent generate Virgil agent for identification client
+func makeVirgilAgent(product string, version string) string {
+	return fmt.Sprintf("%s;go;%s;%s", product, runtime.GOOS, version)
 }
 
 func NewClient(address string, opts ...Option) *Client {
@@ -82,7 +87,7 @@ func NewClient(address string, opts ...Option) *Client {
 		httpClient:   DefaultHTTPClient,
 		errorHandler: DefaultErrorHandler,
 		defaultCodec: &JSONCodec{},
-		virgilAgent:  virgil.MakeVirgilAgent("unknown"),
+		virgilAgent:  makeVirgilAgent("unknown", "unknown"),
 	}
 
 	for _, o := range opts {
