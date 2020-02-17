@@ -37,15 +37,5 @@
 
 package virgil
 
-import (
-	"fmt"
-	"runtime"
-)
-
 // Version current go sdk version
 const Version = "v6.0.2"
-
-// MakeVirgilAgent generate Virgil agent for identification client
-func MakeVirgilAgent(product string) string {
-	return fmt.Sprintf("%s;go;%s;%s", product, runtime.GOOS, Version)
-}
