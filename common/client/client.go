@@ -47,10 +47,11 @@ type Request struct {
 type Option func(o *options)
 
 type options struct {
-	httpClient   *http.Client
-	errorHandler func(resp *Response) error
-	defaultCodec Codec
-	virgilAgent  string
+	httpClient     *http.Client
+	errorHandler   func(resp *Response) error
+	defaultCodec   Codec
+	virgilAgent    string
+	defaultHeaders http.Header
 }
 
 func HTTPClient(c *http.Client) Option {
@@ -77,6 +78,12 @@ func VirgilProduct(product string, version string) Option {
 	}
 }
 
+func DefaultHeader(key string, val string) Option {
+	return func(o *options) {
+		o.defaultHeaders.Add(key, val)
+	}
+}
+
 // makeVirgilAgent generate Virgil agent for identification client
 func makeVirgilAgent(product string, version string) string {
 	return fmt.Sprintf("%s;go;%s;%s", product, runtime.GOOS, version)
@@ -84,15 +91,17 @@ func makeVirgilAgent(product string, version string) string {
 
 func NewClient(address string, opts ...Option) *Client {
 	options := &options{
-		httpClient:   DefaultHTTPClient,
-		errorHandler: DefaultErrorHandler,
-		defaultCodec: &JSONCodec{},
-		virgilAgent:  makeVirgilAgent("unknown", "unknown"),
+		httpClient:     DefaultHTTPClient,
+		errorHandler:   DefaultErrorHandler,
+		defaultCodec:   &JSONCodec{},
+		virgilAgent:    makeVirgilAgent("unknown", "unknown"),
+		defaultHeaders: http.Header{},
 	}
 
 	for _, o := range opts {
 		o(options)
 	}
+
 	Client := &Client{
 		options: options,
 		address: address,
@@ -119,6 +128,12 @@ func (s *Client) Send(ctx context.Context, req *Request) (result *Response, err 
 
 		if reqBody, err = cd.Marshal(req.Payload); err != nil {
 			return nil, err
+		}
+	}
+
+	for k, v := range s.options.defaultHeaders {
+		if len(req.Header[k]) == 0 {
+			req.Header[k] = v
 		}
 	}
 	req.Header.Set("Accept", cd.Name())
