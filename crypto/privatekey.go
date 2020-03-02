@@ -55,3 +55,7 @@ func (k *privateKey) PublicKey() PublicKey {
 
 	return &publicKey{k.Identifier(), pk}
 }
+
+func (k *privateKey) Unwrap() foundation.PrivateKey {
+	return k.key
+}
