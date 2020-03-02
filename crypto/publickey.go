@@ -56,3 +56,7 @@ func (k *publicKey) Export() ([]byte, error) {
 
 	return kp.ExportPublicKey(k.key)
 }
+
+func (k *publicKey) Unwrap() foundation.PublicKey {
+	return k.key
+}
