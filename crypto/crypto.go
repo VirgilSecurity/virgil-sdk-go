@@ -397,7 +397,7 @@ func (c *Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) err
 }
 
 func (c *Crypto) SignThenEncrypt(data []byte, signer PrivateKey, recipients ...PublicKey) ([]byte, error) {
-	return c.SignThenEncryptWithPadding(data, signer, false, recipients...)
+	return c.SignThenEncryptWithPadding(data, signer, true, recipients...)
 }
 
 func (c *Crypto) SignThenEncryptWithPadding(data []byte, signer PrivateKey, padding bool, recipients ...PublicKey) ([]byte, error) {
