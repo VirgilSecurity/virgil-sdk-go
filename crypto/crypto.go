@@ -45,10 +45,12 @@ import (
 type PrivateKey interface {
 	Identifier() []byte
 	PublicKey() PublicKey
+	Unwrap() foundation.PrivateKey
 }
 type PublicKey interface {
 	Export() ([]byte, error)
 	Identifier() []byte
+	Unwrap() foundation.PublicKey
 }
 
 type Crypto struct {
