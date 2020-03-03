@@ -104,15 +104,18 @@ func (c *Crypto) GenerateKeypairFromKeyMaterialForType(t KeyType, keyMaterial []
 	if l < foundation.KeyMaterialRngKeyMaterialLenMin || l > foundation.KeyMaterialRngKeyMaterialLenMax {
 		return nil, ErrInvalidSeedSize
 	}
+	rnd := foundation.NewKeyMaterialRng()
+	rnd.ResetKeyMaterial(keyMaterial)
+	defer delete(rnd)
 
+	return c.GenerateKeypairForTypeWithCustomRng(rnd, t)
+}
+
+func (c *Crypto) GenerateKeypairForTypeWithCustomRng(rnd foundation.Random, t KeyType) (PrivateKey, error) {
 	keyType, ok := keyTypeMap[t]
 	if !ok {
 		return nil, ErrUnsupportedKeyType
 	}
-
-	rnd := foundation.NewKeyMaterialRng()
-	rnd.ResetKeyMaterial(keyMaterial)
-	defer delete(rnd)
 
 	return c.generateKeypair(keyType, rnd)
 }
