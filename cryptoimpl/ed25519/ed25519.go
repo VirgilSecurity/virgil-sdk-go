@@ -47,7 +47,7 @@ import (
 	"crypto/subtle"
 	"io"
 
-	"github.com/tendermint/ed25519/edwards25519"
+	"gopkg.in/virgil.v5/cryptoimpl/ed25519/edwards25519"
 )
 
 const (
