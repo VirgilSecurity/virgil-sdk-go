@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  *
@@ -44,7 +44,7 @@ import (
 
 	"crypto/sha512"
 
-	"github.com/agl/ed25519"
+	"gopkg.in/virgil.v5/cryptoimpl/ed25519"
 	"gopkg.in/virgil.v5/errors"
 )
 

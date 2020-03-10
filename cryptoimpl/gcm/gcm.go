@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  *
@@ -265,7 +265,9 @@ func processTag(buf []byte, tagPart []byte, readBytes int) (lastTagPart, expecte
 			return nil, expectedTag, err
 		}
 		if readBytes < gcmTagSize && len(tagPart) == gcmTagSize { //tag was split between previous chunk & last chunk
-			expectedTag = append(tagPart[readBytes:], buf[:readBytes]...)
+			expectedTag = make([]byte, gcmTagSize)
+			copy(expectedTag, tagPart[readBytes:])
+			copy(expectedTag[gcmTagSize-readBytes:], buf[:readBytes])
 			return nil, expectedTag, nil
 		}
 
