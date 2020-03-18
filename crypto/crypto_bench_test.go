@@ -86,10 +86,29 @@ func BenchmarkEncrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
 	//make random data
-	data := make([]byte, 257)
+	data := make([]byte, 1)
 	rand.Read(data)
 
 	encryptSk, err := vcrypto.GenerateKeypair()
+	require.NoError(b, err)
+	encryptPk := encryptSk.PublicKey()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if _, err := vcrypto.Encrypt(data, encryptPk); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkEncryptRound5(b *testing.B) {
+	vcrypto := &crypto.Crypto{}
+
+	//make random data
+	data := make([]byte, 1)
+	rand.Read(data)
+
+	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.CURVE25519Round5_ED25519Falcon)
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
@@ -105,10 +124,31 @@ func BenchmarkDecrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
 	//make random data
-	data := make([]byte, 257)
+	data := make([]byte, 1)
 	rand.Read(data)
 
 	keypair, err := vcrypto.GenerateKeypair()
+	require.NoError(b, err)
+
+	data, err = vcrypto.Encrypt(data, keypair.PublicKey())
+	require.NoError(b, err)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if _, err = vcrypto.Decrypt(data, keypair); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkDecryptRound5(b *testing.B) {
+	vcrypto := &crypto.Crypto{}
+
+	//make random data
+	data := make([]byte, 1)
+	rand.Read(data)
+
+	keypair, err := vcrypto.GenerateKeypairForType(crypto.CURVE25519Round5_ED25519Falcon)
 	require.NoError(b, err)
 
 	data, err = vcrypto.Encrypt(data, keypair.PublicKey())

@@ -237,10 +237,6 @@ func (c *Crypto) EncryptWithPadding(data []byte, padding bool, recipients ...Pub
 	}
 	defer delete(cipher)
 
-	if err := cipher.StartEncryption(); err != nil {
-		return nil, err
-	}
-
 	buffer := bytes.NewBuffer(nil)
 	buffer.Grow(len(data))
 
@@ -285,10 +281,6 @@ func (c *Crypto) EncryptStreamWithPadding(in io.Reader, out io.Writer, padding b
 		return err
 	}
 	defer delete(cipher)
-
-	if err := cipher.StartEncryption(); err != nil {
-		return err
-	}
 
 	dst := NewEncryptWriter(NopWriteCloser(out), cipher)
 	if err := copyClose(dst, in); err != nil {

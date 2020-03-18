@@ -35,10 +35,8 @@ package crypto_test
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/base64"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
@@ -58,7 +56,7 @@ func TestSignVerify(t *testing.T) {
 	require.NoError(t, err)
 
 	err = vcrypto.VerifySignature(data, sign, signerKey.PublicKey())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestEncryptDecrypt(t *testing.T) {
@@ -75,8 +73,8 @@ func TestEncryptDecrypt(t *testing.T) {
 	require.NoError(t, err)
 
 	actualData, err := vcrypto.Decrypt(cipherText, encryptKey)
-	assert.NoError(t, err)
-	assert.Equal(t, data, actualData)
+	require.NoError(t, err)
+	require.Equal(t, data, actualData)
 }
 
 func TestEncryptWithPaddingDecrypt(t *testing.T) {
@@ -93,8 +91,8 @@ func TestEncryptWithPaddingDecrypt(t *testing.T) {
 	require.NoError(t, err)
 
 	actualData, err := vcrypto.Decrypt(cipherText, encryptKey)
-	assert.NoError(t, err)
-	assert.Equal(t, data, actualData)
+	require.NoError(t, err)
+	require.Equal(t, data, actualData)
 }
 
 func TestStreamCipher(t *testing.T) {
@@ -110,14 +108,12 @@ func TestStreamCipher(t *testing.T) {
 	err = vcrypto.EncryptStream(plain, cipheredStream, key.PublicKey())
 	require.NoError(t, err)
 
-	t.Logf("encrypted data: %s", base64.StdEncoding.EncodeToString(cipheredStream.Bytes()))
-
 	//decrypt with key
 	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer := bytes.NewBuffer(nil)
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
-	assert.NoError(t, err, "decrypt with correct key")
-	assert.Equal(t, plainBuf, plainOutBuffer.Bytes(), "decrypt with correct key: plain & decrypted buffers do not match")
+	require.NoError(t, err, "decrypt with correct key")
+	require.Equal(t, plainBuf, plainOutBuffer.Bytes(), "decrypt with correct key: plain & decrypted buffers do not match")
 
 	//decrypt with wrong id must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
@@ -127,7 +123,7 @@ func TestStreamCipher(t *testing.T) {
 	plainOutBuffer = bytes.NewBuffer(nil)
 
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, wrongKey)
-	assert.Error(t, err, "decrypt with incorrect key")
+	require.Error(t, err, "decrypt with incorrect key")
 }
 
 func TestStreamCipherWithPadding(t *testing.T) {
@@ -147,8 +143,8 @@ func TestStreamCipherWithPadding(t *testing.T) {
 	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer := bytes.NewBuffer(nil)
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
-	assert.NoError(t, err, "decrypt with correct key")
-	assert.Equal(t, plainBuf, plainOutBuffer.Bytes())
+	require.NoError(t, err, "decrypt with correct key")
+	require.Equal(t, plainBuf, plainOutBuffer.Bytes())
 
 	//decrypt with wrong id must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
@@ -158,7 +154,7 @@ func TestStreamCipherWithPadding(t *testing.T) {
 	plainOutBuffer = bytes.NewBuffer(nil)
 
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, wrongKey)
-	assert.Error(t, err, "decrypt with incorrect key")
+	require.Error(t, err, "decrypt with incorrect key")
 }
 
 func TestStreamSigner(t *testing.T) {
@@ -175,21 +171,21 @@ func TestStreamSigner(t *testing.T) {
 	//verify signature
 	plain = bytes.NewBuffer(plainBuf)
 	err = vcrypto.VerifyStream(plain, sign, key.PublicKey())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//verify with wrong key must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
 	err = vcrypto.VerifyStream(plain, sign, wrongKey.PublicKey())
-	assert.Error(t, crypto.ErrSignVerification, err)
+	require.Error(t, crypto.ErrSignVerification, err)
 
 	//verify with wrong signature must fail
 	plain = bytes.NewBuffer(plainBuf)
 	sign[len(sign)-1] = ^sign[len(sign)-1] //invert last byte
 
 	err = vcrypto.VerifyStream(plain, sign, wrongKey.PublicKey())
-	assert.Equal(t, crypto.ErrSignVerification, err)
+	require.Equal(t, crypto.ErrSignVerification, err)
 }
 
 func TestExportImportKeys(t *testing.T) {
@@ -198,16 +194,16 @@ func TestExportImportKeys(t *testing.T) {
 	require.NoError(t, err)
 
 	pubb, err := vcrypto.ExportPublicKey(key.PublicKey())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	privb, err := vcrypto.ExportPrivateKey(key)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	pub, err := vcrypto.ImportPublicKey(pubb)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	priv, err := vcrypto.ImportPrivateKey(privb)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	data := make([]byte, 257)
 	rand.Read(data)
@@ -355,7 +351,7 @@ func TestGenerateKeypairFromKeyMaterialBadCase(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = vcrypto.GenerateKeypairFromKeyMaterial(data)
-		assert.Equal(t, crypto.ErrInvalidSeedSize, err, test.name)
+		require.Equal(t, crypto.ErrInvalidSeedSize, err, test.name)
 	}
 }
 
@@ -395,7 +391,7 @@ func TestKeyTypes(t *testing.T) {
 	for _, test := range table {
 		for _, f := range fs {
 			err := f(test.kt)
-			assert.Equal(t, test.expectedError, err, test.kt)
+			require.Equal(t, test.expectedError, err, test.kt)
 		}
 	}
 }
