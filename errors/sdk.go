@@ -66,7 +66,7 @@ type SDKError struct {
 	InnerErr error
 }
 
-// Error formats error nolint:gosec
+// nolint:gosec
 func (e *SDKError) Error() string {
 	var b strings.Builder
 	b.WriteString("sdk error { ")
