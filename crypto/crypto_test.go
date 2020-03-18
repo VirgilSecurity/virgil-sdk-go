@@ -110,8 +110,6 @@ func TestStreamCipher(t *testing.T) {
 	err = vcrypto.EncryptStream(plain, cipheredStream, key.PublicKey())
 	require.NoError(t, err)
 
-	t.Logf("encrypted data: %s", base64.StdEncoding.EncodeToString(cipheredStream.Bytes()))
-
 	//decrypt with key
 	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer := bytes.NewBuffer(nil)
