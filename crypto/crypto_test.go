@@ -35,7 +35,6 @@ package crypto_test
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/base64"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
