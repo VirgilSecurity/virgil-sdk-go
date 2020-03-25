@@ -158,9 +158,6 @@ func TestCardManager_Integration_Publish_Revoke(t *testing.T) {
 	assert.NotNil(t, card)
 	assert.False(t, card.IsOutdated)
 
-	manager, err = initCardManagerWithIdentityName(card.Identity)
-	assert.NoError(t, err)
-
 	err = manager.RevokeCard(card.Id)
 	assert.NoError(t, err)
 }

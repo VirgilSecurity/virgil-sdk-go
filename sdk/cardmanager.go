@@ -202,12 +202,15 @@ func (c *CardManager) GetCard(cardID string) (*Card, error) {
 }
 
 func (c *CardManager) RevokeCard(cardID string) error {
-	tokenContext := &session.TokenContext{Operation: "delete", Service: "cards"}
+	card, err := c.GetCard(cardID)
+	if err != nil {
+		return err
+	}
+	tokenContext := &session.TokenContext{Identity: card.Identity, Operation: "delete", Service: "cards"}
 	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return err
 	}
-
 	return c.cardClient.RevokeCard(cardID, token.String())
 }
 
