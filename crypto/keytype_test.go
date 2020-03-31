@@ -3,8 +3,9 @@ package crypto
 import (
 	"testing"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 	"github.com/stretchr/testify/require"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 )
 
 func TestGetKeyType(t *testing.T) {
