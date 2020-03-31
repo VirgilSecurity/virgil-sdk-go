@@ -1,25 +1,23 @@
 /*
- * Copyright (C) 2015-2018 Virgil Security Inc.
- *
- * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- *   (1) Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
+ *     (1) Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
  *
- *   (2) Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in
- *   the documentation and/or other materials provided with the
- *   distribution.
+ *     (2) Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
  *
- *   (3) Neither the name of the copyright holder nor the names of its
- *   contributors may be used to endorse or promote products derived
- *   from this software without specific prior written permission.
+ *     (3) Neither the name of the copyright holder nor the names of its
+ *     contributors may be used to endorse or promote products derived from
+ *     this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -33,6 +31,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
+ * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
 package crypto
@@ -43,25 +42,18 @@ import (
 
 type KeyType int
 
-// nolint: golint
 const (
 	DefaultKeyType KeyType = iota
-	RSA_2048
-	RSA_3072
-	RSA_4096
-	RSA_8192
-	EC_SECP256R1
-	EC_SECP384R1
-	EC_SECP521R1
-	EC_BP256R1
-	EC_BP384R1
-	EC_BP512R1
-	EC_SECP256K1
-	EC_CURVE25519
-	FAST_EC_X25519
-	FAST_EC_ED25519
-	CURVE25519_ED25519
-	CURVE25519Round5_ED25519Falcon
+	Rsa2048
+	Rsa3072
+	Rsa4096
+	Rsa8192
+	P256r1
+	Curve25519
+	Ed25519
+	Curve25519Ed25519
+	Curve25519Round5Ed25519Falcon
+	Curve25519Round5
 )
 
 type keyGen interface {
@@ -69,25 +61,29 @@ type keyGen interface {
 }
 
 var keyTypeMap = map[KeyType]keyGen{
-	DefaultKeyType:  keyType(foundation.AlgIdEd25519),
-	RSA_2048:        rsaKeyType(2048),
-	RSA_3072:        rsaKeyType(3072),
-	RSA_4096:        rsaKeyType(4096),
-	RSA_8192:        rsaKeyType(8192),
-	EC_SECP256R1:    keyType(foundation.AlgIdSecp256r1),
-	EC_CURVE25519:   keyType(foundation.AlgIdCurve25519),
-	FAST_EC_ED25519: keyType(foundation.AlgIdEd25519),
-	CURVE25519_ED25519: &compoundHybridKeyType{
+	DefaultKeyType: keyType(foundation.AlgIdEd25519),
+	Rsa2048:        rsaKeyType(2048),
+	Rsa3072:        rsaKeyType(3072),
+	Rsa4096:        rsaKeyType(4096),
+	Rsa8192:        rsaKeyType(8192),
+	P256r1:         keyType(foundation.AlgIdSecp256r1),
+	Curve25519:     keyType(foundation.AlgIdCurve25519),
+	Ed25519:        keyType(foundation.AlgIdEd25519),
+	Curve25519Ed25519: &compoundHybridKeyType{
 		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
 		cipherSecondKeyAlgId: foundation.AlgIdNone,
 		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
 		signerSecondKeyAlgId: foundation.AlgIdNone,
 	},
-	CURVE25519Round5_ED25519Falcon: &compoundHybridKeyType{
+	Curve25519Round5Ed25519Falcon: &compoundHybridKeyType{
 		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
 		cipherSecondKeyAlgId: foundation.AlgIdRound5Nd5kem5d,
 		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
 		signerSecondKeyAlgId: foundation.AlgIdFalcon,
+	},
+	Curve25519Round5: &hybridKeyType{
+		firstKeyAlgId:  foundation.AlgIdCurve25519,
+		secondKeyAlgId: foundation.AlgIdRound5Nd5kem5d,
 	},
 }
 
@@ -118,4 +114,71 @@ func (t *compoundHybridKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (
 		t.signerFirstKeyAlgId,
 		t.signerSecondKeyAlgId,
 	)
+}
+
+type hybridKeyType struct {
+	firstKeyAlgId  foundation.AlgId
+	secondKeyAlgId foundation.AlgId
+}
+
+func (t *hybridKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+	return kp.GenerateHybridPrivateKey(
+		t.firstKeyAlgId,
+		t.secondKeyAlgId,
+	)
+}
+
+func GetKeyType(key foundation.Key) (KeyType, error) {
+	algInfo, err := key.AlgInfo()
+	if err != nil {
+		return DefaultKeyType, err
+	}
+	info := foundation.NewKeyInfoWithAlgInfo(algInfo)
+	if info.IsCompound() {
+		if info.CompoundHybridCipherFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
+			info.CompoundHybridCipherSecondKeyAlgId() == foundation.AlgIdRound5Nd5kem5d &&
+			info.CompoundHybridSignerFirstKeyAlgId() == foundation.AlgIdEd25519 &&
+			info.CompoundHybridSignerSecondKeyAlgId() == foundation.AlgIdFalcon {
+			return Curve25519Round5Ed25519Falcon, nil
+		} else if info.CompoundCipherAlgId() == foundation.AlgIdCurve25519 &&
+			info.CompoundSignerAlgId() == foundation.AlgIdEd25519 {
+			return Curve25519Ed25519, nil
+		} else {
+			return DefaultKeyType, ErrUnsupportedKeyType
+		}
+	}
+
+	if info.IsHybrid() {
+		if info.HybridFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
+			info.HybridSecondKeyAlgId() == foundation.AlgIdRound5Nd5kem5d {
+			return Curve25519Round5, nil
+		}
+		return DefaultKeyType, ErrUnsupportedKeyType
+	}
+
+	if algInfo.AlgId() == foundation.AlgIdRsa {
+		switch key.Bitlen() {
+		case 2048:
+			return Rsa2048, nil
+		case 3072:
+			return Rsa3072, nil
+		case 4096:
+			return Rsa4096, nil
+		case 8192:
+			return Rsa8192, nil
+		default:
+			return DefaultKeyType, ErrUnsupportedKeyType
+		}
+	}
+
+	switch algInfo.AlgId() {
+	case foundation.AlgIdCurve25519:
+		return Curve25519, nil
+	case foundation.AlgIdEd25519:
+		return Ed25519, nil
+	case foundation.AlgIdSecp256r1:
+		return P256r1, nil
+	default:
+		return DefaultKeyType, ErrUnsupportedKeyType
+	}
 }
