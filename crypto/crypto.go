@@ -187,12 +187,12 @@ func (c *Crypto) ImportPublicKey(data []byte) (PublicKey, error) {
 		return nil, err
 	}
 
-	kt, err := getKeyType(pk)
+	/*kt, err := getKeyType(pk)
 	if err != nil {
 		return nil, err
-	}
+	}*/
 
-	return &publicKey{receiverID: id, key: pk, keyType: kt}, nil
+	return &publicKey{receiverID: id, key: pk, keyType: DefaultKeyType}, nil
 }
 
 func (c *Crypto) ExportPrivateKey(key PrivateKey) ([]byte, error) {
