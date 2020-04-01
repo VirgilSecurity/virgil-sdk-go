@@ -11,6 +11,8 @@ func TestGetKeyType(t *testing.T) {
 	for kt := Rsa2048; kt <= Curve25519Round5; kt++ {
 		sk, err := c.GenerateKeypairForType(kt)
 		require.NoError(t, err)
-		require.Equal(t, kt, sk.KeyType())
+		gkt, err := getKeyType(sk.Unwrap())
+		require.NoError(t, err)
+		require.Equal(t, kt, gkt)
 	}
 }
