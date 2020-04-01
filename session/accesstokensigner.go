@@ -42,8 +42,7 @@ import (
 )
 
 var (
-	DefaultCrypto Crypto            = &crypto.Crypto{}
-	_             AccessTokenSigner = &VirgilAccessTokenSigner{}
+	DefaultCrypto Crypto = &crypto.Crypto{}
 )
 
 type Crypto interface {

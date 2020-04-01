@@ -39,6 +39,7 @@ import (
 type publicKey struct {
 	receiverID []byte
 	key        foundation.PublicKey
+	keyType    KeyType
 }
 
 func (k *publicKey) Identifier() []byte {
@@ -59,4 +60,8 @@ func (k *publicKey) Export() ([]byte, error) {
 
 func (k *publicKey) Unwrap() foundation.PublicKey {
 	return k.key
+}
+
+func (k *publicKey) KeyType() KeyType {
+	return k.keyType
 }

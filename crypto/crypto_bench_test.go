@@ -108,7 +108,7 @@ func BenchmarkEncryptRound5(b *testing.B) {
 	data := make([]byte, 1)
 	rand.Read(data)
 
-	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.CURVE25519Round5_ED25519Falcon)
+	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5Ed25519Falcon)
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
@@ -148,7 +148,7 @@ func BenchmarkDecryptRound5(b *testing.B) {
 	data := make([]byte, 1)
 	rand.Read(data)
 
-	keypair, err := vcrypto.GenerateKeypairForType(crypto.CURVE25519Round5_ED25519Falcon)
+	keypair, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5Ed25519Falcon)
 	require.NoError(b, err)
 
 	data, err = vcrypto.Encrypt(data, keypair.PublicKey())

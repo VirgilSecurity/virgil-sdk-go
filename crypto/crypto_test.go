@@ -365,15 +365,12 @@ func TestKeyTypes(t *testing.T) {
 		expectedError error
 	}{
 		{crypto.DefaultKeyType, nil},
-		{crypto.RSA_2048, nil},
-		// {crypto.RSA_3072, nil},
-		// {crypto.RSA_4096, nil},
-		// {crypto.RSA_8192, nil},
-		{crypto.EC_SECP256R1, nil},
-		{crypto.EC_CURVE25519, nil},
-		{crypto.FAST_EC_ED25519, nil},
-		{crypto.CURVE25519_ED25519, nil},
-		{crypto.CURVE25519Round5_ED25519Falcon, nil},
+		{crypto.Rsa2048, nil},
+		{crypto.P256r1, nil},
+		{crypto.Curve25519, nil},
+		{crypto.Ed25519, nil},
+		{crypto.Curve25519Ed25519, nil},
+		{crypto.Curve25519Round5Ed25519Falcon, nil},
 		{crypto.KeyType(100), crypto.ErrUnsupportedKeyType},
 	}
 

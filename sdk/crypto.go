@@ -57,7 +57,7 @@ type CardCrypto struct {
 	Crypto Crypto
 }
 
-func (c *CardCrypto) GenerateSignature(data []byte, key crypto.PrivateKey) ([]byte, error) {
+func (c *CardCrypto) Sign(data []byte, key crypto.PrivateKey) ([]byte, error) {
 	return c.getCrypto().Sign(data, key)
 }
 
@@ -73,8 +73,8 @@ func (c *CardCrypto) ImportPublicKey(data []byte) (crypto.PublicKey, error) {
 	return c.getCrypto().ImportPublicKey(data)
 }
 
-func (c *CardCrypto) GenerateSHA512(data []byte) ([]byte, error) {
-	return c.Crypto.Hash(data, crypto.Sha512)
+func (c *CardCrypto) Hash(data []byte, t crypto.HashType) ([]byte, error) {
+	return c.Crypto.Hash(data, t)
 }
 
 func (c *CardCrypto) getCrypto() Crypto {

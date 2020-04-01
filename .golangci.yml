@@ -83,7 +83,7 @@ linters-settings:
   goimports:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
-    local-prefixes: github.com/VirgilSecurity/virgil-sdk-go
+    local-prefixes: github.com/VirgilSecurity/virgil-sdk-go/v6
   golint:
     # minimal confidence for issues, default is 0.8
     min-confidence: 0.8
@@ -92,7 +92,7 @@ linters-settings:
     simplify: true
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 15
+    min-complexity: 25
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 10
@@ -157,8 +157,8 @@ linters-settings:
     #   - rangeValCopy
 
     # # Which checks should be disabled; can't be combined with 'enabled-checks'; default is empty
-    # disabled-checks:
-    #   - regexpMust
+    disabled-checks:
+      - ifElseChain
 
     # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint run` to see all tags and checks.
     # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".

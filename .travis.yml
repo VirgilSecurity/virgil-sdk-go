@@ -13,8 +13,6 @@ matrix:
       go: stable
       env:
         - LINT_ENABLE=ON
-    - os: linux
-      go: "1.12.x"
 
     ##########################################################################
     # Clang on OSX
@@ -69,10 +67,6 @@ matrix:
     ##########################################################################
     - os: windows
       go: stable
-
-env:
-  global:
-    - GO111MODULE=on
 
 install:
   - go mod download
