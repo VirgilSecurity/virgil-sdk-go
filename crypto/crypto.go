@@ -196,11 +196,7 @@ func (c *Crypto) ExportPrivateKey(key PrivateKey) ([]byte, error) {
 }
 
 func (c *Crypto) ExportPublicKey(key PublicKey) ([]byte, error) {
-	pk, ok := key.(*publicKey)
-	if !ok {
-		return nil, ErrUnsupportedParameter
-	}
-	return pk.Export()
+	return key.Export()
 }
 
 func (c *Crypto) calculateFingerprint(key foundation.PublicKey) ([]byte, error) {
@@ -330,10 +326,6 @@ func (c *Crypto) Sign(data []byte, signer PrivateKey) ([]byte, error) {
 }
 
 func (c *Crypto) VerifySignature(data []byte, signature []byte, key PublicKey) error {
-	pk, ok := key.(*publicKey)
-	if !ok {
-		return ErrUnsupportedParameter
-	}
 
 	v := foundation.NewVerifier()
 	defer delete(v)
@@ -343,7 +335,7 @@ func (c *Crypto) VerifySignature(data []byte, signature []byte, key PublicKey) e
 	}
 	v.AppendData(data)
 
-	if v.Verify(pk.key) {
+	if v.Verify(key.Unwrap()) {
 		return nil
 	}
 	return ErrSignVerification
@@ -370,11 +362,6 @@ func (c *Crypto) SignStream(in io.Reader, signer PrivateKey) ([]byte, error) {
 }
 
 func (c *Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) error {
-	pk, ok := key.(*publicKey)
-	if !ok {
-		return ErrUnsupportedParameter
-	}
-
 	v := foundation.NewVerifier()
 	defer delete(v)
 
@@ -385,7 +372,7 @@ func (c *Crypto) VerifyStream(in io.Reader, signature []byte, key PublicKey) err
 		return err
 	}
 
-	if v.Verify(pk.key) {
+	if v.Verify(key.Unwrap()) {
 		return nil
 	}
 	return ErrSignVerification
@@ -676,12 +663,8 @@ func (c *Crypto) verifyCipherSign(cipher *foundation.RecipientCipher, verifierKe
 	if err != nil {
 		return err
 	}
-	pk, ok := k.(*publicKey)
-	if !ok {
-		return ErrUnsupportedParameter
-	}
 
-	if cipher.VerifySignerInfo(signInfo, pk.key) {
+	if cipher.VerifySignerInfo(signInfo, k.Unwrap()) {
 		return nil
 	}
 	return ErrSignVerification
@@ -729,11 +712,7 @@ func (c *Crypto) setupEncryptCipher(recipients []PublicKey, padding bool) (*foun
 
 func (c *Crypto) setupRecipients(cipher *foundation.RecipientCipher, recipients []PublicKey) error {
 	for _, r := range recipients {
-		pk, ok := r.(*publicKey)
-		if !ok {
-			return ErrUnsupportedParameter
-		}
-		cipher.AddKeyRecipient(r.Identifier(), pk.key)
+		cipher.AddKeyRecipient(r.Identifier(), r.Unwrap())
 	}
 	if err := cipher.StartEncryption(); err != nil {
 		return err

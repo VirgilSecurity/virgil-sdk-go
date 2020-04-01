@@ -128,7 +128,13 @@ func (t *hybridKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundati
 	)
 }
 
-func GetKeyType(key foundation.Key) (KeyType, error) {
+func GetKeyType(obj deleter) (KeyType, error) {
+
+	key, ok := obj.(foundation.Key)
+	if !ok {
+		return DefaultKeyType, ErrUnsupportedKeyType
+	}
+
 	algInfo, err := key.AlgInfo()
 	if err != nil {
 		return DefaultKeyType, err
