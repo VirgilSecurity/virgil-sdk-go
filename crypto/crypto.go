@@ -46,11 +46,13 @@ type PrivateKey interface {
 	Identifier() []byte
 	PublicKey() PublicKey
 	Unwrap() foundation.PrivateKey
+	KeyType() KeyType
 }
 type PublicKey interface {
 	Export() ([]byte, error)
 	Identifier() []byte
 	Unwrap() foundation.PublicKey
+	KeyType() KeyType
 }
 
 type Crypto struct {
@@ -78,13 +80,17 @@ func (c *Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, e
 	if err != nil {
 		return nil, err
 	}
-
 	id, err := c.calculateFingerprint(pk)
 	if err != nil {
 		return nil, err
 	}
 
-	return &privateKey{receiverID: id, key: sk}, nil
+	kt, err := getKeyType(sk)
+	if err != nil {
+		return nil, err
+	}
+
+	return &privateKey{receiverID: id, key: sk, keyType: kt, publicKey: &publicKey{keyType: kt, key: pk, receiverID: id}}, nil
 }
 
 func (c *Crypto) GenerateKeypairForType(t KeyType) (PrivateKey, error) {
@@ -148,13 +154,17 @@ func (c *Crypto) ImportPrivateKey(data []byte) (PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	id, err := c.calculateFingerprint(pk)
 	if err != nil {
 		return nil, err
 	}
 
-	return &privateKey{receiverID: id, key: sk}, nil
+	kt, err := getKeyType(sk)
+	if err != nil {
+		return nil, err
+	}
+
+	return &privateKey{receiverID: id, key: sk, keyType: kt, publicKey: &publicKey{keyType: kt, key: pk, receiverID: id}}, nil
 }
 
 func (c *Crypto) ImportPublicKey(data []byte) (PublicKey, error) {
@@ -177,7 +187,12 @@ func (c *Crypto) ImportPublicKey(data []byte) (PublicKey, error) {
 		return nil, err
 	}
 
-	return &publicKey{receiverID: id, key: pk}, nil
+	kt, err := getKeyType(pk)
+	if err != nil {
+		return nil, err
+	}
+
+	return &publicKey{receiverID: id, key: pk, keyType: kt}, nil
 }
 
 func (c *Crypto) ExportPrivateKey(key PrivateKey) ([]byte, error) {

@@ -33,14 +33,14 @@
 package crypto
 
 import (
-	"fmt"
-
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 )
 
 type privateKey struct {
 	receiverID []byte
 	key        foundation.PrivateKey
+	publicKey  PublicKey
+	keyType    KeyType
 }
 
 func (k *privateKey) Identifier() []byte {
@@ -48,14 +48,12 @@ func (k *privateKey) Identifier() []byte {
 }
 
 func (k *privateKey) PublicKey() PublicKey {
-	pk, err := k.key.ExtractPublicKey()
-	if err != nil {
-		panic(fmt.Errorf("PrivateKey.PublicKey: unexpected error: %v", err))
-	}
-
-	return &publicKey{k.Identifier(), pk}
+	return k.publicKey
 }
 
 func (k *privateKey) Unwrap() foundation.PrivateKey {
 	return k.key
+}
+func (k *privateKey) KeyType() KeyType {
+	return k.keyType
 }
