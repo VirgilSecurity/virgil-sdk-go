@@ -93,9 +93,10 @@ func (obj *RawPublicKey) AlgId() AlgId {
  */
 func (obj *RawPublicKey) AlgInfo() (AlgInfo, error) {
 	proxyResult := /*pr4*/ C.vscf_raw_public_key_alg_info(obj.cCtx)
-	C.vscf_impl_shallow_copy(proxyResult)
+
 	runtime.KeepAlive(obj)
-	return FoundationImplementationWrapAlgInfo(proxyResult) /* r4 */
+
+	return FoundationImplementationWrapAlgInfoCopy(proxyResult) /* r4.1 */
 }
 
 /*

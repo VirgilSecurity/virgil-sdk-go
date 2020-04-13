@@ -38,4 +38,4 @@
 package virgil
 
 // Version current go sdk version
-const Version = "v6.0.11"
+const Version = "v6.0.12"
