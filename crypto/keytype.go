@@ -54,6 +54,7 @@ const (
 	Curve25519Ed25519
 	Curve25519Round5Ed25519Falcon
 	Curve25519Round5
+	Curve25519Curve25519
 )
 
 type keyGen interface {
@@ -84,6 +85,10 @@ var keyTypeMap = map[KeyType]keyGen{
 	Curve25519Round5: &hybridKeyType{
 		firstKeyAlgId:  foundation.AlgIdCurve25519,
 		secondKeyAlgId: foundation.AlgIdRound5Nd5kem5d,
+	},
+	Curve25519Curve25519: &hybridKeyType{
+		firstKeyAlgId:  foundation.AlgIdCurve25519,
+		secondKeyAlgId: foundation.AlgIdCurve25519,
 	},
 }
 
@@ -159,6 +164,11 @@ func getKeyType(obj deleter) (KeyType, error) {
 			info.HybridSecondKeyAlgId() == foundation.AlgIdRound5Nd5kem5d {
 			return Curve25519Round5, nil
 		}
+		if info.HybridFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
+			info.HybridSecondKeyAlgId() == foundation.AlgIdCurve25519 {
+			return Curve25519Curve25519, nil
+		}
+
 		return DefaultKeyType, ErrUnsupportedKeyType
 	}
 

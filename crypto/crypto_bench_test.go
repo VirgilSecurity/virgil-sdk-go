@@ -101,14 +101,32 @@ func BenchmarkEncrypt(b *testing.B) {
 	}
 }
 
-func BenchmarkEncryptRound5(b *testing.B) {
+func BenchmarkEncryptHybridCurveCurve(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
-	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5Ed25519Falcon)
+	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Curve25519)
+	require.NoError(b, err)
+	encryptPk := encryptSk.PublicKey()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if _, err := vcrypto.Encrypt(data, encryptPk); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+func BenchmarkEncryptHybridCurveRound5(b *testing.B) {
+	vcrypto := &crypto.Crypto{}
+
+	//make random data
+	data := make([]byte, 1)
+	rand.Read(data)
+
+	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5)
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
@@ -141,14 +159,35 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 }
 
-func BenchmarkDecryptRound5(b *testing.B) {
+func BenchmarkDecryptHybridCurveCurve(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
 	//make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
-	keypair, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5Ed25519Falcon)
+	keypair, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Curve25519)
+	require.NoError(b, err)
+
+	data, err = vcrypto.Encrypt(data, keypair.PublicKey())
+	require.NoError(b, err)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if _, err = vcrypto.Decrypt(data, keypair); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkDecryptHybridCurveRound5(b *testing.B) {
+	vcrypto := &crypto.Crypto{}
+
+	//make random data
+	data := make([]byte, 1)
+	rand.Read(data)
+
+	keypair, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5)
 	require.NoError(b, err)
 
 	data, err = vcrypto.Encrypt(data, keypair.PublicKey())
@@ -255,5 +294,25 @@ func BenchmarkDecryptThenVerify(b *testing.B) {
 		if _, err = vcrypto.DecryptThenVerify(data, encryptSk, signerPk); err != nil {
 			b.Fatal(err)
 		}
+	}
+}
+
+func Benchmark1000Recipients(b *testing.B) {
+	vcrypto := &crypto.Crypto{}
+	n := 1000
+	keys := make([]crypto.PublicKey, 0, n)
+	var kp crypto.PrivateKey
+	var err error
+	for i := 0; i < n; i++ {
+		kp, err = vcrypto.GenerateKeypairForType(crypto.Ed25519)
+		require.NoError(b, err)
+		keys = append(keys, kp.PublicKey())
+	}
+	data := make([]byte, 50)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := vcrypto.SignThenEncryptWithPadding(data, kp, true, keys...)
+		require.NoError(b, err)
+		//fmt.Println(len(ct))
 	}
 }
