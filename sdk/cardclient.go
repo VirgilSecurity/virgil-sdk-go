@@ -40,8 +40,9 @@ package sdk
 import (
 	"context"
 	"encoding/hex"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6"
 	"net/http"
+
+	"github.com/VirgilSecurity/virgil-sdk-go/v6"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/common/client"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
@@ -112,7 +113,7 @@ type SearchByTypeRequest struct {
 	CardTypes  []string `json:"card_types"`
 }
 
-func (c *CardClient) SearchCardsByTypes(identities []string, cardTypes []string, token string) ([]*RawSignedModel, error) {
+func (c *CardClient) SearchCards(identities []string, cardTypes []string, token string) ([]*RawSignedModel, error) {
 	resp, err := c.client.Send(context.TODO(), &client.Request{
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5/actions/search",

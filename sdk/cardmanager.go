@@ -214,18 +214,18 @@ func (c *CardManager) RevokeCard(cardID string) error {
 	return c.cardClient.RevokeCard(cardID, token.String())
 }
 
-func (c *CardManager) SearchCards(identity string) (Cards, error) {
-	return c.SearchCardsByTypes([]string{identity})
+func (c *CardManager) SearchCards(identities ...string) (Cards, error) {
+	return c.SearchCardsWithTypes(identities)
 }
 
-func (c *CardManager) SearchCardsByTypes(identities []string, cardTypes ...string) (Cards, error) {
+func (c *CardManager) SearchCardsWithTypes(identities []string, cardTypes ...string) (Cards, error) {
 	tokenContext := &session.TokenContext{Identity: "my_default_identity", Operation: "search"}
 	token, err := c.accessTokenProvider.GetToken(tokenContext)
 	if err != nil {
 		return nil, err
 	}
 
-	rawCards, err := c.cardClient.SearchCardsByTypes(identities, cardTypes, token.String())
+	rawCards, err := c.cardClient.SearchCards(identities, cardTypes, token.String())
 	if err != nil {
 		return nil, err
 	}
