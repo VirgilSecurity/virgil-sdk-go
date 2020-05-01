@@ -40,6 +40,7 @@ package sdk
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"os"
 	"testing"
@@ -108,7 +109,7 @@ func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 	manager, err := initCardManager()
 	require.NoError(t, err)
 
-	card, err := manager.GetCard(randomString())
+	card, err := manager.GetCard(randomHexString())
 	require.Nil(t, card)
 	require.True(t, xerrors.Is(err, expectedError), err.Error())
 
@@ -153,26 +154,34 @@ func TestCardManager_Integration_Publish_Get_Search_Types(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cards))
+	require.Equal(t, type1, cards[0].CardType)
 
 	cards, err = manager.SearchCardsWithTypes([]string{name1}, type2, randomString())
 
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cards))
+	require.Equal(t, type2, cards[0].CardType)
 
 	cards, err = manager.SearchCardsWithTypes([]string{name1, name2}, type1, randomString())
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(cards))
+	require.Equal(t, type1, cards[0].CardType)
+	require.Equal(t, type1, cards[1].CardType)
 
 	cards, err = manager.SearchCardsWithTypes([]string{name1}, type2, type1)
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(cards))
+	require.Equal(t, name1, cards[0].Identity)
+	require.Equal(t, name1, cards[1].Identity)
 
 	cards, err = manager.SearchCardsWithTypes([]string{name2}, type1, type2, randomString())
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(cards))
+	require.Equal(t, name2, cards[0].Identity)
+	require.Equal(t, name2, cards[1].Identity)
 
 	cards, err = manager.SearchCardsWithTypes([]string{name2, name1}, type2, type1, randomString())
 
@@ -272,8 +281,14 @@ func PublishCard(t *testing.T, manager *CardManager, identity, cardType, previou
 	return card, err
 }
 
-func randomString() string {
+func randomHexString() string {
 	var buf [32]byte
 	rand.Read(buf[:])
 	return hex.EncodeToString(buf[:])
+}
+
+func randomString() string {
+	var buf [8]byte
+	rand.Read(buf[:])
+	return base64.StdEncoding.EncodeToString(buf[:])
 }
