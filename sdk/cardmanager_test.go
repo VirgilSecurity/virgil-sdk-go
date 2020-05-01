@@ -132,37 +132,59 @@ func TestCardManager_Integration_Publish_Get_Search_Types(t *testing.T) {
 	manager, err := initCardManager()
 	require.NoError(t, err)
 
-	name := "Alice-" + randomString()
+	name1 := "Alice-" + randomString()
+	name2 := "Bob-" + randomString()
 	type1 := randomString()
 	type2 := randomString()
 
-	_, err = PublishCard(t, manager, name, type1, "")
+	_, err = PublishCard(t, manager, name1, type1, "")
 	require.NoError(t, err)
 
-	_, err = PublishCard(t, manager, name, type2, "")
+	_, err = PublishCard(t, manager, name1, type2, "")
 	require.NoError(t, err)
 
-	cards, err := manager.SearchCardsWithTypes([]string{name}, type1, randomString())
+	_, err = PublishCard(t, manager, name2, type1, "")
+	require.NoError(t, err)
+
+	_, err = PublishCard(t, manager, name2, type2, "")
+	require.NoError(t, err)
+
+	cards, err := manager.SearchCardsWithTypes([]string{name1}, type1, randomString())
 
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cards))
 
-	cards, err = manager.SearchCardsWithTypes([]string{name}, type2, randomString())
+	cards, err = manager.SearchCardsWithTypes([]string{name1}, type2, randomString())
 
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cards))
 
-	cards, err = manager.SearchCardsWithTypes([]string{name}, type2, type1, randomString())
+	cards, err = manager.SearchCardsWithTypes([]string{name1, name2}, type1, randomString())
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(cards))
 
-	cards, err = manager.SearchCardsWithTypes([]string{name})
+	cards, err = manager.SearchCardsWithTypes([]string{name1}, type2, type1)
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(cards))
 
-	cards, err = manager.SearchCardsWithTypes([]string{name}, randomString())
+	cards, err = manager.SearchCardsWithTypes([]string{name2}, type1, type2, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 2, len(cards))
+
+	cards, err = manager.SearchCardsWithTypes([]string{name2, name1}, type2, type1, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 4, len(cards))
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1, name2})
+
+	require.NoError(t, err)
+	require.Equal(t, 4, len(cards))
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1, name2}, randomString())
 	require.Equal(t, 0, len(cards))
 	require.NoError(t, err)
 }
