@@ -45,6 +45,7 @@ import (
 
 type CardParams struct {
 	Identity       string
+	CardType       string
 	PrivateKey     crypto.PrivateKey
 	PreviousCardId string
 	ExtraFields    map[string]string

@@ -40,9 +40,9 @@ package sdk
 import (
 	"context"
 	"encoding/hex"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6"
 	"net/http"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/common/client"
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
 )
@@ -107,12 +107,20 @@ func (c *CardClient) PublishCard(rawCard *RawSignedModel, token string) (*RawSig
 	return returnedRawCard, nil
 }
 
-func (c *CardClient) SearchCards(identity string, token string) ([]*RawSignedModel, error) {
+type SearchByTypeRequest struct {
+	Identities []string `json:"identities"`
+	CardTypes  []string `json:"card_types"`
+}
+
+func (c *CardClient) SearchCardsByTypes(identities []string, cardTypes []string, token string) ([]*RawSignedModel, error) {
 	resp, err := c.client.Send(context.TODO(), &client.Request{
 		Method:   http.MethodPost,
 		Endpoint: "/card/v5/actions/search",
-		Payload:  map[string]string{"identity": identity},
-		Header:   c.makeHeader(token),
+		Payload: &SearchByTypeRequest{
+			Identities: identities,
+			CardTypes:  cardTypes,
+		},
+		Header: c.makeHeader(token),
 	})
 	if err != nil {
 		return nil, errors.NewSDKError(err, "action", "CardClient.SearchCards")

@@ -46,6 +46,7 @@ import (
 type Card struct {
 	Id             string
 	Identity       string
+	CardType       string
 	PublicKey      crypto.PublicKey
 	Version        string
 	CreatedAt      time.Time
