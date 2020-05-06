@@ -98,16 +98,12 @@ extern "C" {
 #define VSCR_RATCHET_KEY_UTILS 1
 #endif
 
-#ifndef VSCR_RATCHET_KEY_ID
-#define VSCR_RATCHET_KEY_ID 1
-#endif
-
 #ifndef VSCR_ERROR
 #define VSCR_ERROR 1
 #endif
 
-#ifndef VSCR_RATCHET_X3DH
-#define VSCR_RATCHET_X3DH 1
+#ifndef VSCR_RATCHET_XXDH
+#define VSCR_RATCHET_XXDH 1
 #endif
 
 #ifndef VSCR_RATCHET_MESSAGE
@@ -148,6 +144,10 @@ extern "C" {
 
 #ifndef VSCR_RATCHET_KEYS
 #define VSCR_RATCHET_KEYS 1
+#endif
+
+#ifndef VSCR_RATCHET_PB_UTILS
+#define VSCR_RATCHET_PB_UTILS 1
 #endif
 
 #ifndef VSCR_RATCHET
