@@ -17,7 +17,7 @@
  * Conditionally provide the PKE NIST API functions.
  */
 
-#if CRYPTO_CIPHERTEXTBYTES == 0
+#ifdef ROUND5_CCA_PKE 
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +25,11 @@ extern "C" {
 
 #include "r5_cca_pke.h"
 
+    #define CRYPTO_SECRETKEYBYTES  (PARAMS_KAPPA_BYTES + PARAMS_KAPPA_BYTES + PARAMS_PK_SIZE)
+    #define CRYPTO_PUBLICKEYBYTES  PARAMS_PK_SIZE
+    #define CRYPTO_BYTES           (PARAMS_CT_SIZE + PARAMS_KAPPA_BYTES + 16)
+    #define CRYPTO_CIPHERTEXTBYTES 0
+        
     /**
      * Generates an ENCRYPT key pair.
      *
