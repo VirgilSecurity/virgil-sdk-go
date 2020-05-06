@@ -14,7 +14,7 @@ import (
 )
 
 func ExampleCardManager_PublishCard() {
-	const identity = "Alice"
+	const identity = "Alice1"
 	var crypto crypto.Crypto
 
 	// generate a key pair
@@ -44,23 +44,23 @@ func ExampleCardManager_PublishCard() {
 		log.Fatal(err)
 	}
 	fmt.Println(card.Identity)
-	// Output: Alice
+	// Output: Alice1
 }
 
 func Example_encryptDecrypt() {
 	const (
-		alice = "Alice"
-		bob   = "Bob"
+		Alice1 = "Alice1"
+		Bob1   = "Bob1"
 	)
-	text := fmt.Sprintf("Hello, %s!", bob)
+	text := fmt.Sprintf("Hello, %s!", Bob1)
 
-	registerCard(alice)
-	registerCard(bob)
-	encryptedMsg := encrypt(alice, bob, []byte(text))
-	decryptedMsg := decrypt(alice, bob, encryptedMsg)
+	registerCard(Alice1)
+	registerCard(Bob1)
+	encryptedMsg := encrypt(Alice1, Bob1, []byte(text))
+	decryptedMsg := decrypt(Alice1, Bob1, encryptedMsg)
 
 	fmt.Printf("%s\n", decryptedMsg)
-	// Output: Hello, Bob!
+	// Output: Hello, Bob1!
 }
 
 func encrypt(from string, to string, messageToEncrypt []byte) []byte {
@@ -76,13 +76,13 @@ func encrypt(from string, to string, messageToEncrypt []byte) []byte {
 
 	cardManager := setupCardManager()
 
-	// using cardManager search for Bob's cards on Cards Service
+	// using cardManager search for Bob1's cards on Cards Service
 	cards, err := cardManager.SearchCards(to)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// sign a message with a private key then encrypt using Bob's public keys
+	// sign a message with a private key then encrypt using Bob1's public keys
 	encryptedMessage, err := crypto.SignThenEncrypt(messageToEncrypt, fromPrivateKey, cards.ExtractPublicKeys()...)
 	if err != nil {
 		log.Fatal(err)
@@ -102,13 +102,13 @@ func decrypt(from, to string, encryptedMessage []byte) []byte {
 	}
 
 	cardManager := setupCardManager()
-	// using cardManager search for Alice's cards on Cards Service
+	// using cardManager search for Alice1's cards on Cards Service
 	cards, err := cardManager.SearchCards(from)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// decrypt with a private key and verify using one of Alice's public keys
+	// decrypt with a private key and verify using one of Alice1's public keys
 	decryptedMessage, err := crypto.DecryptThenVerify(encryptedMessage, toPrivateKey, cards.ExtractPublicKeys()...)
 	if err != nil {
 		log.Fatal(err)
