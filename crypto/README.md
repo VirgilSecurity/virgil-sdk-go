@@ -51,7 +51,7 @@ To support older version amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel, ex
 
 - Build docker image
 	- navigate to `./crypto/wrapper/build`
-	- build `docker build -t ccrypto -f Dockerfile_legacy.` image 
+	- build `docker build -t ccrypto -f Dockerfile_legacy .` image 
 - Build pre-build libraries
 	- run docker from the root project `docker run -it --rm -v $PWD:/app ccrypto bash`
 	- run `pip install protobuf` command inside a docker container
