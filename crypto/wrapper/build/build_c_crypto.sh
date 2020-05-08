@@ -16,6 +16,7 @@ cd $TEMPDIR/build && \
 cmake \
     -DVIRGIL_WRAP_GO=OFF \
     -DVIRGIL_LIB_PYTHIA=OFF \
+    -DVIRGIL_LIB_RATCHET=OFF \
     -DVIRGIL_INSTALL_HDRS=ON \
     -DVIRGIL_INSTALL_LIBS=ON \
     -DVIRGIL_INSTALL_CMAKE=OFF \
@@ -34,6 +35,7 @@ cd $TEMPDIR/wrappers/go && \
 if [[ -d "./pkg/${OS}_${ARCH}/lib64" ]]; then
   mv ./pkg/${OS}_${ARCH}/lib64 ./pkg/${OS}_${ARCH}/lib
 fi && \
+rm -rf ratchet
 go test ./...
 
 RETRES=$?

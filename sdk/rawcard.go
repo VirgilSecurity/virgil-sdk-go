@@ -61,6 +61,7 @@ func GenerateRawCard(crypto Crypto, cardParams *CardParams, createdAt time.Time)
 	}
 	snapshot, err := TakeSnapshot(RawCardContent{
 		Identity:       cardParams.Identity,
+		CardType:       cardParams.CardType,
 		PublicKey:      publicKey,
 		CreatedAt:      createdAt.UTC().Unix(),
 		PreviousCardId: cardParams.PreviousCardId,
@@ -114,6 +115,7 @@ func ParseCard(crypto Crypto, card *Card) (*RawSignedModel, error) {
 
 type RawCardContent struct {
 	Identity       string `json:"identity"`
+	CardType       string `json:"card_type"`
 	PublicKey      []byte `json:"public_key"`
 	Version        string `json:"version"`
 	CreatedAt      int64  `json:"created_at"`

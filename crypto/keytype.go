@@ -54,6 +54,7 @@ const (
 	Curve25519Ed25519
 	Curve25519Round5Ed25519Falcon
 	Curve25519Round5
+	Curve25519Curve25519
 )
 
 type keyGen interface {
@@ -77,13 +78,17 @@ var keyTypeMap = map[KeyType]keyGen{
 	},
 	Curve25519Round5Ed25519Falcon: &compoundHybridKeyType{
 		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
-		cipherSecondKeyAlgId: foundation.AlgIdRound5Nd5kem5d,
+		cipherSecondKeyAlgId: foundation.AlgIdRound5Nd1cca5d,
 		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
 		signerSecondKeyAlgId: foundation.AlgIdFalcon,
 	},
 	Curve25519Round5: &hybridKeyType{
 		firstKeyAlgId:  foundation.AlgIdCurve25519,
-		secondKeyAlgId: foundation.AlgIdRound5Nd5kem5d,
+		secondKeyAlgId: foundation.AlgIdRound5Nd1cca5d,
+	},
+	Curve25519Curve25519: &hybridKeyType{
+		firstKeyAlgId:  foundation.AlgIdCurve25519,
+		secondKeyAlgId: foundation.AlgIdCurve25519,
 	},
 }
 
@@ -142,7 +147,7 @@ func getKeyType(obj deleter) (KeyType, error) {
 	info := foundation.NewKeyInfoWithAlgInfo(algInfo)
 	if info.IsCompound() {
 		if info.CompoundHybridCipherFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
-			info.CompoundHybridCipherSecondKeyAlgId() == foundation.AlgIdRound5Nd5kem5d &&
+			info.CompoundHybridCipherSecondKeyAlgId() == foundation.AlgIdRound5Nd1cca5d &&
 			info.CompoundHybridSignerFirstKeyAlgId() == foundation.AlgIdEd25519 &&
 			info.CompoundHybridSignerSecondKeyAlgId() == foundation.AlgIdFalcon {
 			return Curve25519Round5Ed25519Falcon, nil
@@ -156,9 +161,14 @@ func getKeyType(obj deleter) (KeyType, error) {
 
 	if info.IsHybrid() {
 		if info.HybridFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
-			info.HybridSecondKeyAlgId() == foundation.AlgIdRound5Nd5kem5d {
+			info.HybridSecondKeyAlgId() == foundation.AlgIdRound5Nd1cca5d {
 			return Curve25519Round5, nil
 		}
+		if info.HybridFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
+			info.HybridSecondKeyAlgId() == foundation.AlgIdCurve25519 {
+			return Curve25519Curve25519, nil
+		}
+
 		return DefaultKeyType, ErrUnsupportedKeyType
 	}
 

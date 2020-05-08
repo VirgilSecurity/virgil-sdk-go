@@ -40,7 +40,7 @@ package session
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
 )
@@ -54,11 +54,11 @@ func TestJwtVerifier_VerifyToken(t *testing.T) {
 
 	c := &crypto.Crypto{}
 	pub, err := c.ImportPublicKey([]byte(apiKeySource))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	verifier := NewJwtVerifier(pub, apiKeyID, &VirgilAccessTokenSigner{})
 
 	jwt, err := JwtFromString(jwtSource)
-	assert.NoError(t, err)
-	assert.NoError(t, verifier.VerifyToken(jwt))
+	require.NoError(t, err)
+	require.NoError(t, verifier.VerifyToken(jwt))
 }
