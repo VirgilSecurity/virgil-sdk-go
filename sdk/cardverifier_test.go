@@ -43,7 +43,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
 )
@@ -66,7 +66,7 @@ func TestWhitelist(t *testing.T) {
 		Identity:   cardCreds.Signer,
 		PrivateKey: pk,
 	}, time.Now())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var modelSigner ModelSigner // NewModelSigner(cardCrypto)
 	err = modelSigner.SelfSign(model, pk, map[string]string{
@@ -75,7 +75,7 @@ func TestWhitelist(t *testing.T) {
 		"x": "y",
 		"z": cardCreds.Signer,
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	addSign(t, model, creds[0])
 	addRawSign(t, model, creds[1])
@@ -89,11 +89,11 @@ func TestWhitelist(t *testing.T) {
 	)
 
 	card, err := ParseRawCard(cryptoNative, model, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//check default case
 	err = verifier.VerifyCard(card)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//check that everything is ok if at least one signature in whitelist is valid
 	// creds[4] doesn't exist
@@ -104,7 +104,7 @@ func TestWhitelist(t *testing.T) {
 	)
 
 	err = verifier.VerifyCard(card)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	//Check that verification fails if no signature exists for whitelist
 	// creds[3] doesn't exist
@@ -116,7 +116,7 @@ func TestWhitelist(t *testing.T) {
 	)
 
 	err = verifier.VerifyCard(card)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func addRawSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
@@ -124,10 +124,10 @@ func addRawSign(t *testing.T, model *RawSignedModel, credentials testCredentials
 
 	snapshot := make([]byte, 129)
 	_, err := rand.Read(snapshot)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = modelSigner.SignRaw(model, credentials.VerifierCredentials.Signer, credentials.PrivateKey, snapshot)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func addSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
@@ -140,7 +140,7 @@ func addSign(t *testing.T, model *RawSignedModel, credentials testCredentials) {
 		"z": credentials.VerifierCredentials.Signer,
 	})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func makeRandomCredentials() (crypto.PrivateKey, *VerifierCredentials) {

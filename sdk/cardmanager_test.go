@@ -40,12 +40,13 @@ package sdk
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/xerrors"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
@@ -79,7 +80,7 @@ func initCardManagerWithIdentityName(identityName string) (*CardManager, error) 
 		virgilCardVerifierOptions = append(virgilCardVerifierOptions, VirgilCardVerifierSetCardsServicePublicKey(serviceKey))
 	}
 
-	cardClientOptions := []CardClientOption{}
+	var cardClientOptions []CardClientOption
 	if os.Getenv("TEST_ADDRESS") != "" {
 		cardClientOptions = append(cardClientOptions, SetCardClientURL(os.Getenv("TEST_ADDRESS")))
 	}
@@ -106,65 +107,134 @@ func TestCardManager_Integration_Publish_Get_Search(t *testing.T) {
 	var expectedError = &errors.VirgilAPIError{Code: 10001, Message: "Requested card entity not found."}
 
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	card, err := manager.GetCard(randomString())
-	assert.Nil(t, card)
-	assert.True(t, xerrors.Is(err, expectedError), err.Error())
+	card, err := manager.GetCard(randomHexString())
+	require.Nil(t, card)
+	require.True(t, xerrors.Is(err, expectedError), err.Error())
 
-	card, err = PublishCard(t, manager, "Alice-"+randomString(), "")
-	assert.NoError(t, err)
+	card, err = PublishCard(t, manager, "Alice-"+randomString(), "", "")
+	require.NoError(t, err)
 	card, err = manager.GetCard(card.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, card)
+	require.NoError(t, err)
+	require.NotNil(t, card)
 
 	cards, err := manager.SearchCards(card.Identity)
 
-	assert.NoError(t, err)
-	assert.True(t, len(cards) > 0)
+	require.NoError(t, err)
+	require.True(t, len(cards) > 0)
 
 	cards, err = manager.SearchCards(randomString())
-	assert.True(t, len(cards) == 0)
-	assert.NoError(t, err)
+	require.True(t, len(cards) == 0)
+	require.NoError(t, err)
+}
+
+func TestCardManager_Integration_Publish_Get_Search_Types(t *testing.T) {
+	manager, err := initCardManager()
+	require.NoError(t, err)
+
+	name1 := "Alice-" + randomString()
+	name2 := "Bob-" + randomString()
+	type1 := randomString()
+	type2 := randomString()
+
+	_, err = PublishCard(t, manager, name1, type1, "")
+	require.NoError(t, err)
+
+	_, err = PublishCard(t, manager, name1, type2, "")
+	require.NoError(t, err)
+
+	_, err = PublishCard(t, manager, name2, type1, "")
+	require.NoError(t, err)
+
+	_, err = PublishCard(t, manager, name2, type2, "")
+	require.NoError(t, err)
+
+	cards, err := manager.SearchCardsWithTypes([]string{name1}, type1, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 1, len(cards))
+	require.Equal(t, type1, cards[0].CardType)
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1}, type2, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 1, len(cards))
+	require.Equal(t, type2, cards[0].CardType)
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1, name2}, type1, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 2, len(cards))
+	require.Equal(t, type1, cards[0].CardType)
+	require.Equal(t, type1, cards[1].CardType)
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1}, type2, type1)
+
+	require.NoError(t, err)
+	require.Equal(t, 2, len(cards))
+	require.Equal(t, name1, cards[0].Identity)
+	require.Equal(t, name1, cards[1].Identity)
+
+	cards, err = manager.SearchCardsWithTypes([]string{name2}, type1, type2, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 2, len(cards))
+	require.Equal(t, name2, cards[0].Identity)
+	require.Equal(t, name2, cards[1].Identity)
+
+	cards, err = manager.SearchCardsWithTypes([]string{name2, name1}, type2, type1, randomString())
+
+	require.NoError(t, err)
+	require.Equal(t, 4, len(cards))
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1, name2})
+
+	require.NoError(t, err)
+	require.Equal(t, 4, len(cards))
+
+	cards, err = manager.SearchCardsWithTypes([]string{name1, name2}, randomString())
+	require.Equal(t, 0, len(cards))
+	require.NoError(t, err)
 }
 
 func TestCardManager_Integration_Publish_Replace(t *testing.T) {
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	oldCard, err := PublishCard(t, manager, "Alice-"+randomString(), "")
-	assert.NoError(t, err)
+	oldCard, err := PublishCard(t, manager, "Alice-"+randomString(), "", "")
+	require.NoError(t, err)
 
-	newCard, err := PublishCard(t, manager, oldCard.Identity, oldCard.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, newCard)
+	newCard, err := PublishCard(t, manager, oldCard.Identity, "", oldCard.Id)
+	require.NoError(t, err)
+	require.NotNil(t, newCard)
 
 	oldCard, err = manager.GetCard(oldCard.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, oldCard)
-	assert.True(t, oldCard.IsOutdated)
+	require.NoError(t, err)
+	require.NotNil(t, oldCard)
+	require.True(t, oldCard.IsOutdated)
 }
 
 func TestCardManager_Integration_Publish_Revoke(t *testing.T) {
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	card, err := PublishCard(t, manager, "Alice-"+randomString(), "")
-	assert.NoError(t, err)
-	assert.NotNil(t, card)
+	card, err := PublishCard(t, manager, "Alice-"+randomString(), "", "")
+	require.NoError(t, err)
+	require.NotNil(t, card)
 
 	card, err = manager.GetCard(card.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, card)
-	assert.False(t, card.IsOutdated)
+	require.NoError(t, err)
+	require.NotNil(t, card)
+	require.False(t, card.IsOutdated)
 
 	err = manager.RevokeCard(card.Id)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 	manager, err := initCardManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	identity := "Alice-" + randomString()
 
@@ -172,46 +242,53 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 	for i := 0; i < 3; i++ { //3 branches of 3 cards each
 		prev := ""
 		for j := 0; j < 3; j++ {
-			card, err = PublishCard(t, manager, identity, prev)
-			assert.NoError(t, err)
+			card, err = PublishCard(t, manager, identity, "", prev)
+			require.NoError(t, err)
 			prev = card.Id
 		}
 	}
 
 	cards, err := manager.SearchCards(identity)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.True(t, len(cards) == 3)
+	require.True(t, len(cards) == 3)
 
 	for _, card := range cards {
 		current := card
 		for i := 0; i < 2; i++ {
-			assert.True(t, current.PreviousCard != nil)
-			assert.True(t, current.PreviousCard.Id == current.PreviousCardId)
+			require.True(t, current.PreviousCard != nil)
+			require.True(t, current.PreviousCard.Id == current.PreviousCardId)
 			current = current.PreviousCard
 		}
 	}
 }
 
-func PublishCard(t *testing.T, manager *CardManager, identity string, previousCardID string) (*Card, error) {
+func PublishCard(t *testing.T, manager *CardManager, identity, cardType, previousCardID string) (*Card, error) {
 	key, err := cryptoNative.GenerateKeypair()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cardParams := &CardParams{
 		PrivateKey:     key,
 		Identity:       identity,
+		CardType:       cardType,
 		PreviousCardId: previousCardID,
 		ExtraFields:    map[string]string{"key": "value"},
 	}
 
 	card, err := manager.PublishCard(cardParams)
-	assert.NoError(t, err)
-	assert.Equal(t, card.Identity, cardParams.Identity)
+	require.NoError(t, err)
+	require.Equal(t, card.Identity, cardParams.Identity)
 	return card, err
 }
 
-func randomString() string {
+func randomHexString() string {
 	var buf [32]byte
 	rand.Read(buf[:])
 	return hex.EncodeToString(buf[:])
+}
+
+func randomString() string {
+	var buf [8]byte
+	rand.Read(buf[:])
+	return base64.StdEncoding.EncodeToString(buf[:])
 }

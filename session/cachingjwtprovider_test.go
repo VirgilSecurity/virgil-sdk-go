@@ -43,7 +43,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
@@ -83,11 +82,11 @@ func TestCachingJwtProvider(t *testing.T) {
 
 			for time.Since(start) < (time.Second * 5) {
 				token, err := prov.GetToken(&TokenContext{Identity: "Alice"})
-				assert.NotNil(t, token)
-				assert.NoError(t, err)
+				require.NotNil(t, token)
+				require.NoError(t, err)
 			}
 		}()
 	}
 	wg.Wait()
-	assert.Equal(t, 6, genCount)
+	require.Equal(t, 6, genCount)
 }

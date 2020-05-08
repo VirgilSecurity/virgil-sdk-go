@@ -89,6 +89,7 @@ func ParseRawCard(crypto Crypto, model *RawSignedModel, isOutdated bool) (*Card,
 		PreviousCardId:  content.PreviousCardId,
 		CreatedAt:       time.Unix(content.CreatedAt, 0),
 		Identity:        content.Identity,
+		CardType:        content.CardType,
 		IsOutdated:      isOutdated,
 		PublicKey:       publicKey,
 	}, nil
