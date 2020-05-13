@@ -42,7 +42,7 @@ RUN cd && \
 RUN yum install -y rh-python35
 
 # ---------------------------------------------------------------------------
-#   GoLang 1.12
+#   GoLang 1.14
 # ---------------------------------------------------------------------------
 ENV GOLANG_VERSION 1.14.2
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz

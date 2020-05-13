@@ -6,7 +6,7 @@ This README describes how to manage a new version of Virgil crypto.
 
 - The current folder contains adopted cryptography functions for common cases.
 - The wrapper folder contains the C wrapper, pre-build libraries and build scripts.
-	- `foundation`, `phe`, `ratchet` are auto generated libraries from [Virgil crypto C](https://github.com/VirgilSecurity/virgil-crypto-c).
+	- `foundation`, `phe` are auto generated libraries from [Virgil crypto C](https://github.com/VirgilSecurity/virgil-crypto-c).
 	- `build` folder contains docker files and scripts for build pre-build C libs.
 	- `pkg` folder contains pre-build C libs for different platforms.
 
@@ -53,7 +53,7 @@ To support older version amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel, ex
 	- navigate to `./crypto/wrapper/build`
 	- build `docker build -t ccrypto -f Dockerfile_legacy .` image 
 - Build pre-build libraries
-	- run docker from the root project `docker run -it --rm -v $PWD:/app ccrypto bash`
+	- run docker from the project root `docker run -it --rm -v $PWD:/app ccrypto bash`
 	- run `pip install protobuf` command inside a docker container
 	- run `BRANCH={VIRGIL_CRYPTO_C_BRANCH} /app/crypto/wrapper/build/build_c_crypto.sh` script inside a docker container
 
@@ -72,12 +72,12 @@ Execute the following script from the root of the project
 	- Go to `./crypto/wrapper/build`
 	- build image `docker build -t ccrypto .`
 - Build pre-build libraries
-	- run docker from root project `docker run -it --rm -v $PWD:/app ccrypto bash`
+	- run docker from the project root `docker run -it --rm -v $PWD:/app ccrypto bash`
 	- inside docker container `BRANCH={VIRGIL_CRYPTO_C_BRANCH} /app/crypto/wrapper/build/build_c_crypto.sh`
 
 ### Windows
 
-Execute the following script from the root of the project
+Execute the following script from the project root, make sure mingw-w64 is installed without spaces in its path
 
 ```bash
 > ./crypto/wrapper/build/build_c_crypto.ps1 -branch={VIRGIL_CRYPTO_C_BRANCH}
