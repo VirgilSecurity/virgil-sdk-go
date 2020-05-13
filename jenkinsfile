@@ -1,0 +1,56 @@
+pipeline    {
+    agent { node { label "build-docker"} }
+    environment {
+       CRYPTO_C_BASE_FOLDER = "virgil-crypto-c"
+       DOCKER_CNT_NAME = "ccrypto-builder"
+       credentialsId = "1259d404-cffc-48d4-9961-26d5366d7247"
+    }
+
+   stages {
+        stage('Grab SCM: virgil-sdk-go') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: "${credentialsId}", url: 'https://github.com/VirgilSecurity/virgil-sdk-go']]])
+                }
+            }
+        }
+        stage('Grab SCM: virgil-crypto-c') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${CRYPTO_C_BASE_FOLDER}"]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: "${credentialsId}", url: 'https://github.com/VirgilSecurity/virgil-crypto-c/']]])
+                }
+            }
+
+        }
+        stage("Copy files from virgil-crypto-c") {
+            steps {
+                script {
+                   sh "rm -rf crypto/wrapper/phe"
+                   sh "rm -rf crypto/wrapper/foundation"
+                   sh "cp -r ${CRYPTO_C_BASE_FOLDER}/wrappers/go/phe crypto/wrapper/"
+                   sh "cp -r ${CRYPTO_C_BASE_FOLDER}/wrappers/go/foundation crypto/wrapper/"
+                   sh "ls -al crypto/wrapper"
+                }
+            }
+        }
+        stage("Docker: build") {
+            steps {
+                script {
+                   dir('crypto/wrapper/build') {
+                     sh "docker build -t ccrypto ."
+                  }
+                }
+            }
+        }
+        stage("Docker: build libraries") {
+            steps {
+                script {
+                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
+                  /app/crypto/wrapper/build/build_c_crypto.sh"
+                  }
+               }
+         }
+   }
+
+}
+
