@@ -134,10 +134,25 @@ pipeline    {
                     withCredentials([usernamePassword(credentialsId: "${credentialsId}", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/VirgilSecurity/virgil-sdk-go ${GIT_WORK_BRANCH}"
                     }
-
-
-                    // create PR
-                    // https://github.com/jenkinsci/pipeline-github-plugin
+                }
+            }
+        }
+        stage("Create PR") {
+            agent { node { label "build-docker"} }
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${credentialsId}", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                       sh """
+                        curl -D- -u ${GIT_USERNAME}:${GIT_PASSWORD} https://api.github.com/repos/VirgilSecurity/virgil-sdk-go/pulls \
+                        --header 'Content-Type: application/json' -X POST \
+                        --data '{
+                                "title": "Crypto library update from ${GIT_WORK_BRANCH}",
+                                "body": "Please pull these awesome changes in!",
+                                "head": "${GIT_WORK_BRANCH}",
+                                "base": "master"
+                            }'
+                       """
+                    }
                 }
             }
         }
