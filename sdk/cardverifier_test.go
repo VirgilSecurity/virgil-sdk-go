@@ -53,7 +53,7 @@ type testCredentials struct {
 	PrivateKey          crypto.PrivateKey
 }
 
-func TestWhitelist(t *testing.T) {
+func TestAllowList(t *testing.T) {
 	const credsCount = 5
 	creds := make([]testCredentials, 5)
 	for i := 0; i < credsCount; i++ {
@@ -84,8 +84,8 @@ func TestWhitelist(t *testing.T) {
 	verifier := NewVirgilCardVerifier(
 		VirgilCardVerifierSetCrypto(cryptoNative),
 		VirgilCardVerifierDisableVirgilSignature(),
-		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[0].VerifierCredentials, creds[1].VerifierCredentials)),
-		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[2].VerifierCredentials)),
+		VirgilCardVerifierAddAllowList(NewAllowList(creds[0].VerifierCredentials, creds[1].VerifierCredentials)),
+		VirgilCardVerifierAddAllowList(NewAllowList(creds[2].VerifierCredentials)),
 	)
 
 	card, err := ParseRawCard(cryptoNative, model, false)
@@ -95,24 +95,24 @@ func TestWhitelist(t *testing.T) {
 	err = verifier.VerifyCard(card)
 	require.NoError(t, err)
 
-	//check that everything is ok if at least one signature in whitelist is valid
+	//check that everything is ok if at least one signature in allow list is valid
 	// creds[4] doesn't exist
 	verifier = NewVirgilCardVerifier(
 		VirgilCardVerifierSetCrypto(cryptoNative),
 		VirgilCardVerifierDisableVirgilSignature(),
-		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[4].VerifierCredentials, creds[1].VerifierCredentials)),
+		VirgilCardVerifierAddAllowList(NewAllowList(creds[4].VerifierCredentials, creds[1].VerifierCredentials)),
 	)
 
 	err = verifier.VerifyCard(card)
 	require.NoError(t, err)
 
-	//Check that verification fails if no signature exists for whitelist
+	//Check that verification fails if no signature exists for allow list
 	// creds[3] doesn't exist
 	verifier = NewVirgilCardVerifier(
 		VirgilCardVerifierSetCrypto(cryptoNative),
 		VirgilCardVerifierDisableVirgilSignature(),
-		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[2].VerifierCredentials)),
-		VirgilCardVerifierAddWhitelist(NewWhitelist(creds[3].VerifierCredentials)),
+		VirgilCardVerifierAddAllowList(NewAllowList(creds[2].VerifierCredentials)),
+		VirgilCardVerifierAddAllowList(NewAllowList(creds[3].VerifierCredentials)),
 	)
 
 	err = verifier.VerifyCard(card)
