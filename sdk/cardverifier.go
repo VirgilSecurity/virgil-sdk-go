@@ -70,9 +70,9 @@ func VirgilCardVerifierDisableVirgilSignature() VirgilCardVerifierOption {
 	}
 }
 
-func VirgilCardVerifierAddWhitelist(wl Whitelist) VirgilCardVerifierOption {
+func VirgilCardVerifierAddAllowList(wl *AllowList) VirgilCardVerifierOption {
 	return func(v *VirgilCardVerifier) {
-		v.whitelists = append(v.whitelists, wl)
+		v.allowLists = append(v.allowLists, wl)
 	}
 }
 
@@ -86,7 +86,7 @@ type VirgilCardVerifier struct {
 	crypto                *CardCrypto
 	verifySelfSignature   bool
 	verifyVirgilSignature bool
-	whitelists            []Whitelist
+	allowLists            []*AllowList
 	virgilPublicKey       crypto.PublicKey
 
 	// virgilPublicKeySource is used to update Virgil Cards service public key
@@ -137,15 +137,15 @@ func (v *VirgilCardVerifier) VerifyCard(card *Card) error {
 			return errors.NewSDKError(err, "action", "VirgilCardVerifier.VerifyCard", "validate", "virgil")
 		}
 	}
-	return v.verifyCardByWhitelist(card)
+	return v.verifyCardByAllowList(card)
 }
 
-func (v *VirgilCardVerifier) verifyCardByWhitelist(card *Card) error {
-	for _, whitelist := range v.whitelists {
+func (v *VirgilCardVerifier) verifyCardByAllowList(card *Card) error {
+	for _, allowList := range v.allowLists {
 		signatureVerified := false
 		var err error
-		for i := range whitelist.VerifierCredentials {
-			var cred = whitelist.VerifierCredentials[i]
+		for i := range allowList.VerifierCredentials {
+			var cred = allowList.VerifierCredentials[i]
 			if err = v.ValidateSignerSignature(card, cred.Signer, cred.PublicKey); err != nil {
 				continue
 			}
@@ -181,12 +181,12 @@ func (v *VirgilCardVerifier) ValidateSignerSignature(card *Card, signer string, 
 	return ErrSignerWasNotFound
 }
 
-type Whitelist struct {
+type AllowList struct {
 	VerifierCredentials []*VerifierCredentials
 }
 
-func NewWhitelist(credentials ...*VerifierCredentials) Whitelist {
-	return Whitelist{
+func NewAllowList(credentials ...*VerifierCredentials) *AllowList {
+	return &AllowList{
 		VerifierCredentials: credentials,
 	}
 }
