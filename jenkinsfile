@@ -35,7 +35,6 @@ pipeline    {
                 script {
                    sh "rm -rf crypto/wrapper/{phe,foundation,pkg}"
                    sh "mkdir -p crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
-                   sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
 
                    sh "cp -r ${CRYPTO_C_BASE_FOLDER}/wrappers/go/{phe,foundation} crypto/wrapper/"
                    sh '''
@@ -99,6 +98,7 @@ pipeline    {
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
+                  sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
                   }
             }
         }
@@ -120,6 +120,7 @@ pipeline    {
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME_LEGACY} ccrypto-legacy \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
+                  sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
                   }
             }
         }
