@@ -35,6 +35,7 @@ pipeline    {
                 script {
                    sh "rm -rf crypto/wrapper/{phe,foundation,pkg}"
                    sh "mkdir -p crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                   sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
 
                    sh "cp -r ${CRYPTO_C_BASE_FOLDER}/wrappers/go/{phe,foundation} crypto/wrapper/"
                    sh '''
