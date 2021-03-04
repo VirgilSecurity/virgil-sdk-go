@@ -96,9 +96,8 @@ pipeline    {
                 script {
                   sh "docker ps -a | grep ${DOCKER_CNT_NAME} && docker rm -f  ${DOCKER_CNT_NAME} || true"
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
-                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
+                  sh "docker run -t --rm --user $(id -u tomcat):$(id -g tomcat) -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
-                  sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
                   }
             }
         }
@@ -118,9 +117,8 @@ pipeline    {
                 script {
                   sh "docker ps -a | grep ${DOCKER_CNT_NAME_LEGACY} && docker rm -f  ${DOCKER_CNT_NAME_LEGACY} || true"
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
-                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME_LEGACY} ccrypto-legacy \
+                  sh "docker run -t --rm --user $(id -u tomcat):$(id -g tomcat) -v ${workspace}:/app --name ${DOCKER_CNT_NAME_LEGACY} ccrypto-legacy \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
-                  sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
                   }
             }
         }
