@@ -7,6 +7,7 @@ pipeline    {
        DOCKER_CNT_NAME_LEGACY = "ccrypto-builder-legacy"
        credentialsId = "1259d404-cffc-48d4-9961-26d5366d7247"
        GIT_WORK_BRANCH = "crypto_library_updates_${new Date().format('yyyy-MM-dd')}"
+       JENKINS_USER_ID = "1004"
     }
 
     stages {
@@ -96,7 +97,7 @@ pipeline    {
                 script {
                   sh "docker ps -a | grep ${DOCKER_CNT_NAME} && docker rm -f  ${DOCKER_CNT_NAME} || true"
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
-                  sh "docker run -t --rm --user $(id -u tomcat):$(id -g tomcat) -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
+                  sh "docker run -t --rm --user ${JENKINS_USER_ID}:${JENKINS_USER_ID} -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
                   }
             }
@@ -117,7 +118,7 @@ pipeline    {
                 script {
                   sh "docker ps -a | grep ${DOCKER_CNT_NAME_LEGACY} && docker rm -f  ${DOCKER_CNT_NAME_LEGACY} || true"
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
-                  sh "docker run -t --rm --user $(id -u tomcat):$(id -g tomcat) -v ${workspace}:/app --name ${DOCKER_CNT_NAME_LEGACY} ccrypto-legacy \
+                  sh "docker run -t --rm --user ${JENKINS_USER_ID}:${JENKINS_USER_ID} -v ${workspace}:/app --name ${DOCKER_CNT_NAME_LEGACY} ccrypto-legacy \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
                   }
             }
