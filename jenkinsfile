@@ -102,7 +102,7 @@ pipeline    {
                   }
             }
         }
-        /* stage("Docker: build legacy") {
+        stage("Docker: build legacy") {
             agent { node { label "build-docker"} }
             steps {
                 script {
@@ -122,7 +122,7 @@ pipeline    {
                   /app/crypto/wrapper/build/build_c_crypto.sh"
                   }
             }
-        } */
+        }
         stage("Docker: Chown libraries by Jenkins user") {
             agent { node { label "build-docker"} }
             steps {
