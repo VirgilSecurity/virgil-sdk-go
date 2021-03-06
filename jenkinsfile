@@ -128,7 +128,8 @@ pipeline    {
             steps {
                 script {
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
-                  chown -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  sh "ls -la crypto/wrapper/pkg"
                   }
             }
         }
