@@ -102,7 +102,7 @@ pipeline    {
                   }
             }
         }
-        stage("Docker: Chown libraries by Jenkins user") {
+        stage("Docker: 1 - Chown libraries by Jenkins user") {
             agent { node { label "build-docker"} }
             steps {
                 script {
@@ -134,7 +134,7 @@ pipeline    {
                   }
             }
         }
-        stage("Docker: Chown libraries by Jenkins user") {
+        stage("Docker: 2 - Chown libraries by Jenkins user") {
             agent { node { label "build-docker"} }
             steps {
                 script {
