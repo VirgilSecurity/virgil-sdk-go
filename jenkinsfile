@@ -99,7 +99,6 @@ pipeline    {
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
                   /app/crypto/wrapper/build/build_c_crypto.sh"
-                  sh "chown -R tomcat:tomcat crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
                   }
             }
         }
@@ -124,6 +123,15 @@ pipeline    {
                   }
             }
         } */
+        stage("Docker: Chown libraries by Jenkins user") {
+            agent { node { label "build-docker"} }
+            steps {
+                script {
+                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
+                  chown -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  }
+            }
+        }
         stage("Update git") {
             agent { node { label "build-docker"} }
             steps {
