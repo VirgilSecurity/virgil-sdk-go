@@ -1,5 +1,9 @@
-FROM centos:centos6
+FROM centos:centos6.10
 MAINTAINER Virgil Security Inc. <support@virgilsecurity.com>
+
+# Update Yum repo baseurl as Centos 6 lifetime ended
+RUN sed -i 's+#baseurl=.*+baseurl=https://vault.centos.org/6.10/os/$basearch+g; s,\(^mirrorlist.*\),#\1,g' /etc/yum.repos.d/CentOS-Base.repo
+RUN yum clean all && yum update
 
 # ---------------------------------------------------------------------------
 #   Basic
@@ -39,7 +43,13 @@ RUN cd && \
 # ---------------------------------------------------------------------------
 #   Python 3.5
 # ---------------------------------------------------------------------------
-RUN yum install -y rh-python35
+RUN curl -s https://www.python.org/ftp/python/3.5.9/Python-3.5.9.tgz -o Python-3.5.9.tgz \
+    && tar xfz Python-3.5.9.tgz \
+    && cd Python-3.5.9 \
+    && ./configure --enable-optimizations \
+    && make altinstall \
+    && ln -sfn /usr/local/bin/python3.5 /usr/bin/python3.5
+#RUN yum install -y rh-python35
 
 # ---------------------------------------------------------------------------
 #   GoLang 1.14
