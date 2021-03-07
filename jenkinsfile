@@ -102,7 +102,18 @@ pipeline    {
                   }
             }
         }
-        /* stage("Docker: build legacy") {
+        stage("Docker: 1 - Chown libraries by Jenkins user") {
+            agent { node { label "build-docker"} }
+            steps {
+                script {
+                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
+                  chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} \
+                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  sh "ls -la crypto/wrapper/pkg"
+                  }
+            }
+        }
+        stage("Docker: build legacy") {
             agent { node { label "build-docker"} }
             steps {
                 script {
@@ -122,13 +133,14 @@ pipeline    {
                   /app/crypto/wrapper/build/build_c_crypto.sh"
                   }
             }
-        } */
-        stage("Docker: Chown libraries by Jenkins user") {
+        }
+        stage("Docker: 2 - Chown libraries by Jenkins user") {
             agent { node { label "build-docker"} }
             steps {
                 script {
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
-                  chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} \
+                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
                   sh "ls -la crypto/wrapper/pkg"
                   }
             }
