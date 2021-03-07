@@ -108,7 +108,7 @@ pipeline    {
                 script {
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
                   chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} \
-                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} || true"
                   sh "ls -la crypto/wrapper/pkg"
                   }
             }
@@ -140,7 +140,7 @@ pipeline    {
                 script {
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
                   chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} \
-                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
+                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} || true"
                   sh "ls -la crypto/wrapper/pkg"
                   }
             }
