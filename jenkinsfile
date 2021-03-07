@@ -98,21 +98,12 @@ pipeline    {
                   sh "docker ps -a | grep ${DOCKER_CNT_NAME} && docker rm -f  ${DOCKER_CNT_NAME} || true"
                   sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
                   sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
-                  /app/crypto/wrapper/build/build_c_crypto.sh"
+                  sh -c '/app/crypto/wrapper/build/build_c_crypto.sh && \
+                  chown -c -R 1004:1004 /app/crypto/wrapper/pkg/linux_amd64 && \
+                  chmod -R g+w /app/crypto/wrapper/pkg/linux_amd64'"
                   }
             }
         }
-        /* stage("Docker: 1 - Chown libraries by Jenkins user") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
-                  chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} \
-                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} || true"
-                  sh "ls -la crypto/wrapper/pkg"
-                  }
-            }
-        } */
         stage("Docker: build legacy") {
             agent { node { label "build-docker"} }
             steps {
@@ -134,17 +125,6 @@ pipeline    {
                   }
             }
         }
-        /* stage("Docker: 2 - Chown libraries by Jenkins user") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME} ccrypto \
-                  chown -c -R ${JENKINS_USER_ID}:${JENKINS_USER_ID} /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} \
-                  && chmod -R g+w /app/crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64} || true"
-                  sh "ls -la crypto/wrapper/pkg"
-                  }
-            }
-        } */
         stage("Update git") {
             agent { node { label "build-docker"} }
             steps {
