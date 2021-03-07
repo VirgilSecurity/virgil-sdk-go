@@ -51,6 +51,11 @@ RUN curl -s https://www.python.org/ftp/python/3.5.9/Python-3.5.9.tgz -o Python-3
     && ln -sfn /usr/local/bin/python3.5 /usr/bin/python3.5
 #RUN yum install -y rh-python35
 
+RUN wget https://archives.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm \
+    && rpm --quiet -U epel-release-6-8.noarch.rpm \
+    && yum install -y python34-pip \
+    && ln -sfn /usr/bin/python3.5 /usr/bin/python
+
 # ---------------------------------------------------------------------------
 #   GoLang 1.14
 # ---------------------------------------------------------------------------
