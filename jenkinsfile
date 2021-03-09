@@ -71,6 +71,21 @@ pipeline    {
                   }
             }
         }
+        stage("Update git") {
+            agent { node { label "build-docker"} }
+            steps {
+                script {
+                    sh '''
+                        git add crypto/wrapper/{foundation,phe,pkg}
+                        git commit -m "Crypto library update"
+                    '''
+
+                    withCredentials([usernamePassword(credentialsId: "${credentialsId}", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                        sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/VirgilSecurity/virgil-sdk-go ${GIT_WORK_BRANCH}"
+                    }
+                }
+            }
+        }
     }
 
 }
