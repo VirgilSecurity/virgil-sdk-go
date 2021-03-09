@@ -76,6 +76,7 @@ pipeline    {
             steps {
                 script {
                     sh '''
+                        git status
                         git add crypto/wrapper/{foundation,phe,pkg}
                         git commit -m "Crypto library update"
                     '''
