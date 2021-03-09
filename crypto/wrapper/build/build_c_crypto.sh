@@ -30,7 +30,7 @@ cmake \
     -DED25519_REF10=OFF \
     -DED25519_AMD64_RADIX_64_24K=ON \
     -DCMAKE_INSTALL_PREFIX=../wrappers/go/pkg/${OS}_${ARCH} .. && \
-make -j1 && make -j1 install && \
+make -j10 && make -j10 install && \
 cd $TEMPDIR/wrappers/go && \
 if [[ -d "./pkg/${OS}_${ARCH}/lib64" ]]; then
   mv ./pkg/${OS}_${ARCH}/lib64 ./pkg/${OS}_${ARCH}/lib
