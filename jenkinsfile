@@ -48,7 +48,8 @@ pipeline    {
                 }
             }
         }
-        /* stage("Build Wind and MacOS") {
+        /*
+        stage("Build Wind and MacOS") {
             parallel {
                 stage("Build Windows"){ 
                     agent { node { label "build-win10"} }
@@ -71,7 +72,8 @@ pipeline    {
                     } 
                 }
             }
-        } */
+        }
+        */
         /* stage("copy to main host") {
             agent { node { label "build-docker"} }
             steps {
