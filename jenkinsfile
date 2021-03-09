@@ -71,8 +71,8 @@ pipeline    {
                     } 
                 }
             }
-        }
-        stage("copy to main host") {
+        } */
+        /* stage("copy to main host") {
             agent { node { label "build-docker"} }
             steps {
                 script {
