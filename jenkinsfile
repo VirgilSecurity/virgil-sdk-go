@@ -48,39 +48,6 @@ pipeline    {
                 }
             }
         }
-        stage("Build Wind and MacOS") {
-            parallel {
-                stage("Build Windows"){ 
-                    agent { node { label "build-win10"} }
-                    steps {
-                        cleanWs()
-                        unstash "myStash"
-                        dir("crypto/wrapper/build"){
-                            bat 'powershell ./build_c_crypto.ps1'
-                        }
-                        stash  includes: "crypto/wrapper/pkg/windows_amd64/**/*", name: 'myStash-windows'
-                    } 
-                }
-                stage("Build MacOS"){ 
-                    agent { node { label "build-os-x"} }
-                    steps {
-                        cleanWs()
-                        unstash "myStash"
-                        sh "./crypto/wrapper/build/build_c_crypto.sh"        
-                        stash  includes: "crypto/wrapper/pkg/darwin_amd64/**/*", name: 'myStash-macOS'
-                    } 
-                }
-            }
-        }
-        stage("copy to main host") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                    unstash "myStash-macOS"
-                    unstash "myStash-windows"
-                }
-            }
-        }
         stage("Docker: build") {
             agent { node { label "build-docker"} }
             steps {
@@ -102,61 +69,6 @@ pipeline    {
                   chown -c -R 1004:1004 /app/crypto/wrapper/pkg/linux_amd64 && \
                   chmod -R g+w /app/crypto/wrapper/pkg/linux_amd64'"
                   }
-            }
-        }
-        stage("Docker: build legacy") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                   dir('crypto/wrapper/build') {
-                     sh "docker build -t ccrypto-legacy -f Dockerfile_legacy ."
-                    }
-                }
-            }
-        }
-        stage("Docker: build libraries legacy") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                  sh "docker ps -a | grep ${DOCKER_CNT_NAME_LEGACY} && docker rm -f  ${DOCKER_CNT_NAME_LEGACY} || true"
-                  sh "chmod +x crypto/wrapper/build/build_c_crypto.sh"
-                  sh "docker run -t --rm -v ${workspace}:/app --name ${DOCKER_CNT_NAME_LEGACY} ccrypto-legacy \
-                  /app/crypto/wrapper/build/build_c_crypto.sh"
-                  }
-            }
-        }
-        stage("Update git") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                    sh '''
-                        git add crypto/wrapper/{foundation,phe,pkg}
-                        git commit -m "Crypto library update"
-                    '''
-
-                    withCredentials([usernamePassword(credentialsId: "${credentialsId}", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                        sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/VirgilSecurity/virgil-sdk-go ${GIT_WORK_BRANCH}"
-                    }
-                }
-            }
-        }
-        stage("Create PR") {
-            agent { node { label "build-docker"} }
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${credentialsId}", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                       sh """
-                        curl -D- -u ${GIT_USERNAME}:${GIT_PASSWORD} https://api.github.com/repos/VirgilSecurity/virgil-sdk-go/pulls \
-                        --header 'Content-Type: application/json' -X POST \
-                        --data '{
-                                "title": "Crypto library update from ${GIT_WORK_BRANCH}",
-                                "body": "Please pull these awesome changes in!",
-                                "head": "${GIT_WORK_BRANCH}",
-                                "base": "master"
-                            }'
-                       """
-                    }
-                }
             }
         }
     }
