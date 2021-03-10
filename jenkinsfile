@@ -1,6 +1,7 @@
 
 pipeline    {
     agent none
+    
     environment {
        CRYPTO_C_BASE_FOLDER = "virgil-crypto-c"
        DOCKER_CNT_NAME = "ccrypto-builder"
@@ -8,6 +9,10 @@ pipeline    {
        credentialsId = "1259d404-cffc-48d4-9961-26d5366d7247"
        GIT_WORK_BRANCH = "crypto_library_updates_${new Date().format('yyyy-MM-dd')}"
        JENKINS_USER_ID = "1004"
+    }
+    
+    options {
+       skipDefaultCheckout true
     }
 
     stages {
