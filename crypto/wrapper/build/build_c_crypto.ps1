@@ -47,7 +47,8 @@ Pop-Location
 if ($result) 
 { 
     Remove-Item -Path (Join-Path $scriptFolder "..\pkg\$prebuildFolder\*") -Recurse -Force
-    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder\include")
+    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\include\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder\include")
+    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\lib\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder\lib")
 }
 
 Remove-Item -Recurse -Force  -Path $tmpDir
