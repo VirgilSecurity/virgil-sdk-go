@@ -65,6 +65,9 @@ The Recurse parameter in this cmdlet does not work properly.
 Because the Recurse parameter in this cmdlet is faulty,
 the command uses the Get-Childitem cmdlet to get the desire d files,
 and it uses the pipeline operator to pass them to the Remove-Item cmdlet.
+
+Example:
+Get-ChildItem -Path $tmpDir -Name -Recurse -Force | Remove-Item
 #>
 
-Get-ChildItem -Path $tmpDir -Name -Recurse -Force | Remove-Item
+Remove-Item $tmpDir
