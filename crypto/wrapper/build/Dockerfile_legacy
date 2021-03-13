@@ -41,20 +41,23 @@ RUN cd && \
     rm cmake-${CMAKE_VERSION}-Linux-x86_64.sh
 
 # ---------------------------------------------------------------------------
-#   Python 3.5
+#   Python
 # ---------------------------------------------------------------------------
-RUN curl -s https://www.python.org/ftp/python/3.5.9/Python-3.5.9.tgz -o Python-3.5.9.tgz \
-    && tar xfz Python-3.5.9.tgz \
-    && cd Python-3.5.9 \
+ENV PYTHON_VERSION_MINOR 2.7
+ENV PYTHON_VERSION 2.7.18
+
+RUN curl -s https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz -o Python-${PYTHON_VERSION}.tgz \
+    && tar xfz Python-${PYTHON_VERSION}.tgz \
+    && cd Python-${PYTHON_VERSION} \
     && ./configure --enable-optimizations \
     && make altinstall \
-    && ln -sfn /usr/local/bin/python3.5 /usr/bin/python3.5
+    && ln -sfn /usr/local/bin/python${PYTHON_VERSION_MINOR} /usr/bin/python${PYTHON_VERSION_MINOR}
 #RUN yum install -y rh-python35
 
 RUN wget https://archives.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm \
     && rpm --quiet -U epel-release-6-8.noarch.rpm \
     && yum install -y python34-pip \
-    && ln -sfn /usr/bin/python3.5 /usr/bin/python
+    && ln -sfn /usr/bin/python${PYTHON_VERSION_MINOR} /usr/bin/python
 
 # ---------------------------------------------------------------------------
 #   GoLang 1.14
