@@ -70,4 +70,5 @@ Example:
 Get-ChildItem -Path $tmpDir -Name -Recurse -Force | Remove-Item
 #>
 
-Remove-Item $tmpDir
+Get-ChildItem -Path $tmpDir\* -Force | Remove-Item -Force; Remove-Item $tmpDir
+
