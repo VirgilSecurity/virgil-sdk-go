@@ -55,7 +55,7 @@ func (c *CardParams) Validate() error {
 	if c == nil {
 		return ErrIdentityIsMandatory
 	}
-	if strings.Replace(c.Identity, " ", "", -1) == "" {
+	if strings.ReplaceAll(c.Identity, " ", "") == "" {
 		return ErrIdentityIsMandatory
 	}
 

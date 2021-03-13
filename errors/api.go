@@ -1,6 +1,8 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var (
 	// ErrEntityNotFound return when service return 404 HTTP status code and body is empty
@@ -24,12 +26,4 @@ type VirgilAPIError struct {
 
 func (err *VirgilAPIError) Error() string {
 	return fmt.Sprintf("Virgil API error {code: %v message: %v}", err.Code, err.Message)
-}
-
-func (err *VirgilAPIError) Is(e error) bool {
-	ve, ok := e.(*VirgilAPIError)
-	if !ok {
-		return false
-	}
-	return ve.Code == err.Code
 }

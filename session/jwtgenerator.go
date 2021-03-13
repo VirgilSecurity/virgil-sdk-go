@@ -63,7 +63,7 @@ func (j *JwtGenerator) Validate() error {
 	if j.AppKey == nil {
 		return errors.New("JwtGenerator: api private key is not set")
 	}
-	if strings.Replace(j.AppKeyID, " ", "", -1) == "" {
+	if strings.ReplaceAll(j.AppKeyID, " ", "") == "" {
 		return errors.New("JwtGenerator: api public key identifier is not set")
 	}
 
@@ -71,14 +71,14 @@ func (j *JwtGenerator) Validate() error {
 	if signer == nil {
 		return errors.New("JwtGenerator: access token signer is nil")
 	}
-	if strings.Replace(signer.GetAlgorithm(), " ", "", -1) == "" {
+	if strings.ReplaceAll(signer.GetAlgorithm(), " ", "") == "" {
 		return errors.New("JwtGenerator: access token signer algorithm is empty")
 	}
 	return nil
 }
 
 func (j *JwtGenerator) GenerateToken(identity string, additionalData map[string]interface{}) (*Jwt, error) {
-	if strings.Replace(identity, " ", "", -1) == "" {
+	if strings.ReplaceAll(identity, " ", "") == "" {
 		return nil, ErrIdentityIsMandatory
 	}
 

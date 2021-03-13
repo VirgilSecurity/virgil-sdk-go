@@ -91,11 +91,11 @@ func TestAllowList(t *testing.T) {
 	card, err := ParseRawCard(cryptoNative, model, false)
 	require.NoError(t, err)
 
-	//check default case
+	// check default case
 	err = verifier.VerifyCard(card)
 	require.NoError(t, err)
 
-	//check that everything is ok if at least one signature in allow list is valid
+	// check that everything is ok if at least one signature in allow list is valid
 	// creds[4] doesn't exist
 	verifier = NewVirgilCardVerifier(
 		VirgilCardVerifierSetCrypto(cryptoNative),
@@ -106,7 +106,7 @@ func TestAllowList(t *testing.T) {
 	err = verifier.VerifyCard(card)
 	require.NoError(t, err)
 
-	//Check that verification fails if no signature exists for allow list
+	// Check that verification fails if no signature exists for allow list
 	// creds[3] doesn't exist
 	verifier = NewVirgilCardVerifier(
 		VirgilCardVerifierSetCrypto(cryptoNative),

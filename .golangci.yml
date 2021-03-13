@@ -96,9 +96,6 @@ linters-settings:
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 10
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true
   dupl:
     # tokens count to trigger issue, 150 by default
     threshold: 100
@@ -192,7 +189,6 @@ linters:
     - megacheck
     - govet
     - lll
-    - maligned
     - ineffassign
     - unparam
     - unused
@@ -226,7 +222,7 @@ linters:
     # - whitespace - remove signatures
     # - funlen    -- how many statements in a function
   enable-all: false
-  disable:
+  disable: exhaustive
   disable-all: false
   presets:
     - bugs

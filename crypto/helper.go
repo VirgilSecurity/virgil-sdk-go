@@ -63,5 +63,5 @@ func unwrapKey(key []byte) []byte {
 		return buf[:read]
 	}
 
-	return key //already DER
+	return key // already DER
 }

@@ -44,7 +44,7 @@ func init() {
 	rnd := foundation.NewCtrDrbg()
 
 	if err := rnd.SetupDefaults(); err != nil {
-		panic(fmt.Errorf("virgil crypto cannot initialize random generator: %v", err))
+		panic(fmt.Errorf("virgil crypto cannot initialize random generator: %w", err))
 	}
 	random = rnd
 }

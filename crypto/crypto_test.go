@@ -46,7 +46,7 @@ import (
 func TestSignVerify(t *testing.T) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -63,7 +63,7 @@ func TestSignVerify(t *testing.T) {
 func TestEncryptDecrypt(t *testing.T) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -81,7 +81,7 @@ func TestEncryptDecrypt(t *testing.T) {
 func TestEncryptWithPaddingDecrypt(t *testing.T) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -109,14 +109,14 @@ func TestStreamCipher(t *testing.T) {
 	err = vcrypto.EncryptStream(plain, cipheredStream, key.PublicKey())
 	require.NoError(t, err)
 
-	//decrypt with key
+	// decrypt with key
 	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer := bytes.NewBuffer(nil)
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
 	require.NoError(t, err, "decrypt with correct key")
 	require.Equal(t, plainBuf, plainOutBuffer.Bytes(), "decrypt with correct key: plain & decrypted buffers do not match")
 
-	//decrypt with wrong id must fail
+	// decrypt with wrong id must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
@@ -140,14 +140,14 @@ func TestStreamCipherWithPadding(t *testing.T) {
 	err = vcrypto.EncryptStreamWithPadding(plain, cipheredStream, true, key.PublicKey())
 	require.NoError(t, err)
 
-	//decrypt with key
+	// decrypt with key
 	cipheredInputStream := bytes.NewReader(cipheredStream.Bytes())
 	plainOutBuffer := bytes.NewBuffer(nil)
 	err = vcrypto.DecryptStream(cipheredInputStream, plainOutBuffer, key)
 	require.NoError(t, err, "decrypt with correct key")
 	require.Equal(t, plainBuf, plainOutBuffer.Bytes())
 
-	//decrypt with wrong id must fail
+	// decrypt with wrong id must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
@@ -169,21 +169,21 @@ func TestStreamSigner(t *testing.T) {
 	sign, err := vcrypto.SignStream(plain, key)
 	require.NoError(t, err)
 
-	//verify signature
+	// verify signature
 	plain = bytes.NewBuffer(plainBuf)
 	err = vcrypto.VerifyStream(plain, sign, key.PublicKey())
 	require.NoError(t, err)
 
-	//verify with wrong key must fail
+	// verify with wrong key must fail
 	wrongKey, err := vcrypto.GenerateKeypair()
 	require.NoError(t, err)
 
 	err = vcrypto.VerifyStream(plain, sign, wrongKey.PublicKey())
 	require.Error(t, crypto.ErrSignVerification, err)
 
-	//verify with wrong signature must fail
+	// verify with wrong signature must fail
 	plain = bytes.NewBuffer(plainBuf)
-	sign[len(sign)-1] = ^sign[len(sign)-1] //invert last byte
+	sign[len(sign)-1] = ^sign[len(sign)-1] // invert last byte
 
 	err = vcrypto.VerifyStream(plain, sign, wrongKey.PublicKey())
 	require.Equal(t, crypto.ErrSignVerification, err)

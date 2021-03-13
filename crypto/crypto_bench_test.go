@@ -44,7 +44,7 @@ import (
 func BenchmarkSign(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -63,7 +63,7 @@ func BenchmarkSign(b *testing.B) {
 func BenchmarkVerify(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -85,7 +85,7 @@ func BenchmarkVerify(b *testing.B) {
 func BenchmarkEncrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
@@ -104,7 +104,7 @@ func BenchmarkEncrypt(b *testing.B) {
 func BenchmarkEncryptHybridCurveCurve(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
@@ -122,7 +122,7 @@ func BenchmarkEncryptHybridCurveCurve(b *testing.B) {
 func BenchmarkEncryptHybridCurveRound5(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
@@ -141,7 +141,7 @@ func BenchmarkEncryptHybridCurveRound5(b *testing.B) {
 func BenchmarkDecrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
@@ -162,7 +162,7 @@ func BenchmarkDecrypt(b *testing.B) {
 func BenchmarkDecryptHybridCurveCurve(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
@@ -183,7 +183,7 @@ func BenchmarkDecryptHybridCurveCurve(b *testing.B) {
 func BenchmarkDecryptHybridCurveRound5(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 1)
 	rand.Read(data)
 
@@ -204,7 +204,7 @@ func BenchmarkDecryptHybridCurveRound5(b *testing.B) {
 func BenchmarkSignAndEncrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -226,7 +226,7 @@ func BenchmarkSignAndEncrypt(b *testing.B) {
 func BenchmarkDecryptAndVerify(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -252,7 +252,7 @@ func BenchmarkDecryptAndVerify(b *testing.B) {
 func BenchmarkSignThenEncrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -274,7 +274,7 @@ func BenchmarkSignThenEncrypt(b *testing.B) {
 func BenchmarkDecryptThenVerify(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
-	//make random data
+	// make random data
 	data := make([]byte, 257)
 	rand.Read(data)
 
@@ -313,6 +313,6 @@ func Benchmark1000Recipients(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := vcrypto.SignThenEncryptWithPadding(data, kp, true, keys...)
 		require.NoError(b, err)
-		//fmt.Println(len(ct))
+		// fmt.Println(len(ct))
 	}
 }

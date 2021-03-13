@@ -225,6 +225,7 @@ var DefaultHTTPClient = &http.Client{
 	Timeout: time.Second * 10,
 	Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{
+			MinVersion:         tls.VersionTLS12,
 			ClientSessionCache: tls.NewLRUClientSessionCache(64),
 		},
 		TLSHandshakeTimeout: 5 * time.Second,

@@ -34,6 +34,7 @@ package crypto
 
 import (
 	"bytes"
+	"errors"
 	"io"
 
 	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
@@ -105,7 +106,7 @@ func (dr *DecryptReader) Read(d []byte) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-	} else if err == io.EOF && !dr.finished {
+	} else if errors.Is(err, io.EOF) && !dr.finished {
 		buf, err = dr.cipher.FinishDecryption()
 		if err != nil {
 			return 0, err

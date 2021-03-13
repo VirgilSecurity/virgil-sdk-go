@@ -86,7 +86,7 @@ func (j *JwtVerifier) Validate() error {
 		return errors.New("JwtVerifier: api public key is not set")
 	}
 
-	if strings.Replace(j.appPublicKeyID, " ", "", -1) == "" {
+	if strings.ReplaceAll(j.appPublicKeyID, " ", "") == "" {
 		return errors.New("JwtVerifier: api public key id is not set")
 	}
 	return nil

@@ -239,7 +239,7 @@ func TestCardManager_Integration_Publish_Replace_Link(t *testing.T) {
 	identity := "Alice-" + randomString()
 
 	var card *Card
-	for i := 0; i < 3; i++ { //3 branches of 3 cards each
+	for i := 0; i < 3; i++ { // 3 branches of 3 cards each
 		prev := ""
 		for j := 0; j < 3; j++ {
 			card, err = PublishCard(t, manager, identity, "", prev)
