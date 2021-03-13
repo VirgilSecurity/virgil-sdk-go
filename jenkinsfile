@@ -130,6 +130,7 @@ pipeline    {
                   }
             }
         }
+        /*
         stage("Update git") {
             agent { node { label "build-docker"} }
             steps {
@@ -144,7 +145,8 @@ pipeline    {
                     }
                 }
             }
-        }
+        } */
+        /*
         stage("Create PR") {
             agent { node { label "build-docker"} }
             steps {
@@ -162,7 +164,7 @@ pipeline    {
                        """
                     }
                 }
-            }
+            } */
         }
     }
 
