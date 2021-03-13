@@ -43,8 +43,8 @@ RUN cd && \
 # ---------------------------------------------------------------------------
 #   Python
 # ---------------------------------------------------------------------------
-ENV PYTHON_VERSION_MINOR 2.7
-ENV PYTHON_VERSION 2.7.18
+ENV PYTHON_VERSION_MINOR 3.5
+ENV PYTHON_VERSION 3.5.10
 
 RUN curl -s https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz -o Python-${PYTHON_VERSION}.tgz \
     && tar xfz Python-${PYTHON_VERSION}.tgz \
