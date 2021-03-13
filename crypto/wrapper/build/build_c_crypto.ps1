@@ -56,4 +56,15 @@ if ($result)
     }
 }
 
-Remove-Item -Recurse -Force -Path $tmpDir
+<#
+Remove-Item -Recurse has unexpected behaviour.
+
+See thread https://www.vistax64.com/threads/help-output-what-do-they-mean-by-this.25349
+
+The Recurse parameter in this cmdlet does not work properly.
+Because the Recurse parameter in this cmdlet is faulty,
+the command uses the Get-Childitem cmdlet to get the desire d files,
+and it uses the pipeline operator to pass them to the Remove-Item cmdlet.
+#>
+
+Get-ChildItem -Path $tmpDir -Name -Recurse -Force | Remove-Item
