@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -26,4 +27,12 @@ type VirgilAPIError struct {
 
 func (err *VirgilAPIError) Error() string {
 	return fmt.Sprintf("Virgil API error {code: %v message: %v}", err.Code, err.Message)
+}
+
+func (err *VirgilAPIError) Is(e error) bool {
+	var ve *VirgilAPIError
+	if !errors.As(e, &ve) {
+		return false
+	}
+	return ve.Code == err.Code
 }
