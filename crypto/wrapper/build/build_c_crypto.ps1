@@ -67,8 +67,8 @@ the command uses the Get-Childitem cmdlet to get the desire d files,
 and it uses the pipeline operator to pass them to the Remove-Item cmdlet.
 
 Example:
-Get-ChildItem -Path $tmpDir\* -Force | Remove-Item -Force; Remove-Item $tmpDir
+Get-ChildItem $tmpDir -Recurse | Remove-Item -Force -Recurse; Remove-Item $tmpDir -Force -Recurse
 #>
 
-rm -r -fo $tmpDir
+Get-ChildItem $tmpDir -Recurse | Remove-Item -Force -Recurse; Remove-Item $tmpDir -Force -Recurse
 
