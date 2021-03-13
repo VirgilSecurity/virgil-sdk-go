@@ -15,16 +15,6 @@ matrix:
         - LINT_ENABLE=ON
 
     ##########################################################################
-    # Clang on OSX
-    # Travis seems to take longer to start OSX instances,
-    # so leave this first for the overall build to be faster
-    ##########################################################################
-    - os: osx
-      osx_image: xcode11
-      compiler: clang
-      go: stable
-
-    ##########################################################################
     # GCC on Linux
     ##########################################################################
     - os: linux
