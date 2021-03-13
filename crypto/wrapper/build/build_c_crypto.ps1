@@ -41,14 +41,19 @@ $result=$(git clone -b $branch https://github.com/VirgilSecurity/virgil-crypto-c
         $(Push-Location (Join-Path $tmpDir \wrappers\go) -ev err | Out-Host;!$err) -and
         $(go test ./... | Out-Host;$?)
 
+<#
 Pop-Location
 Pop-Location
+#>
 
 if ($result) 
 { 
-    Remove-Item -Path (Join-Path $scriptFolder "..\pkg\$prebuildFolder\*") -Recurse -Force
-    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\include\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder\include")
-    Copy-Item  -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\lib\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder\lib")
+    <# Remove-Item -Path (Join-Path $scriptFolder "..\pkg\$prebuildFolder\*") -Recurse -Force #>
+    ForEach ($dir in ("include", "lib"))
+    {
+       New-Item -ItemType "directory" -Path (Join-Path $scriptFolder "..\pkg\$prebuildFolder\$dir")
+       Copy-Item -Recurse -Path (Join-Path $tmpDir "wrappers\go\pkg\$($os)_$($arch)\$dir\*") -Destination (Join-Path $scriptFolder "..\pkg\$prebuildFolder\$dir")
+    }
 }
 
-Remove-Item -Recurse -Force  -Path $tmpDir
+Remove-Item -Recurse -Force -Path $tmpDir
