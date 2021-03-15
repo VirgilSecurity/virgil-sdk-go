@@ -109,6 +109,7 @@ pipeline    {
                   }
             }
         }
+        /*
         stage("Docker: build legacy") {
             agent { node { label "build-docker"} }
             steps {
@@ -130,6 +131,7 @@ pipeline    {
                   }
             }
         }
+        */
         stage("Update git") {
             agent { node { label "build-docker"} }
             steps {
