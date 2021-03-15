@@ -109,8 +109,7 @@ pipeline    {
                   }
             }
         }
-        /*
-        stage("Docker: build legacy") {
+        /* stage("Docker: build legacy") {
             agent { node { label "build-docker"} }
             steps {
                 script {
@@ -130,8 +129,7 @@ pipeline    {
                   /app/crypto/wrapper/build/build_c_crypto.sh"
                   }
             }
-        }
-        */
+        } */
         stage("Update git") {
             agent { node { label "build-docker"} }
             steps {
