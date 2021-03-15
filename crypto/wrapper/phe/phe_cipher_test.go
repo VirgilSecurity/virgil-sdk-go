@@ -35,9 +35,9 @@
 package phe
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
 )
 
 func TestNewPheCipher(t *testing.T) {
