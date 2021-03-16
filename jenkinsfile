@@ -31,7 +31,7 @@ pipeline    {
             agent { node { label "build-docker"} }
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${CRYPTO_C_BASE_FOLDER}"]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: "${credentialsId}", url: 'https://github.com/VirgilSecurity/virgil-crypto-c/']]])
+                    checkout([$class: 'GitSCM', branches: [[name: '*/feature/string-type-go']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${CRYPTO_C_BASE_FOLDER}"]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: "${credentialsId}", url: 'https://github.com/VirgilSecurity/virgil-crypto-c/']]])
                 }
             }
         }
@@ -39,12 +39,12 @@ pipeline    {
             agent { node { label "build-docker"} }
             steps {
                 script {
-                   sh "rm -rf crypto/wrapper/{phe,foundation,pkg}"
+                   sh "rm -rf crypto/wrapper/{phe,foundation,sdk,pkg}"
                    sh "mkdir -p crypto/wrapper/pkg/{darwin_amd64,linux_amd64,linux_amd64__legacy_os,windows_amd64}"
 
-                   sh "cp -r ${CRYPTO_C_BASE_FOLDER}/wrappers/go/{phe,foundation} crypto/wrapper/"
+                   sh "cp -r ${CRYPTO_C_BASE_FOLDER}/wrappers/go/{phe,foundation,sdk} crypto/wrapper/"
                    sh '''
-                    for i in $(grep -R 'virgil/foundation' crypto/wrapper/{phe,foundation} | cut -d ':' -f 1);  do
+                    for i in $(grep -R 'virgil/foundation' crypto/wrapper/{phe,foundation,sdk} | cut -d ':' -f 1);  do
   	                    echo  $i
                         sed -i 's|virgil/foundation|github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation|g' $i
                     done;
@@ -55,17 +55,17 @@ pipeline    {
         }
         stage("Build Wind and MacOS") {
             parallel {
-                stage("Build Windows"){ 
-                    agent { node { label "build-win10"} }
-                    steps {
-                        cleanWs()
-                        unstash "myStash"
-                        dir("crypto/wrapper/build"){
-                            bat 'powershell ./build_c_crypto.ps1'
-                        }
-                        stash  includes: "crypto/wrapper/pkg/windows_amd64/**/*", name: 'myStash-windows'
-                    } 
-                }
+                //stage("Build Windows"){
+                //    agent { node { label "build-win10"} }
+                //   steps {
+                //        cleanWs()
+                //        unstash "myStash"
+                //        dir("crypto/wrapper/build"){
+                //            bat 'powershell ./build_c_crypto.ps1'
+                //        }
+                //        stash  includes: "crypto/wrapper/pkg/windows_amd64/**/*", name: 'myStash-windows'
+                //    }
+                //}
                 stage("Build MacOS"){ 
                     agent { node { label "build-os-x"} }
                     steps {
@@ -135,7 +135,7 @@ pipeline    {
             steps {
                 script {
                     sh '''
-                        git add crypto/wrapper/{foundation,phe,pkg}
+                        git add crypto/wrapper/{foundation,phe,sdk,pkg}
                         git commit -m "Crypto library update"
                     '''
 

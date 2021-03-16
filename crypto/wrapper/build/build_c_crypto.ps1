@@ -22,6 +22,7 @@ $result=$(git clone -b $branch https://github.com/VirgilSecurity/virgil-crypto-c
             -G "MinGW Makefiles" `
             -DVIRGIL_WRAP_GO=OFF `
             -DVIRGIL_LIB_PYTHIA=OFF `
+            -DVIRGIL_SDK_PYTHIA=OFF `
             -DVIRGIL_LIB_RATCHET=OFF `
             -DVIRGIL_INSTALL_HDRS=ON `
             -DVIRGIL_INSTALL_LIBS=ON `

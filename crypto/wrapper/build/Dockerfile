@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	python \
 	python3-pip \
     zip \
+    libcurl4-openssl-dev \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,9 +36,9 @@ RUN pip3 install protobuf
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
 
 # install golang
-ENV GOLANG_VERSION 1.14.2
+ENV GOLANG_VERSION 1.16.2
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA256 6272d6e940ecb71ea5636ddb5fab3933e087c1356173c61f4a803895e947ebb3
+ENV GOLANG_DOWNLOAD_SHA256 542e936b19542e62679766194364f45141fde55169db2d8d01046555ca9eb4b8
 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
     && echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
