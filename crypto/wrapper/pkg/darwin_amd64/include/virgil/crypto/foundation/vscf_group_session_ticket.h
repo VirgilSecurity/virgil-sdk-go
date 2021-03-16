@@ -54,7 +54,7 @@
 #define VSCF_GROUP_SESSION_TICKET_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_group_session_message.h"
+#include "vscf_random.h"
 #include "vscf_group_session_message.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
@@ -85,7 +85,10 @@ extern "C" {
 //
 //  Handle 'group session ticket' context.
 //
-typedef struct vscf_group_session_ticket_t vscf_group_session_ticket_t;
+#ifndef VSCF_GROUP_SESSION_TICKET_T_DEFINED
+#define VSCF_GROUP_SESSION_TICKET_T_DEFINED
+    typedef struct vscf_group_session_ticket_t vscf_group_session_ticket_t;
+#endif // VSCF_GROUP_SESSION_TICKET_T_DEFINED
 
 //
 //  Return size of 'vscf_group_session_ticket_t'.
@@ -116,7 +119,7 @@ vscf_group_session_ticket_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_group_session_ticket_delete(vscf_group_session_ticket_t *self);
+vscf_group_session_ticket_delete(const vscf_group_session_ticket_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -130,6 +133,13 @@ vscf_group_session_ticket_destroy(vscf_group_session_ticket_t **self_ref);
 //
 VSCF_PUBLIC vscf_group_session_ticket_t *
 vscf_group_session_ticket_shallow_copy(vscf_group_session_ticket_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_group_session_ticket_t *
+vscf_group_session_ticket_shallow_copy_const(const vscf_group_session_ticket_t *self);
 
 //
 //  Random used to generate keys

@@ -59,6 +59,7 @@
 #define VSCF_MESSAGE_INFO_EDITOR_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_random.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
 
@@ -90,7 +91,10 @@ extern "C" {
 //
 //  Handle 'message info editor' context.
 //
-typedef struct vscf_message_info_editor_t vscf_message_info_editor_t;
+#ifndef VSCF_MESSAGE_INFO_EDITOR_T_DEFINED
+#define VSCF_MESSAGE_INFO_EDITOR_T_DEFINED
+    typedef struct vscf_message_info_editor_t vscf_message_info_editor_t;
+#endif // VSCF_MESSAGE_INFO_EDITOR_T_DEFINED
 
 //
 //  Return size of 'vscf_message_info_editor_t'.
@@ -121,7 +125,7 @@ vscf_message_info_editor_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_message_info_editor_delete(vscf_message_info_editor_t *self);
+vscf_message_info_editor_delete(const vscf_message_info_editor_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -135,6 +139,13 @@ vscf_message_info_editor_destroy(vscf_message_info_editor_t **self_ref);
 //
 VSCF_PUBLIC vscf_message_info_editor_t *
 vscf_message_info_editor_shallow_copy(vscf_message_info_editor_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_message_info_editor_t *
+vscf_message_info_editor_shallow_copy_const(const vscf_message_info_editor_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.
@@ -210,6 +221,16 @@ vscf_message_info_editor_packed_len(const vscf_message_info_editor_t *self);
 //
 VSCF_PUBLIC void
 vscf_message_info_editor_pack(vscf_message_info_editor_t *self, vsc_buffer_t *message_info);
+
+//
+//  Read message info prefix from the given data, and if it is valid,
+//  return a length of bytes of the whole message info.
+//
+//  Zero returned if length can not be determined from the given data,
+//  and this means that there is no message info at the data beginning.
+//
+VSCF_PUBLIC size_t
+vscf_message_info_editor_read_prefix(vsc_data_t data);
 
 
 // --------------------------------------------------------------------------

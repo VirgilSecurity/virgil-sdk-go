@@ -90,7 +90,10 @@ enum {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_entropy_accumulator_t vscf_entropy_accumulator_t;
+#ifndef VSCF_ENTROPY_ACCUMULATOR_T_DEFINED
+#define VSCF_ENTROPY_ACCUMULATOR_T_DEFINED
+    typedef struct vscf_entropy_accumulator_t vscf_entropy_accumulator_t;
+#endif // VSCF_ENTROPY_ACCUMULATOR_T_DEFINED
 
 //
 //  Return size of 'vscf_entropy_accumulator_t' type.
@@ -135,7 +138,7 @@ vscf_entropy_accumulator_new(void);
 //  This is a reverse action of the function 'vscf_entropy_accumulator_new()'.
 //
 VSCF_PUBLIC void
-vscf_entropy_accumulator_delete(vscf_entropy_accumulator_t *self);
+vscf_entropy_accumulator_delete(const vscf_entropy_accumulator_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -150,6 +153,13 @@ vscf_entropy_accumulator_destroy(vscf_entropy_accumulator_t **self_ref);
 //
 VSCF_PUBLIC vscf_entropy_accumulator_t *
 vscf_entropy_accumulator_shallow_copy(vscf_entropy_accumulator_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_entropy_accumulator_t *
+vscf_entropy_accumulator_shallow_copy_const(const vscf_entropy_accumulator_t *self);
 
 //
 //  Setup predefined values to the uninitialized class dependencies.

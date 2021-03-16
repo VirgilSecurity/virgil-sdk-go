@@ -55,14 +55,14 @@
 
 #include "vscf_library.h"
 #include "vscf_atomic.h"
-#include "vscf_key_recipient_list.h"
-#include "vscf_signer_list.h"
-#include "vscf_message_info.h"
-#include "vscf_message_info_footer.h"
 #include "vscf_impl.h"
 #include "vscf_padding_params.h"
+#include "vscf_key_recipient_list.h"
+#include "vscf_signer_list.h"
 #include "vscf_padding_cipher.h"
+#include "vscf_message_info.h"
 #include "vscf_message_info_der_serializer.h"
+#include "vscf_message_info_footer.h"
 #include "vscf_recipient_cipher_decryption_state.h"
 
 #if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
@@ -133,7 +133,7 @@ struct vscf_recipient_cipher_t {
 
     vsc_buffer_t *decryption_recipient_id;
 
-    vscf_impl_t *decryption_recipient_key;
+    const vscf_impl_t *decryption_recipient_key;
 
     vsc_buffer_t *decryption_password;
 

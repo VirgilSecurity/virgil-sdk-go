@@ -56,12 +56,16 @@
 #define VSCF_RECIPIENT_CIPHER_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_random.h"
+#include "vscf_cipher.h"
+#include "vscf_padding.h"
+#include "vscf_hash.h"
 #include "vscf_padding_params.h"
+#include "vscf_impl.h"
+#include "vscf_status.h"
 #include "vscf_message_info_custom_params.h"
 #include "vscf_signer_info_list.h"
 #include "vscf_signer_info.h"
-#include "vscf_impl.h"
-#include "vscf_status.h"
 
 #if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
 #   include <virgil/crypto/common/vsc_data.h>
@@ -91,7 +95,10 @@ extern "C" {
 //
 //  Handle 'recipient cipher' context.
 //
-typedef struct vscf_recipient_cipher_t vscf_recipient_cipher_t;
+#ifndef VSCF_RECIPIENT_CIPHER_T_DEFINED
+#define VSCF_RECIPIENT_CIPHER_T_DEFINED
+    typedef struct vscf_recipient_cipher_t vscf_recipient_cipher_t;
+#endif // VSCF_RECIPIENT_CIPHER_T_DEFINED
 
 //
 //  Return size of 'vscf_recipient_cipher_t'.
@@ -122,7 +129,7 @@ vscf_recipient_cipher_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_recipient_cipher_delete(vscf_recipient_cipher_t *self);
+vscf_recipient_cipher_delete(const vscf_recipient_cipher_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -136,6 +143,13 @@ vscf_recipient_cipher_destroy(vscf_recipient_cipher_t **self_ref);
 //
 VSCF_PUBLIC vscf_recipient_cipher_t *
 vscf_recipient_cipher_shallow_copy(vscf_recipient_cipher_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_recipient_cipher_t *
+vscf_recipient_cipher_shallow_copy_const(const vscf_recipient_cipher_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.
@@ -244,7 +258,7 @@ vscf_recipient_cipher_has_key_recipient(const vscf_recipient_cipher_t *self, vsc
 //
 VSCF_PUBLIC void
 vscf_recipient_cipher_add_key_recipient(vscf_recipient_cipher_t *self, vsc_data_t recipient_id,
-        vscf_impl_t *public_key);
+        const vscf_impl_t *public_key);
 
 //
 //  Remove all recipients.
@@ -258,7 +272,7 @@ vscf_recipient_cipher_clear_recipients(vscf_recipient_cipher_t *self);
 //
 VSCF_PUBLIC vscf_status_t
 vscf_recipient_cipher_add_signer(vscf_recipient_cipher_t *self, vsc_data_t signer_id,
-        vscf_impl_t *private_key) VSCF_NODISCARD;
+        const vscf_impl_t *private_key) VSCF_NODISCARD;
 
 //
 //  Remove all signers.
@@ -337,7 +351,7 @@ vscf_recipient_cipher_finish_encryption(vscf_recipient_cipher_t *self, vsc_buffe
 //
 VSCF_PUBLIC vscf_status_t
 vscf_recipient_cipher_start_decryption_with_key(vscf_recipient_cipher_t *self, vsc_data_t recipient_id,
-        vscf_impl_t *private_key, vsc_data_t message_info) VSCF_NODISCARD;
+        const vscf_impl_t *private_key, vsc_data_t message_info) VSCF_NODISCARD;
 
 //
 //  Initiate decryption process with a recipient private key.
@@ -347,7 +361,7 @@ vscf_recipient_cipher_start_decryption_with_key(vscf_recipient_cipher_t *self, v
 //
 VSCF_PUBLIC vscf_status_t
 vscf_recipient_cipher_start_verified_decryption_with_key(vscf_recipient_cipher_t *self, vsc_data_t recipient_id,
-        vscf_impl_t *private_key, vsc_data_t message_info, vsc_data_t message_info_footer) VSCF_NODISCARD;
+        const vscf_impl_t *private_key, vsc_data_t message_info, vsc_data_t message_info_footer) VSCF_NODISCARD;
 
 //
 //  Return buffer length required to hold output of the method

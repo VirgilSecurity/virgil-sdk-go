@@ -68,14 +68,12 @@ extern "C" {
 //  Generated section start.
 // --------------------------------------------------------------------------
 
+#ifndef VSCF_HAVE_ASSERT_H
 #define VSCF_HAVE_ASSERT_H 1
-#if VSCF_HAVE_ASSERT_H
-#   include <assert.h>
 #endif
 
+#ifndef VSCF_HAVE_STDATOMIC_H
 #define VSCF_HAVE_STDATOMIC_H 1
-#if VSCF_HAVE_STDATOMIC_H
-#   include <stdatomic.h>
 #endif
 
 #ifndef VSCF_SHARED_LIBRARY
@@ -436,6 +434,14 @@ extern "C" {
 
 #ifndef VSCF_ERROR
 #define VSCF_ERROR 1
+#endif
+
+#ifndef VSCF_ERROR_MESSAGE
+#define VSCF_ERROR_MESSAGE 1
+#endif
+
+#ifndef VSCF_BINARY
+#define VSCF_BINARY 1
 #endif
 
 #ifndef VSCF_MBEDTLS_BIGNUM_ASN1_WRITER

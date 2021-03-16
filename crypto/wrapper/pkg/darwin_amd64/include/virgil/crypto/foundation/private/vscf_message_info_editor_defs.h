@@ -55,8 +55,8 @@
 
 #include "vscf_library.h"
 #include "vscf_atomic.h"
-#include "vscf_message_info.h"
 #include "vscf_impl.h"
+#include "vscf_message_info.h"
 
 #if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
 #   include <virgil/crypto/common/vsc_buffer.h>
@@ -103,6 +103,8 @@ struct vscf_message_info_editor_t {
     vscf_impl_t *message_info_serializer;
 
     vsc_buffer_t *encryption_key;
+
+    vsc_buffer_t *non_message_info_data;
 };
 
 

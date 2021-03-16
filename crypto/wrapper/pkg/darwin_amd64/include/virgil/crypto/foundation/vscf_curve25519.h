@@ -54,10 +54,11 @@
 #define VSCF_CURVE25519_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_random.h"
 #include "vscf_ecies.h"
-#include "vscf_error.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
+#include "vscf_error.h"
 #include "vscf_raw_public_key.h"
 #include "vscf_raw_private_key.h"
 
@@ -111,7 +112,10 @@ enum {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_curve25519_t vscf_curve25519_t;
+#ifndef VSCF_CURVE25519_T_DEFINED
+#define VSCF_CURVE25519_T_DEFINED
+    typedef struct vscf_curve25519_t vscf_curve25519_t;
+#endif // VSCF_CURVE25519_T_DEFINED
 
 //
 //  Return size of 'vscf_curve25519_t' type.
@@ -156,7 +160,7 @@ vscf_curve25519_new(void);
 //  This is a reverse action of the function 'vscf_curve25519_new()'.
 //
 VSCF_PUBLIC void
-vscf_curve25519_delete(vscf_curve25519_t *self);
+vscf_curve25519_delete(const vscf_curve25519_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -171,6 +175,13 @@ vscf_curve25519_destroy(vscf_curve25519_t **self_ref);
 //
 VSCF_PUBLIC vscf_curve25519_t *
 vscf_curve25519_shallow_copy(vscf_curve25519_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_curve25519_t *
+vscf_curve25519_shallow_copy_const(const vscf_curve25519_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.

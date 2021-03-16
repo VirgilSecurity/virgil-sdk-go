@@ -54,9 +54,12 @@
 #define VSCF_HYBRID_KEY_ALG_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_error.h"
+#include "vscf_random.h"
+#include "vscf_cipher_auth.h"
+#include "vscf_hash.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
+#include "vscf_error.h"
 #include "vscf_raw_public_key.h"
 #include "vscf_raw_private_key.h"
 #include "vscf_alg_id.h"
@@ -111,7 +114,10 @@ enum {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_hybrid_key_alg_t vscf_hybrid_key_alg_t;
+#ifndef VSCF_HYBRID_KEY_ALG_T_DEFINED
+#define VSCF_HYBRID_KEY_ALG_T_DEFINED
+    typedef struct vscf_hybrid_key_alg_t vscf_hybrid_key_alg_t;
+#endif // VSCF_HYBRID_KEY_ALG_T_DEFINED
 
 //
 //  Return size of 'vscf_hybrid_key_alg_t' type.
@@ -156,7 +162,7 @@ vscf_hybrid_key_alg_new(void);
 //  This is a reverse action of the function 'vscf_hybrid_key_alg_new()'.
 //
 VSCF_PUBLIC void
-vscf_hybrid_key_alg_delete(vscf_hybrid_key_alg_t *self);
+vscf_hybrid_key_alg_delete(const vscf_hybrid_key_alg_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -171,6 +177,13 @@ vscf_hybrid_key_alg_destroy(vscf_hybrid_key_alg_t **self_ref);
 //
 VSCF_PUBLIC vscf_hybrid_key_alg_t *
 vscf_hybrid_key_alg_shallow_copy(vscf_hybrid_key_alg_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_hybrid_key_alg_t *
+vscf_hybrid_key_alg_shallow_copy_const(const vscf_hybrid_key_alg_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.

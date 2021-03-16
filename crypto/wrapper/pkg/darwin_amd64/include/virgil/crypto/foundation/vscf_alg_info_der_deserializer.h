@@ -54,8 +54,9 @@
 #define VSCF_ALG_INFO_DER_DESERIALIZER_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_error.h"
+#include "vscf_asn1_reader.h"
 #include "vscf_impl.h"
+#include "vscf_error.h"
 
 #if !VSCF_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
 #   include <virgil/crypto/common/vsc_data.h>
@@ -83,7 +84,10 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_alg_info_der_deserializer_t vscf_alg_info_der_deserializer_t;
+#ifndef VSCF_ALG_INFO_DER_DESERIALIZER_T_DEFINED
+#define VSCF_ALG_INFO_DER_DESERIALIZER_T_DEFINED
+    typedef struct vscf_alg_info_der_deserializer_t vscf_alg_info_der_deserializer_t;
+#endif // VSCF_ALG_INFO_DER_DESERIALIZER_T_DEFINED
 
 //
 //  Return size of 'vscf_alg_info_der_deserializer_t' type.
@@ -128,7 +132,7 @@ vscf_alg_info_der_deserializer_new(void);
 //  This is a reverse action of the function 'vscf_alg_info_der_deserializer_new()'.
 //
 VSCF_PUBLIC void
-vscf_alg_info_der_deserializer_delete(vscf_alg_info_der_deserializer_t *self);
+vscf_alg_info_der_deserializer_delete(const vscf_alg_info_der_deserializer_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -143,6 +147,13 @@ vscf_alg_info_der_deserializer_destroy(vscf_alg_info_der_deserializer_t **self_r
 //
 VSCF_PUBLIC vscf_alg_info_der_deserializer_t *
 vscf_alg_info_der_deserializer_shallow_copy(vscf_alg_info_der_deserializer_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_alg_info_der_deserializer_t *
+vscf_alg_info_der_deserializer_shallow_copy_const(const vscf_alg_info_der_deserializer_t *self);
 
 //
 //  Setup dependency to the interface 'asn1 reader' with shared ownership.

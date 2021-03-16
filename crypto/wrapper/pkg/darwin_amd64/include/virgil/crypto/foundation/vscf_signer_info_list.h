@@ -55,7 +55,6 @@
 
 #include "vscf_library.h"
 #include "vscf_signer_info.h"
-#include "vscf_signer_info_list.h"
 
 // clang-format on
 //  @end
@@ -75,7 +74,10 @@ extern "C" {
 //
 //  Handle 'signer info list' context.
 //
-typedef struct vscf_signer_info_list_t vscf_signer_info_list_t;
+#ifndef VSCF_SIGNER_INFO_LIST_T_DEFINED
+#define VSCF_SIGNER_INFO_LIST_T_DEFINED
+    typedef struct vscf_signer_info_list_t vscf_signer_info_list_t;
+#endif // VSCF_SIGNER_INFO_LIST_T_DEFINED
 
 //
 //  Return size of 'vscf_signer_info_list_t'.
@@ -106,7 +108,7 @@ vscf_signer_info_list_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_signer_info_list_delete(vscf_signer_info_list_t *self);
+vscf_signer_info_list_delete(const vscf_signer_info_list_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -120,6 +122,13 @@ vscf_signer_info_list_destroy(vscf_signer_info_list_t **self_ref);
 //
 VSCF_PUBLIC vscf_signer_info_list_t *
 vscf_signer_info_list_shallow_copy(vscf_signer_info_list_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_signer_info_list_t *
+vscf_signer_info_list_shallow_copy_const(const vscf_signer_info_list_t *self);
 
 //
 //  Add new item to the list.

@@ -54,6 +54,8 @@
 #define VSCF_SIGNER_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_hash.h"
+#include "vscf_random.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
 
@@ -85,7 +87,10 @@ extern "C" {
 //
 //  Handle 'signer' context.
 //
-typedef struct vscf_signer_t vscf_signer_t;
+#ifndef VSCF_SIGNER_T_DEFINED
+#define VSCF_SIGNER_T_DEFINED
+    typedef struct vscf_signer_t vscf_signer_t;
+#endif // VSCF_SIGNER_T_DEFINED
 
 //
 //  Return size of 'vscf_signer_t'.
@@ -116,7 +121,7 @@ vscf_signer_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_signer_delete(vscf_signer_t *self);
+vscf_signer_delete(const vscf_signer_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -130,6 +135,13 @@ vscf_signer_destroy(vscf_signer_t **self_ref);
 //
 VSCF_PUBLIC vscf_signer_t *
 vscf_signer_shallow_copy(vscf_signer_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_signer_t *
+vscf_signer_shallow_copy_const(const vscf_signer_t *self);
 
 //
 //  Setup dependency to the interface 'hash' with shared ownership.

@@ -54,6 +54,7 @@
 #define VSCF_PKCS5_PBKDF2_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_mac.h"
 #include "vscf_impl.h"
 #include "vscf_alg_id.h"
 #include "vscf_status.h"
@@ -86,7 +87,10 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_pkcs5_pbkdf2_t vscf_pkcs5_pbkdf2_t;
+#ifndef VSCF_PKCS5_PBKDF2_T_DEFINED
+#define VSCF_PKCS5_PBKDF2_T_DEFINED
+    typedef struct vscf_pkcs5_pbkdf2_t vscf_pkcs5_pbkdf2_t;
+#endif // VSCF_PKCS5_PBKDF2_T_DEFINED
 
 //
 //  Return size of 'vscf_pkcs5_pbkdf2_t' type.
@@ -131,7 +135,7 @@ vscf_pkcs5_pbkdf2_new(void);
 //  This is a reverse action of the function 'vscf_pkcs5_pbkdf2_new()'.
 //
 VSCF_PUBLIC void
-vscf_pkcs5_pbkdf2_delete(vscf_pkcs5_pbkdf2_t *self);
+vscf_pkcs5_pbkdf2_delete(const vscf_pkcs5_pbkdf2_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -146,6 +150,13 @@ vscf_pkcs5_pbkdf2_destroy(vscf_pkcs5_pbkdf2_t **self_ref);
 //
 VSCF_PUBLIC vscf_pkcs5_pbkdf2_t *
 vscf_pkcs5_pbkdf2_shallow_copy(vscf_pkcs5_pbkdf2_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_pkcs5_pbkdf2_t *
+vscf_pkcs5_pbkdf2_shallow_copy_const(const vscf_pkcs5_pbkdf2_t *self);
 
 //
 //  Setup dependency to the interface 'mac' with shared ownership.

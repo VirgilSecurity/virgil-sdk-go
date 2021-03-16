@@ -54,9 +54,10 @@
 #define VSCF_RSA_H_INCLUDED
 
 #include "vscf_library.h"
-#include "vscf_error.h"
+#include "vscf_random.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
+#include "vscf_error.h"
 #include "vscf_raw_public_key.h"
 #include "vscf_raw_private_key.h"
 #include "vscf_alg_id.h"
@@ -111,7 +112,10 @@ enum {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_rsa_t vscf_rsa_t;
+#ifndef VSCF_RSA_T_DEFINED
+#define VSCF_RSA_T_DEFINED
+    typedef struct vscf_rsa_t vscf_rsa_t;
+#endif // VSCF_RSA_T_DEFINED
 
 //
 //  Return size of 'vscf_rsa_t' type.
@@ -156,7 +160,7 @@ vscf_rsa_new(void);
 //  This is a reverse action of the function 'vscf_rsa_new()'.
 //
 VSCF_PUBLIC void
-vscf_rsa_delete(vscf_rsa_t *self);
+vscf_rsa_delete(const vscf_rsa_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -171,6 +175,13 @@ vscf_rsa_destroy(vscf_rsa_t **self_ref);
 //
 VSCF_PUBLIC vscf_rsa_t *
 vscf_rsa_shallow_copy(vscf_rsa_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_rsa_t *
+vscf_rsa_shallow_copy_const(const vscf_rsa_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.

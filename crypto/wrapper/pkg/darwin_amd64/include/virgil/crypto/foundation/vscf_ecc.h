@@ -54,11 +54,12 @@
 #define VSCF_ECC_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_random.h"
 #include "vscf_ecies.h"
-#include "vscf_error.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
 #include "vscf_alg_id.h"
+#include "vscf_error.h"
 #include "vscf_raw_public_key.h"
 #include "vscf_raw_private_key.h"
 
@@ -112,7 +113,10 @@ enum {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_ecc_t vscf_ecc_t;
+#ifndef VSCF_ECC_T_DEFINED
+#define VSCF_ECC_T_DEFINED
+    typedef struct vscf_ecc_t vscf_ecc_t;
+#endif // VSCF_ECC_T_DEFINED
 
 //
 //  Return size of 'vscf_ecc_t' type.
@@ -157,7 +161,7 @@ vscf_ecc_new(void);
 //  This is a reverse action of the function 'vscf_ecc_new()'.
 //
 VSCF_PUBLIC void
-vscf_ecc_delete(vscf_ecc_t *self);
+vscf_ecc_delete(const vscf_ecc_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -172,6 +176,13 @@ vscf_ecc_destroy(vscf_ecc_t **self_ref);
 //
 VSCF_PUBLIC vscf_ecc_t *
 vscf_ecc_shallow_copy(vscf_ecc_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_ecc_t *
+vscf_ecc_shallow_copy_const(const vscf_ecc_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.

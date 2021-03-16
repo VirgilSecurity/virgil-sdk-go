@@ -68,14 +68,12 @@ extern "C" {
 //  Generated section start.
 // --------------------------------------------------------------------------
 
+#ifndef VSC_HAVE_ASSERT_H
 #define VSC_HAVE_ASSERT_H 1
-#if VSC_HAVE_ASSERT_H
-#   include <assert.h>
 #endif
 
+#ifndef VSC_HAVE_STDATOMIC_H
 #define VSC_HAVE_STDATOMIC_H 1
-#if VSC_HAVE_STDATOMIC_H
-#   include <stdatomic.h>
 #endif
 
 #ifndef VSC_SHARED_LIBRARY
@@ -92,6 +90,18 @@ extern "C" {
 
 #ifndef VSC_BUFFER
 #define VSC_BUFFER 1
+#endif
+
+#ifndef VSC_STR
+#define VSC_STR 1
+#endif
+
+#ifndef VSC_STR_BUFFER
+#define VSC_STR_BUFFER 1
+#endif
+
+#ifndef VSC_STR_MUTABLE
+#define VSC_STR_MUTABLE 1
 #endif
 
 

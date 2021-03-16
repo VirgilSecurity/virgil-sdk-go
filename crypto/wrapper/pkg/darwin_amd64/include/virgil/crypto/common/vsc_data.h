@@ -54,7 +54,6 @@
 #define VSC_DATA_H_INCLUDED
 
 #include "vsc_library.h"
-#include "vsc_data.h"
 
 // clang-format on
 //  @end
@@ -74,7 +73,10 @@ extern "C" {
 //
 //  Handle 'data' context.
 //
-typedef struct vsc_data_t vsc_data_t;
+#ifndef VSC_DATA_T_DEFINED
+#define VSC_DATA_T_DEFINED
+    typedef struct vsc_data_t vsc_data_t;
+#endif // VSC_DATA_T_DEFINED
 struct vsc_data_t {
     //
     //  Underlying byte array.
@@ -115,6 +117,12 @@ vsc_data_empty(void);
 //
 VSC_PUBLIC bool
 vsc_data_is_valid(vsc_data_t self);
+
+//
+//  Returns true if underlying byte array is defined and not empty.
+//
+VSC_PUBLIC bool
+vsc_data_is_valid_and_non_empty(vsc_data_t self);
 
 //
 //  Returns true if underlying byte array contains only zeros.

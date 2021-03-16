@@ -68,14 +68,12 @@ extern "C" {
 //  Generated section start.
 // --------------------------------------------------------------------------
 
+#ifndef VSCE_HAVE_ASSERT_H
 #define VSCE_HAVE_ASSERT_H 1
-#if VSCE_HAVE_ASSERT_H
-#   include <assert.h>
 #endif
 
+#ifndef VSCE_HAVE_STDATOMIC_H
 #define VSCE_HAVE_STDATOMIC_H 1
-#if VSCE_HAVE_STDATOMIC_H
-#   include <stdatomic.h>
 #endif
 
 #ifndef VSCE_SHARED_LIBRARY

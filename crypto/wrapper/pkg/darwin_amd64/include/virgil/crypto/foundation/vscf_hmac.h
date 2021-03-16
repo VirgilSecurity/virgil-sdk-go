@@ -54,6 +54,7 @@
 #define VSCF_HMAC_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_hash.h"
 #include "vscf_impl.h"
 #include "vscf_alg_id.h"
 #include "vscf_status.h"
@@ -86,7 +87,10 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_hmac_t vscf_hmac_t;
+#ifndef VSCF_HMAC_T_DEFINED
+#define VSCF_HMAC_T_DEFINED
+    typedef struct vscf_hmac_t vscf_hmac_t;
+#endif // VSCF_HMAC_T_DEFINED
 
 //
 //  Return size of 'vscf_hmac_t' type.
@@ -131,7 +135,7 @@ vscf_hmac_new(void);
 //  This is a reverse action of the function 'vscf_hmac_new()'.
 //
 VSCF_PUBLIC void
-vscf_hmac_delete(vscf_hmac_t *self);
+vscf_hmac_delete(const vscf_hmac_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -146,6 +150,13 @@ vscf_hmac_destroy(vscf_hmac_t **self_ref);
 //
 VSCF_PUBLIC vscf_hmac_t *
 vscf_hmac_shallow_copy(vscf_hmac_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_hmac_t *
+vscf_hmac_shallow_copy_const(const vscf_hmac_t *self);
 
 //
 //  Setup dependency to the interface 'hash' with shared ownership.

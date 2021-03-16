@@ -57,6 +57,9 @@
 #include "vsce_phe_common.h"
 #include "vsce_status.h"
 
+#include <virgil/crypto/foundation/vscf_random.h>
+#include <virgil/crypto/foundation/vscf_random.h>
+
 #if !VSCE_IMPORT_PROJECT_COMMON_FROM_FRAMEWORK
 #   include <virgil/crypto/common/vsc_buffer.h>
 #   include <virgil/crypto/common/vsc_data.h>
@@ -93,7 +96,10 @@ extern "C" {
 //
 //  Handle 'uokms client' context.
 //
-typedef struct vsce_uokms_client_t vsce_uokms_client_t;
+#ifndef VSCE_UOKMS_CLIENT_T_DEFINED
+#define VSCE_UOKMS_CLIENT_T_DEFINED
+    typedef struct vsce_uokms_client_t vsce_uokms_client_t;
+#endif // VSCE_UOKMS_CLIENT_T_DEFINED
 
 //
 //  Return size of 'vsce_uokms_client_t'.
@@ -124,7 +130,7 @@ vsce_uokms_client_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCE_PUBLIC void
-vsce_uokms_client_delete(vsce_uokms_client_t *self);
+vsce_uokms_client_delete(const vsce_uokms_client_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -138,6 +144,13 @@ vsce_uokms_client_destroy(vsce_uokms_client_t **self_ref);
 //
 VSCE_PUBLIC vsce_uokms_client_t *
 vsce_uokms_client_shallow_copy(vsce_uokms_client_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCE_PUBLIC const vsce_uokms_client_t *
+vsce_uokms_client_shallow_copy_const(const vsce_uokms_client_t *self);
 
 //
 //  Random used for key generation, proofs, etc.

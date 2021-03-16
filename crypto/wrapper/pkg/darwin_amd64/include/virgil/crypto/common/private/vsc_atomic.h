@@ -53,7 +53,9 @@
 #ifndef VSC_ATOMIC_H_INCLUDED
 #define VSC_ATOMIC_H_INCLUDED
 
-#include "vsc_library.h"
+#if VSC_HAVE_STDATOMIC_H
+#   include <stdatomic.h>
+#endif
 
 // clang-format on
 //  @end

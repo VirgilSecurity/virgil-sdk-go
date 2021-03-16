@@ -1,0 +1,12 @@
+prefix=/var/folders/kw/h2300xts73sgzv571pqzjnd40000gp/T/tmp.XsgT6Meo/build/thirdparty/json_c/json_c
+exec_prefix=/var/folders/kw/h2300xts73sgzv571pqzjnd40000gp/T/tmp.XsgT6Meo/build/thirdparty/json_c/json_c
+libdir=/var/folders/kw/h2300xts73sgzv571pqzjnd40000gp/T/tmp.XsgT6Meo/build/thirdparty/json_c/json_c/lib
+includedir=/var/folders/kw/h2300xts73sgzv571pqzjnd40000gp/T/tmp.XsgT6Meo/build/thirdparty/json_c/json_c/include
+
+Name: json-c
+Description: A JSON implementation in C
+Version: 0.14
+Requires:
+Libs.private: 
+Libs: -L${libdir} -ljson-c
+Cflags: -I${includedir} -I${includedir}/json-c

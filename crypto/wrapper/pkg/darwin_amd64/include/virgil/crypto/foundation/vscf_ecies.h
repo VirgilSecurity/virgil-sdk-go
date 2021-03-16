@@ -54,6 +54,11 @@
 #define VSCF_ECIES_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_random.h"
+#include "vscf_cipher.h"
+#include "vscf_mac.h"
+#include "vscf_kdf.h"
+#include "vscf_private_key.h"
 #include "vscf_impl.h"
 #include "vscf_status.h"
 
@@ -85,7 +90,10 @@ extern "C" {
 //
 //  Handle 'ecies' context.
 //
-typedef struct vscf_ecies_t vscf_ecies_t;
+#ifndef VSCF_ECIES_T_DEFINED
+#define VSCF_ECIES_T_DEFINED
+    typedef struct vscf_ecies_t vscf_ecies_t;
+#endif // VSCF_ECIES_T_DEFINED
 
 //
 //  Return size of 'vscf_ecies_t'.
@@ -116,7 +124,7 @@ vscf_ecies_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_ecies_delete(vscf_ecies_t *self);
+vscf_ecies_delete(const vscf_ecies_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -130,6 +138,13 @@ vscf_ecies_destroy(vscf_ecies_t **self_ref);
 //
 VSCF_PUBLIC vscf_ecies_t *
 vscf_ecies_shallow_copy(vscf_ecies_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_ecies_t *
+vscf_ecies_shallow_copy_const(const vscf_ecies_t *self);
 
 //
 //  Setup dependency to the interface 'random' with shared ownership.

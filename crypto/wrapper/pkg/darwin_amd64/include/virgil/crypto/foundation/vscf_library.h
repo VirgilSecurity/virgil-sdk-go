@@ -59,6 +59,7 @@
 
 #include "vscf_platform.h"
 
+#include <limits.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -116,9 +117,9 @@ extern "C" {
 
 #define VSCF_VERSION_MAJOR 0
 
-#define VSCF_VERSION_MINOR 15
+#define VSCF_VERSION_MINOR 16
 
-#define VSCF_VERSION_PATCH 2
+#define VSCF_VERSION_PATCH 0
 
 #define VSCF_VERSION_MAKE(major, minor, patch) ((major) * 10000 + (minor) * 100 + (patch))
 
@@ -138,6 +139,11 @@ extern "C" {
 //  Custom implementation of the number ceil algorithm.
 //
 #define VSCF_CEIL(x,y) (0 == (x) ? 0 : 1 + (((x) - 1) / (y)))
+
+//
+//  Returns max of two numbers.
+//
+#define VSCF_MAX(x,y) ((x) > (y) ? (x) : (y))
 
 //
 //  Mark argument or function return value as "unused".

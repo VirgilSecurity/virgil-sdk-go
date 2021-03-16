@@ -54,6 +54,7 @@
 #define VSCF_KDF1_H_INCLUDED
 
 #include "vscf_library.h"
+#include "vscf_hash.h"
 #include "vscf_impl.h"
 #include "vscf_alg_id.h"
 #include "vscf_status.h"
@@ -86,7 +87,10 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_kdf1_t vscf_kdf1_t;
+#ifndef VSCF_KDF1_T_DEFINED
+#define VSCF_KDF1_T_DEFINED
+    typedef struct vscf_kdf1_t vscf_kdf1_t;
+#endif // VSCF_KDF1_T_DEFINED
 
 //
 //  Return size of 'vscf_kdf1_t' type.
@@ -131,7 +135,7 @@ vscf_kdf1_new(void);
 //  This is a reverse action of the function 'vscf_kdf1_new()'.
 //
 VSCF_PUBLIC void
-vscf_kdf1_delete(vscf_kdf1_t *self);
+vscf_kdf1_delete(const vscf_kdf1_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -146,6 +150,13 @@ vscf_kdf1_destroy(vscf_kdf1_t **self_ref);
 //
 VSCF_PUBLIC vscf_kdf1_t *
 vscf_kdf1_shallow_copy(vscf_kdf1_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_kdf1_t *
+vscf_kdf1_shallow_copy_const(const vscf_kdf1_t *self);
 
 //
 //  Setup dependency to the interface 'hash' with shared ownership.

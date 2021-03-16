@@ -132,12 +132,18 @@ enum vscf_impl_tag_t {
     vscf_impl_tag_SIMPLE_ALG_INFO,
     vscf_impl_tag_END
 };
-typedef enum vscf_impl_tag_t vscf_impl_tag_t;
+#ifndef VSCF_IMPL_TAG_T_DEFINED
+#define VSCF_IMPL_TAG_T_DEFINED
+    typedef enum vscf_impl_tag_t vscf_impl_tag_t;
+#endif // VSCF_IMPL_TAG_T_DEFINED
 
 //
 //  Generic type for any 'implementation'.
 //
-typedef struct vscf_impl_t vscf_impl_t;
+#ifndef VSCF_IMPL_T_DEFINED
+#define VSCF_IMPL_T_DEFINED
+    typedef struct vscf_impl_t vscf_impl_t;
+#endif // VSCF_IMPL_T_DEFINED
 
 //
 //  Return 'API' object that is fulfiled with a meta information
@@ -163,7 +169,7 @@ vscf_impl_cleanup(vscf_impl_t *impl);
 //  Delete implementation object and it's dependencies.
 //
 VSCF_PUBLIC void
-vscf_impl_delete(vscf_impl_t *impl);
+vscf_impl_delete(const vscf_impl_t *impl);
 
 //
 //  Destroy implementation object and it's dependencies.

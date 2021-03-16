@@ -57,11 +57,11 @@
 #include "vscf_library.h"
 #include "vscf_key_recipient_info.h"
 #include "vscf_password_recipient_info.h"
+#include "vscf_impl.h"
 #include "vscf_key_recipient_info_list.h"
 #include "vscf_password_recipient_info_list.h"
 #include "vscf_message_info_custom_params.h"
 #include "vscf_footer_info.h"
-#include "vscf_impl.h"
 
 // clang-format on
 //  @end
@@ -81,7 +81,10 @@ extern "C" {
 //
 //  Handle 'message info' context.
 //
-typedef struct vscf_message_info_t vscf_message_info_t;
+#ifndef VSCF_MESSAGE_INFO_T_DEFINED
+#define VSCF_MESSAGE_INFO_T_DEFINED
+    typedef struct vscf_message_info_t vscf_message_info_t;
+#endif // VSCF_MESSAGE_INFO_T_DEFINED
 
 //
 //  Return size of 'vscf_message_info_t'.
@@ -112,7 +115,7 @@ vscf_message_info_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_message_info_delete(vscf_message_info_t *self);
+vscf_message_info_delete(const vscf_message_info_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -126,6 +129,13 @@ vscf_message_info_destroy(vscf_message_info_t **self_ref);
 //
 VSCF_PUBLIC vscf_message_info_t *
 vscf_message_info_shallow_copy(vscf_message_info_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_message_info_t *
+vscf_message_info_shallow_copy_const(const vscf_message_info_t *self);
 
 //
 //  Add recipient that is defined by Public Key.

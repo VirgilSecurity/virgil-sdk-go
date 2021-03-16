@@ -76,7 +76,10 @@ extern "C" {
 //
 //  Handle 'message info custom params' context.
 //
-typedef struct vscf_message_info_custom_params_t vscf_message_info_custom_params_t;
+#ifndef VSCF_MESSAGE_INFO_CUSTOM_PARAMS_T_DEFINED
+#define VSCF_MESSAGE_INFO_CUSTOM_PARAMS_T_DEFINED
+    typedef struct vscf_message_info_custom_params_t vscf_message_info_custom_params_t;
+#endif // VSCF_MESSAGE_INFO_CUSTOM_PARAMS_T_DEFINED
 
 //
 //  Return size of 'vscf_message_info_custom_params_t'.
@@ -107,7 +110,7 @@ vscf_message_info_custom_params_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_message_info_custom_params_delete(vscf_message_info_custom_params_t *self);
+vscf_message_info_custom_params_delete(const vscf_message_info_custom_params_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -121,6 +124,13 @@ vscf_message_info_custom_params_destroy(vscf_message_info_custom_params_t **self
 //
 VSCF_PUBLIC vscf_message_info_custom_params_t *
 vscf_message_info_custom_params_shallow_copy(vscf_message_info_custom_params_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_message_info_custom_params_t *
+vscf_message_info_custom_params_shallow_copy_const(const vscf_message_info_custom_params_t *self);
 
 //
 //  Add custom parameter with integer value.

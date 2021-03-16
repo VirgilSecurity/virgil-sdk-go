@@ -85,7 +85,10 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_seed_entropy_source_t vscf_seed_entropy_source_t;
+#ifndef VSCF_SEED_ENTROPY_SOURCE_T_DEFINED
+#define VSCF_SEED_ENTROPY_SOURCE_T_DEFINED
+    typedef struct vscf_seed_entropy_source_t vscf_seed_entropy_source_t;
+#endif // VSCF_SEED_ENTROPY_SOURCE_T_DEFINED
 
 //
 //  Return size of 'vscf_seed_entropy_source_t' type.
@@ -130,7 +133,7 @@ vscf_seed_entropy_source_new(void);
 //  This is a reverse action of the function 'vscf_seed_entropy_source_new()'.
 //
 VSCF_PUBLIC void
-vscf_seed_entropy_source_delete(vscf_seed_entropy_source_t *self);
+vscf_seed_entropy_source_delete(const vscf_seed_entropy_source_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -145,6 +148,13 @@ vscf_seed_entropy_source_destroy(vscf_seed_entropy_source_t **self_ref);
 //
 VSCF_PUBLIC vscf_seed_entropy_source_t *
 vscf_seed_entropy_source_shallow_copy(vscf_seed_entropy_source_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_seed_entropy_source_t *
+vscf_seed_entropy_source_shallow_copy_const(const vscf_seed_entropy_source_t *self);
 
 //
 //  Set a new seed as an entropy source.

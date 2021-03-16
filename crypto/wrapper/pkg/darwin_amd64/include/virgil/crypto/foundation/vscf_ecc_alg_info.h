@@ -76,7 +76,10 @@ extern "C" {
 //
 //  Handles implementation details.
 //
-typedef struct vscf_ecc_alg_info_t vscf_ecc_alg_info_t;
+#ifndef VSCF_ECC_ALG_INFO_T_DEFINED
+#define VSCF_ECC_ALG_INFO_T_DEFINED
+    typedef struct vscf_ecc_alg_info_t vscf_ecc_alg_info_t;
+#endif // VSCF_ECC_ALG_INFO_T_DEFINED
 
 //
 //  Return size of 'vscf_ecc_alg_info_t' type.
@@ -121,7 +124,7 @@ vscf_ecc_alg_info_new(void);
 //  This is a reverse action of the function 'vscf_ecc_alg_info_new()'.
 //
 VSCF_PUBLIC void
-vscf_ecc_alg_info_delete(vscf_ecc_alg_info_t *self);
+vscf_ecc_alg_info_delete(const vscf_ecc_alg_info_t *self);
 
 //
 //  Destroy given implementation context and it's dependencies.
@@ -136,6 +139,13 @@ vscf_ecc_alg_info_destroy(vscf_ecc_alg_info_t **self_ref);
 //
 VSCF_PUBLIC vscf_ecc_alg_info_t *
 vscf_ecc_alg_info_shallow_copy(vscf_ecc_alg_info_t *self);
+
+//
+//  Copy given implementation context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_ecc_alg_info_t *
+vscf_ecc_alg_info_shallow_copy_const(const vscf_ecc_alg_info_t *self);
 
 //
 //  Perform initialization of pre-allocated context.

@@ -82,7 +82,10 @@ enum {
 //
 //  Handle 'padding params' context.
 //
-typedef struct vscf_padding_params_t vscf_padding_params_t;
+#ifndef VSCF_PADDING_PARAMS_T_DEFINED
+#define VSCF_PADDING_PARAMS_T_DEFINED
+    typedef struct vscf_padding_params_t vscf_padding_params_t;
+#endif // VSCF_PADDING_PARAMS_T_DEFINED
 
 //
 //  Return size of 'vscf_padding_params_t'.
@@ -129,7 +132,7 @@ vscf_padding_params_new_with_constraints(size_t frame, size_t frame_max);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_padding_params_delete(vscf_padding_params_t *self);
+vscf_padding_params_delete(const vscf_padding_params_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -143,6 +146,13 @@ vscf_padding_params_destroy(vscf_padding_params_t **self_ref);
 //
 VSCF_PUBLIC vscf_padding_params_t *
 vscf_padding_params_shallow_copy(vscf_padding_params_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_padding_params_t *
+vscf_padding_params_shallow_copy_const(const vscf_padding_params_t *self);
 
 //
 //  Return padding frame in bytes.

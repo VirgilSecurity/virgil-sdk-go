@@ -59,6 +59,7 @@
 
 #include "vsc_platform.h"
 
+#include <limits.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -116,9 +117,9 @@ extern "C" {
 
 #define VSC_VERSION_MAJOR 0
 
-#define VSC_VERSION_MINOR 15
+#define VSC_VERSION_MINOR 16
 
-#define VSC_VERSION_PATCH 2
+#define VSC_VERSION_PATCH 0
 
 #define VSC_VERSION_MAKE(major, minor, patch) ((major) * 10000 + (minor) * 100 + (patch))
 
@@ -138,6 +139,11 @@ extern "C" {
 //  Custom implementation of the number ceil algorithm.
 //
 #define VSC_CEIL(x,y) (0 == (x) ? 0 : 1 + (((x) - 1) / (y)))
+
+//
+//  Returns max of two numbers.
+//
+#define VSC_MAX(x,y) ((x) > (y) ? (x) : (y))
 
 //
 //  Mark argument or function return value as "unused".

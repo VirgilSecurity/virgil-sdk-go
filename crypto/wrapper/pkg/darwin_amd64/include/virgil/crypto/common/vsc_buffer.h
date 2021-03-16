@@ -55,7 +55,6 @@
 
 #include "vsc_library.h"
 #include "vsc_data.h"
-#include "vsc_buffer.h"
 
 // clang-format on
 //  @end
@@ -75,7 +74,10 @@ extern "C" {
 //
 //  Handle 'buffer' context.
 //
-typedef struct vsc_buffer_t vsc_buffer_t;
+#ifndef VSC_BUFFER_T_DEFINED
+#define VSC_BUFFER_T_DEFINED
+    typedef struct vsc_buffer_t vsc_buffer_t;
+#endif // VSC_BUFFER_T_DEFINED
 
 //
 //  Return size of 'vsc_buffer_t'.
@@ -134,7 +136,7 @@ vsc_buffer_new_with_data(vsc_data_t data);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSC_PUBLIC void
-vsc_buffer_delete(vsc_buffer_t *self);
+vsc_buffer_delete(const vsc_buffer_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -148,6 +150,13 @@ vsc_buffer_destroy(vsc_buffer_t **self_ref);
 //
 VSC_PUBLIC vsc_buffer_t *
 vsc_buffer_shallow_copy(vsc_buffer_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSC_PUBLIC const vsc_buffer_t *
+vsc_buffer_shallow_copy_const(const vsc_buffer_t *self);
 
 //
 //  Returns true if buffer has no data written.
@@ -240,6 +249,12 @@ VSC_PUBLIC bool
 vsc_buffer_is_valid(const vsc_buffer_t *self);
 
 //
+//  Returns true if buffer is defined and handles at least one byte.
+//
+VSC_PUBLIC bool
+vsc_buffer_is_valid_and_non_empty(vsc_buffer_t *self);
+
+//
 //  Returns underlying buffer bytes.
 //
 VSC_PUBLIC const byte *
@@ -294,10 +309,27 @@ VSC_PUBLIC void
 vsc_buffer_dec_used(vsc_buffer_t *self, size_t len);
 
 //
+//  Copy one byte to the buffer.
+//
+VSC_PUBLIC void
+vsc_buffer_write_byte(vsc_buffer_t *self, byte b);
+
+//
 //  Copy data to the buffer.
 //
 VSC_PUBLIC void
 vsc_buffer_write_data(vsc_buffer_t *self, vsc_data_t data);
+
+//
+//  Copy byte to the buffer and reallocate if needed by coping.
+//
+//  Precondition: buffer should be an owner of the bytes.
+//
+//  Note, this operation can be slow if copy operation occurred.
+//  Note, buffer capacity is doubled.
+//
+VSC_PUBLIC void
+vsc_buffer_append_byte(vsc_buffer_t *self, byte b);
 
 //
 //  Copy data to the buffer and reallocate if needed by coping.
@@ -309,6 +341,32 @@ vsc_buffer_write_data(vsc_buffer_t *self, vsc_data_t data);
 //
 VSC_PUBLIC void
 vsc_buffer_append_data(vsc_buffer_t *self, vsc_data_t data);
+
+//
+//  Reset buffer and increase capacity if given value less then current.
+//
+VSC_PUBLIC void
+vsc_buffer_reset_with_capacity(vsc_buffer_t *self, size_t min_capacity);
+
+//
+//  Increase buffer capacity if needed.
+//
+//  Precondition: buffer should be an owner of the bytes.
+//
+//  Note, this operation can be slow if copy operation occurred.
+//
+VSC_PUBLIC void
+vsc_buffer_reserve(vsc_buffer_t *self, size_t capacity);
+
+//
+//  Increase buffer capacity if needed to have at least given unused bytes.
+//
+//  Precondition: buffer should be an owner of the bytes.
+//
+//  Note, this operation can be slow if copy operation occurred.
+//
+VSC_PUBLIC void
+vsc_buffer_reserve_unused(vsc_buffer_t *self, size_t requested_unused_len);
 
 //
 //  Reset to the initial state.

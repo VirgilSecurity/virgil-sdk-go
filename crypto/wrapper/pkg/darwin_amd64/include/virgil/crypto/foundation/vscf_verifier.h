@@ -84,7 +84,10 @@ extern "C" {
 //
 //  Handle 'verifier' context.
 //
-typedef struct vscf_verifier_t vscf_verifier_t;
+#ifndef VSCF_VERIFIER_T_DEFINED
+#define VSCF_VERIFIER_T_DEFINED
+    typedef struct vscf_verifier_t vscf_verifier_t;
+#endif // VSCF_VERIFIER_T_DEFINED
 
 //
 //  Return size of 'vscf_verifier_t'.
@@ -115,7 +118,7 @@ vscf_verifier_new(void);
 //  It is safe to call this method even if the context was statically allocated.
 //
 VSCF_PUBLIC void
-vscf_verifier_delete(vscf_verifier_t *self);
+vscf_verifier_delete(const vscf_verifier_t *self);
 
 //
 //  Delete given context and nullifies reference.
@@ -129,6 +132,13 @@ vscf_verifier_destroy(vscf_verifier_t **self_ref);
 //
 VSCF_PUBLIC vscf_verifier_t *
 vscf_verifier_shallow_copy(vscf_verifier_t *self);
+
+//
+//  Copy given class context by increasing reference counter.
+//  Reference counter is internally synchronized, so constness is presumed.
+//
+VSCF_PUBLIC const vscf_verifier_t *
+vscf_verifier_shallow_copy_const(const vscf_verifier_t *self);
 
 //
 //  Start verifying a signature.
@@ -146,7 +156,7 @@ vscf_verifier_append_data(vscf_verifier_t *self, vsc_data_t data);
 //  Verify accumulated data.
 //
 VSCF_PUBLIC bool
-vscf_verifier_verify(vscf_verifier_t *self, vscf_impl_t *public_key);
+vscf_verifier_verify(vscf_verifier_t *self, const vscf_impl_t *public_key);
 
 
 // --------------------------------------------------------------------------
