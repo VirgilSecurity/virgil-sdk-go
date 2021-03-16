@@ -71,7 +71,7 @@ pipeline    {
                     steps {
                         cleanWs()
                         unstash "myStash"
-                        sh "./crypto/wrapper/build/build_c_crypto.sh"        
+                        sh "BRANCH=feature/string-type-go ./crypto/wrapper/build/build_c_crypto.sh"
                         stash  includes: "crypto/wrapper/pkg/darwin_amd64/**/*", name: 'myStash-macOS'
                     } 
                 }
