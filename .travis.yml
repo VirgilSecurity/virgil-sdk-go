@@ -12,7 +12,7 @@ matrix:
     - os: linux
       go: stable
       env:
-        - LINT_ENABLE=ON
+        - LINT_ENABLE=OFF
 
     ##########################################################################
     # GCC on Linux
