@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sdk_test
@@ -158,11 +159,24 @@ func setupCardManager() *sdk.CardManager {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var virgilCardVerifierOptions []sdk.VirgilCardVerifierOption
+	if serviceKey := os.Getenv("TEST_SERVICE_KEY"); serviceKey != "" {
+		virgilCardVerifierOptions = append(virgilCardVerifierOptions, sdk.VirgilCardVerifierSetCardsServicePublicKey(serviceKey))
+	}
+
+	var cardClientOptions []sdk.CardClientOption
+	if os.Getenv("TEST_ADDRESS") != "" {
+		cardClientOptions = append(cardClientOptions, sdk.SetCardClientURL(os.Getenv("TEST_ADDRESS")))
+	}
+
 	return sdk.NewCardManager(session.NewGeneratorJwtProvider(session.JwtGenerator{
 		AppKeyID: appKeyID,
 		AppKey:   appKey,
 		AppID:    appID,
-	}))
+	}),
+		sdk.CardManagerSetCardClient(sdk.NewCardsClient(cardClientOptions...)),
+		sdk.CardManagerSetCardVerifier(sdk.NewVirgilCardVerifier(virgilCardVerifierOptions...)))
 }
 
 func getEnv(name string) string {
