@@ -16,20 +16,7 @@ matrix:
     # GCC on Linux
     ##########################################################################
     - os: linux
-      dist: precise
       go: "1.19.x"
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.8
-      env:
-        - CC=gcc-4.8
-        - CXX=g++-4.8
-        - LEGACY="true"
-    - os: linux
-      go: stable
       addons:
         apt:
           sources:
@@ -40,7 +27,7 @@ matrix:
         - CC=gcc-5
         - CXX=g++-5
     - os: linux
-      go: stable
+      go: "1.19.x"
       addons:
         apt:
           sources:
@@ -50,11 +37,6 @@ matrix:
       env:
         - CC=gcc-9
         - CXX=g++-9
-    ##########################################################################
-    # Windows
-    ##########################################################################
-    - os: windows
-      go: stable
 
 install:
   - go mod download
