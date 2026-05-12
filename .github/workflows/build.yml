@@ -3,7 +3,6 @@ name: Build
 on:
   push:
     branches:
-      - develop
       - main
       - 'release/**'
       - 'hotfix/**'
@@ -13,7 +12,6 @@ on:
       - 'chore/**'
   pull_request:
     branches:
-      - master
       - main
 
 env:

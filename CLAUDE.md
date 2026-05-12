@@ -45,7 +45,7 @@ go test -tags integration -count=1 ./...
 ## Development Workflow
 
 - **Branch naming**: `feat/<topic>` for features, `fix/<topic>` for bug fixes, `chore/<topic>` for maintenance.
-- **Base and target**: branch off `master`, open PRs targeting `master`. There is no `develop` branch.
+- **Base and target**: branch off `main`, open PRs targeting `main`. There is no `develop` branch.
 - **Before pushing**: run `go build ./...` and `go test ./...` locally. Push only after confirming no regressions.
 - **Docs-only commits**: append `[skip ci]` to the commit message when the commit touches only `.md` or `docs/` files.
 
@@ -53,4 +53,4 @@ go test -tags integration -count=1 ./...
 
 - **Do not push without a local build and test check**.
 - **Do not add co-author lines** to commit messages.
-- **Do not force-push to `master`**.
+- **Do not force-push to `main`**.
