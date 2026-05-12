@@ -37,7 +37,7 @@
 
 package session
 
-import "github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+import "github.com/VirgilSecurity/virgil-sdk-go/v7/errors"
 
 type GeneratorJwtProviderOption func(p *GeneratorJwtProvider)
 

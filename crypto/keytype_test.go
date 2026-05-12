@@ -8,7 +8,15 @@ import (
 
 func TestGetKeyType(t *testing.T) {
 	c := &Crypto{}
-	for kt := Rsa2048; kt <= Curve25519Round5; kt++ {
+	types := []KeyType{
+		RsaKey(2048), RsaKey(4096),
+		P256r1, Curve25519, Ed25519,
+		Curve25519Ed25519,
+		Curve25519MlKem768Ed25519Falcon,
+		HybridKEM(AlgCurve25519, AlgMlKem768),
+		CompoundKey(AlgCurve25519, AlgNone, AlgEd25519, AlgMlDsa65),
+	}
+	for _, kt := range types {
 		sk, err := c.GenerateKeypairForType(kt)
 		require.NoError(t, err)
 		require.Equal(t, kt, sk.KeyType())

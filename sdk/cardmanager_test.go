@@ -49,8 +49,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/xerrors"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/session"
 )
 
 func initCardManager() (*CardManager, error) {

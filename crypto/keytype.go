@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2026 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,104 +37,86 @@
 package crypto
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
+	"github.com/VirgilSecurity/virgil-crypto-c/wrappers/go/foundation"
 )
 
-type KeyType int
+// KeyType describes the algorithm configuration for a keypair.
+// Use the package-level vars for recommended types or the constructor
+// functions HybridKEM and CompoundKey for custom combinations.
+// KeyType is comparable with ==.
+type KeyType struct {
+	rsaBitlen uint      // nonzero for RSA; all other fields must be zero
+	simple    Algorithm // single-algorithm key (Ed25519, Curve25519, P256r1)
+	cipher    Algorithm // cipher component of a compound or standalone hybrid KEM
+	pqCipher  Algorithm // post-quantum cipher component (AlgNone if not hybrid)
+	signer    Algorithm // signer component of a compound key
+	pqSigner  Algorithm // post-quantum signer component (AlgNone if not hybrid signer)
+}
 
-const (
-	DefaultKeyType KeyType = iota
-	Rsa2048
-	Rsa3072
-	Rsa4096
-	Rsa8192
-	P256r1
-	Curve25519
-	Ed25519
-	Curve25519Ed25519
-	Curve25519Round5Ed25519Falcon
-	Curve25519Round5
-	Curve25519Curve25519
+// Recommended named types — use these for new code.
+var (
+	DefaultKeyType = Ed25519
+
+	// Classical
+	P256r1     = KeyType{simple: AlgP256r1}
+	Curve25519 = KeyType{simple: AlgCurve25519}
+	Ed25519    = KeyType{simple: AlgEd25519}
+
+	// Recommended compound types
+	Curve25519Ed25519               = CompoundKey(AlgCurve25519, AlgNone, AlgEd25519, AlgNone)
+	Curve25519MlKem768Ed25519Falcon = CompoundKey(AlgCurve25519, AlgMlKem768, AlgEd25519, AlgFalcon)
 )
 
-type keyGen interface {
-	GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error)
+// RsaKey returns a KeyType for an RSA keypair with the given bit length.
+// Prefer elliptic-curve types for new integrations; RSA is provided for
+// interoperability with legacy systems.
+func RsaKey(bitlen uint) KeyType {
+	return KeyType{rsaBitlen: bitlen}
 }
 
-var keyTypeMap = map[KeyType]keyGen{
-	DefaultKeyType: keyType(foundation.AlgIdEd25519),
-	Rsa2048:        rsaKeyType(2048),
-	Rsa3072:        rsaKeyType(3072),
-	Rsa4096:        rsaKeyType(4096),
-	Rsa8192:        rsaKeyType(8192),
-	P256r1:         keyType(foundation.AlgIdSecp256r1),
-	Curve25519:     keyType(foundation.AlgIdCurve25519),
-	Ed25519:        keyType(foundation.AlgIdEd25519),
-	Curve25519Ed25519: &compoundHybridKeyType{
-		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
-		cipherSecondKeyAlgId: foundation.AlgIdNone,
-		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
-		signerSecondKeyAlgId: foundation.AlgIdNone,
-	},
-	Curve25519Round5Ed25519Falcon: &compoundHybridKeyType{
-		cipherFirstKeyAlgId:  foundation.AlgIdCurve25519,
-		cipherSecondKeyAlgId: foundation.AlgIdRound5Nd1cca5d,
-		signerFirstKeyAlgId:  foundation.AlgIdEd25519,
-		signerSecondKeyAlgId: foundation.AlgIdFalcon,
-	},
-	Curve25519Round5: &hybridKeyType{
-		firstKeyAlgId:  foundation.AlgIdCurve25519,
-		secondKeyAlgId: foundation.AlgIdRound5Nd1cca5d,
-	},
-	Curve25519Curve25519: &hybridKeyType{
-		firstKeyAlgId:  foundation.AlgIdCurve25519,
-		secondKeyAlgId: foundation.AlgIdCurve25519,
-	},
+// HybridKEM returns a KeyType for a hybrid key-encapsulation mechanism.
+// classical is the classical cipher algorithm (e.g. AlgCurve25519) and
+// postQuantum is the post-quantum counterpart (e.g. AlgMlKem768).
+func HybridKEM(classical, postQuantum Algorithm) KeyType {
+	return KeyType{cipher: classical, pqCipher: postQuantum}
 }
 
-type keyType foundation.AlgId
-
-func (t keyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
-	return kp.GeneratePrivateKey(foundation.AlgId(t))
+// CompoundKey returns a KeyType for a compound key that combines a cipher
+// part and a signer part, each optionally hybrid.
+// Pass AlgNone for pqCipher or pqSigner to use a classical-only component.
+func CompoundKey(cipher, pqCipher, signer, pqSigner Algorithm) KeyType {
+	return KeyType{cipher: cipher, pqCipher: pqCipher, signer: signer, pqSigner: pqSigner}
 }
 
-type rsaKeyType int
+func (kt KeyType) generatePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
+	switch {
+	case kt.rsaBitlen > 0:
+		kp.SetRsaParams(kt.rsaBitlen)
+		return kp.GeneratePrivateKey(foundation.AlgIdRsa)
 
-func (t rsaKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
-	kp.SetRsaParams(uint(t))
-	return kp.GeneratePrivateKey(foundation.AlgIdRsa)
-}
+	case kt.simple != AlgNone:
+		return kp.GeneratePrivateKey(algToFoundation(kt.simple))
 
-type compoundHybridKeyType struct {
-	cipherFirstKeyAlgId  foundation.AlgId
-	cipherSecondKeyAlgId foundation.AlgId
-	signerFirstKeyAlgId  foundation.AlgId
-	signerSecondKeyAlgId foundation.AlgId
-}
+	case kt.cipher != AlgNone && kt.signer != AlgNone:
+		return kp.GenerateCompoundHybridPrivateKey(
+			algToFoundation(kt.cipher),
+			algToFoundation(kt.pqCipher),
+			algToFoundation(kt.signer),
+			algToFoundation(kt.pqSigner),
+		)
 
-func (t *compoundHybridKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
-	return kp.GenerateCompoundHybridPrivateKey(
-		t.cipherFirstKeyAlgId,
-		t.cipherSecondKeyAlgId,
-		t.signerFirstKeyAlgId,
-		t.signerSecondKeyAlgId,
-	)
-}
+	case kt.cipher != AlgNone && kt.pqCipher != AlgNone:
+		return kp.GenerateHybridPrivateKey(
+			algToFoundation(kt.cipher),
+			algToFoundation(kt.pqCipher),
+		)
 
-type hybridKeyType struct {
-	firstKeyAlgId  foundation.AlgId
-	secondKeyAlgId foundation.AlgId
-}
-
-func (t *hybridKeyType) GeneratePrivateKey(kp *foundation.KeyProvider) (foundation.PrivateKey, error) {
-	return kp.GenerateHybridPrivateKey(
-		t.firstKeyAlgId,
-		t.secondKeyAlgId,
-	)
+	default:
+		return nil, ErrUnsupportedKeyType
+	}
 }
 
 func getKeyType(obj deleter) (KeyType, error) {
-
 	key, ok := obj.(foundation.Key)
 	if !ok {
 		return DefaultKeyType, ErrUnsupportedKeyType
@@ -144,57 +126,41 @@ func getKeyType(obj deleter) (KeyType, error) {
 	if err != nil {
 		return DefaultKeyType, err
 	}
+
 	info := foundation.NewKeyInfoWithAlgInfo(algInfo)
+	defer info.Delete()
+
 	if info.IsCompound() {
-		if info.CompoundHybridCipherFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
-			info.CompoundHybridCipherSecondKeyAlgId() == foundation.AlgIdRound5Nd1cca5d &&
-			info.CompoundHybridSignerFirstKeyAlgId() == foundation.AlgIdEd25519 &&
-			info.CompoundHybridSignerSecondKeyAlgId() == foundation.AlgIdFalcon {
-			return Curve25519Round5Ed25519Falcon, nil
-		} else if info.CompoundCipherAlgId() == foundation.AlgIdCurve25519 &&
-			info.CompoundSignerAlgId() == foundation.AlgIdEd25519 {
-			return Curve25519Ed25519, nil
+		var cipher, pqCipher, signer, pqSigner Algorithm
+		if info.IsCompoundHybridCipher() {
+			cipher = algFromFoundation(info.CompoundHybridCipherFirstKeyAlgId())
+			pqCipher = algFromFoundation(info.CompoundHybridCipherSecondKeyAlgId())
 		} else {
-			return DefaultKeyType, ErrUnsupportedKeyType
+			cipher = algFromFoundation(info.CompoundCipherAlgId())
 		}
+		if info.IsCompoundHybridSigner() {
+			signer = algFromFoundation(info.CompoundHybridSignerFirstKeyAlgId())
+			pqSigner = algFromFoundation(info.CompoundHybridSignerSecondKeyAlgId())
+		} else {
+			signer = algFromFoundation(info.CompoundSignerAlgId())
+		}
+		return KeyType{cipher: cipher, pqCipher: pqCipher, signer: signer, pqSigner: pqSigner}, nil
 	}
 
 	if info.IsHybrid() {
-		if info.HybridFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
-			info.HybridSecondKeyAlgId() == foundation.AlgIdRound5Nd1cca5d {
-			return Curve25519Round5, nil
-		}
-		if info.HybridFirstKeyAlgId() == foundation.AlgIdCurve25519 &&
-			info.HybridSecondKeyAlgId() == foundation.AlgIdCurve25519 {
-			return Curve25519Curve25519, nil
-		}
-
-		return DefaultKeyType, ErrUnsupportedKeyType
+		return KeyType{
+			cipher:   algFromFoundation(info.HybridFirstKeyAlgId()),
+			pqCipher: algFromFoundation(info.HybridSecondKeyAlgId()),
+		}, nil
 	}
 
 	if algInfo.AlgId() == foundation.AlgIdRsa {
-		switch key.Bitlen() {
-		case 2048:
-			return Rsa2048, nil
-		case 3072:
-			return Rsa3072, nil
-		case 4096:
-			return Rsa4096, nil
-		case 8192:
-			return Rsa8192, nil
-		default:
-			return DefaultKeyType, ErrUnsupportedKeyType
-		}
+		return KeyType{rsaBitlen: key.Bitlen()}, nil
 	}
 
-	switch algInfo.AlgId() {
-	case foundation.AlgIdCurve25519:
-		return Curve25519, nil
-	case foundation.AlgIdEd25519:
-		return Ed25519, nil
-	case foundation.AlgIdSecp256r1:
-		return P256r1, nil
-	default:
+	alg := algFromFoundation(algInfo.AlgId())
+	if alg == AlgNone {
 		return DefaultKeyType, ErrUnsupportedKeyType
 	}
+	return KeyType{simple: alg}, nil
 }

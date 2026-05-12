@@ -41,7 +41,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/errors"
 )
 
 type CachingJwtProvider struct {
