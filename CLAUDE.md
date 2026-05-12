@@ -49,6 +49,15 @@ go test -tags integration -count=1 ./...
 - **Before pushing**: run `go build ./...` and `go test ./...` locally. Push only after confirming no regressions.
 - **Docs-only commits**: append `[skip ci]` to the commit message when the commit touches only `.md` or `docs/` files.
 
+## Versioning and Releases
+
+Follows the [standard Go module versioning strategy](https://go.dev/doc/modules/version-numbers):
+
+- Versions are tagged as `vMAJOR.MINOR.PATCH` (e.g., `v7.0.0`).
+- Major versions ≥ 2 carry a `/vN` suffix in the module path (`github.com/VirgilSecurity/virgil-sdk-go/v7`).
+- **No maintenance branches for old major versions.** The `v4` and `v5` branches are historical artifacts; v6 and below receive no further updates.
+- To release: tag `vMAJOR.MINOR.PATCH` on `main` after merging the PR. The Go module proxy picks it up automatically.
+
 ## Forbidden
 
 - **Do not push without a local build and test check**.

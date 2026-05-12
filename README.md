@@ -1,6 +1,6 @@
 # Virgil Core SDK Go
 
-[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-sdk-go.svg?branch=master)](https://travis-ci.com/VirgilSecurity/virgil-sdk-go)
+[![Build](https://github.com/VirgilSecurity/virgil-sdk-go/actions/workflows/build.yml/badge.svg)](https://github.com/VirgilSecurity/virgil-sdk-go/actions/workflows/build.yml)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/VirgilSecurity/virgil-sdk-go)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/VirgilSecurity/virgil-sdk-go)
@@ -20,33 +20,26 @@ In case you need additional security functionality for multi-device support, gro
 - Manage users' public keys
 - Encrypt, sign, decrypt and verify data
 - Store private keys in secure local storage
-- Use [Virgil Crypto Library](https://github.com/VirgilSecurity/virgil-crypto)
+- Use [Virgil Crypto Library](https://github.com/VirgilSecurity/virgil-crypto-c)
 
 ## Crypto library purposes
 * Asymmetric Key Generation
 * Encryption/Decryption of data and streams
 * Generation/Verification of digital signatures
 * PFS (Perfect Forward Secrecy)
-* **Post-quantum algorithms support**: [Round5](https://round5.org/) (encryption) and [Falcon](https://falcon-sign.info/) (signature) 
+* **Post-quantum algorithms**: [ML-KEM-768](https://csrc.nist.gov/pubs/fips/203/final) (NIST FIPS 203, encryption) and [Falcon](https://falcon-sign.info/) / [ML-DSA-65](https://csrc.nist.gov/pubs/fips/204/final) (NIST FIPS 204, signature)
 
 ## Installation
 
-The Virgil Go SDK is provided as a package named virgil. The package is distributed via github. Also in this guide, you will find one more package called Virgil Crypto (Virgil Crypto Library) that is used by the SDK to perform cryptographic operations.
+Requires Go 1.21 or newer.
 
-The package is available for Go 1.12 or newer.
+```bash
+go get github.com/VirgilSecurity/virgil-sdk-go/v7
+```
 
-Installing the package:
+Pre-built CGo static libraries for all supported platforms are bundled inside the `virgil-crypto-c/wrappers/go` module dependency and are downloaded automatically by `go mod download`. No separate C build step is required.
 
-- go get -u github.com/VirgilSecurity/virgil-sdk-go/v6/sdk
-
-### Virgil Crypto Library
-
-Virgil Crypto library is a wrapper for [C Crypto library](https://github.com/VirgilSecurity/virgil-crypto-c). Virgil Crypto library uses prebuilded C library for better experience for the most popular operation system:
-
-- MacOS amd64 with X Code 11
-- Windows amd64 with mingw64
-- Linux amd64 gcc >= 5 and clang >=7
-- For support older version linux amd64 gcc < 5 and clang < 7  with 2.14 Linux kernel use tag `legacy`
+Supported platforms: `linux/amd64`, `linux/arm64`, `darwin/amd64`, `darwin/arm64`, `windows/amd64`.
 
 ## Configure SDK
 
@@ -74,10 +67,10 @@ Use these lines of code to specify which JWT generation source you prefer to use
 package main
 
 import (
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/storage"
 )
 
 func main() {
@@ -88,6 +81,7 @@ func main() {
 
 	// Setup AccessTokenProvider
 	accessTokenProvider := session.NewCachingStringJwtProvider(authenticatedQueryToServerSide)
+	_ = accessTokenProvider
 }
 ```
 
@@ -100,7 +94,7 @@ Here is an example of how to generate a JWT:
 ```go
 	// App Key (you got this Key at Virgil Dashboard)
 	privateKeyStr := []byte("MIGhMF0GCSqGSIb3DQEFDTBQMC8GCSqGSIb3DQEFDDAiBBC7Sg/DbNzhJ/uakTva")
-	vcrypto := &crypto.Crypto{}	
+	vcrypto := &crypto.Crypto{}
 
 	// Crypto library imports a private key into a necessary format
 	privateKey, err := vcrypto.ImportPrivateKey(privateKeyStr)
@@ -110,13 +104,13 @@ Here is an example of how to generate a JWT:
 
 	// use your App Credentials you got at Virgil Dashboard:
 	appId := "be00e10e4e1f4bf58f9b4dc85d79c77a" // App ID
-	appKeyId := "70b447e321f3a0fd"           	// App Key ID
+	appKeyId := "70b447e321f3a0fd"               // App Key ID
 
 	// setup JWT generator with necessary parameters:
 	jwtGenerator := session.JwtGenerator{
-		AppKey: privateKey,
+		AppKey:   privateKey,
 		AppKeyID: appKeyId,
-		AppID: appId,
+		AppID:    appId,
 	}
 
 	// generate JWT for a user
@@ -134,13 +128,14 @@ Here is an example of how to generate a JWT:
 	// you can provide users with JWT at registration or authorization steps
 	// Send a JWT to client-side
 	jwtString := token.String()
+	_ = jwtString
 ```
 
 For this subsection we've created a sample backend that demonstrates how you can set up your backend to generate the JWTs. To set up and run the sample backend locally, head over to your GitHub repo of choice:
 
 [Node.js](https://github.com/VirgilSecurity/sample-backend-nodejs) | [Golang](https://github.com/VirgilSecurity/sample-backend-go) | [PHP](https://github.com/VirgilSecurity/sample-backend-php) | [Java](https://github.com/VirgilSecurity/sample-backend-java) | [Python](https://github.com/VirgilSecurity/virgil-sdk-python/tree/master#sample-backend-for-jwt-generation)
  and follow the instructions in README.
- 
+
 ### Setup Card Verifier
 
 Virgil Card Verifier helps you automatically verify signatures of a user's Card, for example when you get a Card from Virgil Cards Service.
@@ -150,7 +145,7 @@ By default, `VirgilCardVerifier` verifies only two signatures - those of a Card 
 Set up `VirgilCardVerifier` with the following lines of code:
 
 ```go
-	cardVerifier:= sdk.NewVirgilCardVerifier()
+	cardVerifier := sdk.NewVirgilCardVerifier()
 ```
 
 ### Set up Card Manager
@@ -164,7 +159,7 @@ With Card Manager you can:
 Use the following lines of code to set up the Card Manager:
 
 ```go
-cardManager := sdk.NewCardManager(accessTokenProvider,sdk.CardManagerSetCardVerifier(cardVerifier))
+cardManager := sdk.NewCardManager(accessTokenProvider, sdk.CardManagerSetCardVerifier(cardVerifier))
 ```
 
 ### Setup Key storage to store private keys
@@ -175,7 +170,7 @@ Here is an example of how to set up the `VSSKeyStorage` class:
 
 ```go
 	vcrypto := &crypto.Crypto{}
-	
+
 	// Generate a private key
 	privateKey, err := vcrypto.GenerateKeypair()
 	if err != nil {
@@ -183,10 +178,10 @@ Here is an example of how to set up the `VSSKeyStorage` class:
 	}
 
 	// Setup PrivateKeyStorage
-	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{RootDir:"~/keys/"})
+	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{RootDir: "~/keys/"})
 
 	// Store a private key with a name, for example Alice
-	err = privateKeyStorage.Store(privateKey,"Alice", nil)
+	err = privateKeyStorage.Store(privateKey, "Alice", nil)
 	if err != nil {
 		//handle error
 	}
@@ -196,11 +191,12 @@ Here is an example of how to set up the `VSSKeyStorage` class:
 
 	// Delete a private key
 	err = privateKeyStorage.Delete("Alice")
+	_, _ = key, meta
 ```
 
 ## Usage Examples
 
-Before you start practicing with the usage examples, make sure that the SDK is configured. Check out our [SDK configuration guides][#configure-sdk] for more information.
+Before you start practicing with the usage examples, make sure that the SDK is configured. Check out our [SDK configuration guides](#configure-sdk) for more information.
 
 ### Generate and publish user's Cards with public keys inside at Cards Service
 
@@ -212,10 +208,10 @@ package main
 import (
 	"log"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/storage"
 )
 
 var (
@@ -277,10 +273,10 @@ import (
 	"encoding/base64"
 	"log"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/storage"
 )
 
 var (
@@ -290,14 +286,14 @@ var (
 )
 
 func main() {
-	vcrypto:= &crypto.Crypto{}
+	vcrypto := &crypto.Crypto{}
 	messageToEncrypt := []byte("Hello, Bob!")
 
 	privateKeyStorage := storage.NewVirgilPrivateKeyStorage(&storage.FileStorage{})
 
 	// prepare a user's private key from a device storage
 	alicePrivateKey, _, err := privateKeyStorage.Load("Alice")
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -314,16 +310,16 @@ func main() {
 
 	// using cardManager search for Bob's cards on Cards Service
 	cards, err := cardManager.SearchCards("Bob")
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	// sign a message with a private key then encrypt using Bob's public keys
 	encryptedMessage, err := vcrypto.SignThenEncrypt(messageToEncrypt, alicePrivateKey, cards.ExtractPublicKeys()...)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Encrypted message:",base64.StdEncoding.EncodeToString(encryptedMessage))
+	log.Println("Encrypted message:", base64.StdEncoding.EncodeToString(encryptedMessage))
 }
 ```
 
@@ -338,16 +334,16 @@ import (
 	"encoding/base64"
 	"log"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/sdk"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/storage"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/sdk"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/storage"
 )
 
 var (
-	AppKey   = "{YOUR_APP_KEY}"
-	AppKeyID = "{YOUR_APP_KEY_ID}"
-	AppID    = "{YOUR_APP_ID}"
+	AppKey           = "{YOUR_APP_KEY}"
+	AppKeyID         = "{YOUR_APP_KEY_ID}"
+	AppID            = "{YOUR_APP_ID}"
 	EncryptedMessage = "{YOUR_ENCRYPTED_MESSAGE}"
 )
 
@@ -432,5 +428,4 @@ You can find us on [Twitter](https://twitter.com/VirgilSecurity) or send us emai
 
 Also, get extra help from our support team on [Slack](https://virgilsecurity.com/join-community).
 
-[_virgil_crypto]: https://github.com/VirgilSecurity/virgil-crypto-go/tree/master
 [_cards_service]: https://developer.virgilsecurity.com/docs/api-reference/cards-service
