@@ -39,8 +39,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
+	"github.com/VirgilSecurity/virgil-crypto-c/wrappers/go/foundation"
 )
 
 func TestSignVerify(t *testing.T) {
@@ -366,13 +366,12 @@ func TestKeyTypes(t *testing.T) {
 		expectedError error
 	}{
 		{crypto.DefaultKeyType, nil},
-		{crypto.Rsa2048, nil},
+		{crypto.RsaKey(2048), nil},
 		{crypto.P256r1, nil},
 		{crypto.Curve25519, nil},
 		{crypto.Ed25519, nil},
 		{crypto.Curve25519Ed25519, nil},
-		{crypto.Curve25519Round5Ed25519Falcon, nil},
-		{crypto.KeyType(100), crypto.ErrUnsupportedKeyType},
+		{crypto.CompoundKey(crypto.AlgNone, crypto.AlgNone, crypto.AlgEd25519, crypto.AlgNone), crypto.ErrUnsupportedKeyType},
 	}
 
 	fs := []func(kt crypto.KeyType) error{

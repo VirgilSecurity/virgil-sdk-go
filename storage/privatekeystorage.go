@@ -41,8 +41,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
-	verrors "github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
+	verrors "github.com/VirgilSecurity/virgil-sdk-go/v7/errors"
 )
 
 var (

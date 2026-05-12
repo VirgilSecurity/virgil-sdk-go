@@ -41,7 +41,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
 )
 
 type JwtVerifier struct {

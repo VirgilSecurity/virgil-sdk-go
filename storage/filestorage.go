@@ -44,7 +44,7 @@ import (
 	"path"
 	"path/filepath"
 
-	errors "github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+	errors "github.com/VirgilSecurity/virgil-sdk-go/v7/errors"
 )
 
 var (

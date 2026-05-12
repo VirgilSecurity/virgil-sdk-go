@@ -39,7 +39,7 @@ import (
 	"crypto/subtle"
 	"io"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto/wrapper/foundation"
+	"github.com/VirgilSecurity/virgil-crypto-c/wrappers/go/foundation"
 )
 
 type PrivateKey interface {
@@ -65,13 +65,16 @@ var (
 	signerIDKey  = []byte("VIRGIL-DATA-SIGNER-ID")
 )
 
-func (c *Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, error) {
+func (c *Crypto) generateKeypair(t KeyType, rnd foundation.Random) (PrivateKey, error) {
+	if t == (KeyType{}) {
+		t = DefaultKeyType
+	}
 	kp := foundation.NewKeyProvider()
 	defer delete(kp)
 
 	kp.SetRandom(rnd)
 
-	sk, err := t.GeneratePrivateKey(kp)
+	sk, err := t.generatePrivateKey(kp)
 	if err != nil {
 		return nil, err
 	}
@@ -102,11 +105,7 @@ func (c *Crypto) generateKeypair(t keyGen, rnd foundation.Random) (PrivateKey, e
 }
 
 func (c *Crypto) GenerateKeypairForType(t KeyType) (PrivateKey, error) {
-	keyType, ok := keyTypeMap[t]
-	if !ok {
-		return nil, ErrUnsupportedKeyType
-	}
-	return c.generateKeypair(keyType, random)
+	return c.generateKeypair(t, random)
 }
 
 func (c *Crypto) GenerateKeypair() (PrivateKey, error) {
@@ -126,12 +125,7 @@ func (c *Crypto) GenerateKeypairFromKeyMaterialForType(t KeyType, keyMaterial []
 }
 
 func (c *Crypto) GenerateKeypairForTypeWithCustomRng(rnd foundation.Random, t KeyType) (PrivateKey, error) {
-	keyType, ok := keyTypeMap[t]
-	if !ok {
-		return nil, ErrUnsupportedKeyType
-	}
-
-	return c.generateKeypair(keyType, rnd)
+	return c.generateKeypair(t, rnd)
 }
 
 func (c *Crypto) GenerateKeypairFromKeyMaterial(keyMaterial []byte) (PrivateKey, error) {

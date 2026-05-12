@@ -47,7 +47,7 @@ import (
 
 	"golang.org/x/crypto/hkdf"
 
-	verrors "github.com/VirgilSecurity/virgil-sdk-go/v6/errors"
+	verrors "github.com/VirgilSecurity/virgil-sdk-go/v7/errors"
 )
 
 const (

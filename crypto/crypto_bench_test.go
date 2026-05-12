@@ -38,7 +38,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
 )
 
 func BenchmarkSign(b *testing.B) {
@@ -108,7 +108,7 @@ func BenchmarkEncryptHybridCurveCurve(b *testing.B) {
 	data := make([]byte, 1)
 	rand.Read(data)
 
-	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Curve25519)
+	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.HybridKEM(crypto.AlgCurve25519, crypto.AlgCurve25519))
 	require.NoError(b, err)
 	encryptPk := encryptSk.PublicKey()
 
@@ -119,25 +119,6 @@ func BenchmarkEncryptHybridCurveCurve(b *testing.B) {
 		}
 	}
 }
-func BenchmarkEncryptHybridCurveRound5(b *testing.B) {
-	vcrypto := &crypto.Crypto{}
-
-	// make random data
-	data := make([]byte, 1)
-	rand.Read(data)
-
-	encryptSk, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5)
-	require.NoError(b, err)
-	encryptPk := encryptSk.PublicKey()
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		if _, err := vcrypto.Encrypt(data, encryptPk); err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
 func BenchmarkDecrypt(b *testing.B) {
 	vcrypto := &crypto.Crypto{}
 
@@ -166,28 +147,7 @@ func BenchmarkDecryptHybridCurveCurve(b *testing.B) {
 	data := make([]byte, 1)
 	rand.Read(data)
 
-	keypair, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Curve25519)
-	require.NoError(b, err)
-
-	data, err = vcrypto.Encrypt(data, keypair.PublicKey())
-	require.NoError(b, err)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		if _, err = vcrypto.Decrypt(data, keypair); err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
-func BenchmarkDecryptHybridCurveRound5(b *testing.B) {
-	vcrypto := &crypto.Crypto{}
-
-	// make random data
-	data := make([]byte, 1)
-	rand.Read(data)
-
-	keypair, err := vcrypto.GenerateKeypairForType(crypto.Curve25519Round5)
+	keypair, err := vcrypto.GenerateKeypairForType(crypto.HybridKEM(crypto.AlgCurve25519, crypto.AlgCurve25519))
 	require.NoError(b, err)
 
 	data, err = vcrypto.Encrypt(data, keypair.PublicKey())

@@ -40,7 +40,7 @@ package sdk
 import (
 	"strings"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
 )
 
 type CardParams struct {

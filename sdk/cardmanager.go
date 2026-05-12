@@ -41,7 +41,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/session"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/session"
 )
 
 type CardManagerOption func(c *CardManager)

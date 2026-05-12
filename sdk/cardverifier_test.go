@@ -45,7 +45,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/VirgilSecurity/virgil-sdk-go/v6/crypto"
+	"github.com/VirgilSecurity/virgil-sdk-go/v7/crypto"
 )
 
 type testCredentials struct {
