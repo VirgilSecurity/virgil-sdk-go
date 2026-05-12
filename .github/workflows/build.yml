@@ -8,9 +8,12 @@ on:
       - 'release/**'
       - 'hotfix/**'
       - 'feature/**'
+      - 'feat/**'
+      - 'fix/**'
+      - 'chore/**'
   pull_request:
     branches:
-      - develop
+      - master
       - main
 
 env:
