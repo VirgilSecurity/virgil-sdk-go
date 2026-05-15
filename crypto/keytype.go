@@ -63,8 +63,9 @@ var (
 	Ed25519    = KeyType{simple: AlgEd25519}
 
 	// Recommended compound types
-	Curve25519Ed25519               = CompoundKey(AlgCurve25519, AlgNone, AlgEd25519, AlgNone)
-	Curve25519MlKem768Ed25519Falcon = CompoundKey(AlgCurve25519, AlgMlKem768, AlgEd25519, AlgFalcon)
+	Curve25519Ed25519                = CompoundKey(AlgCurve25519, AlgNone, AlgEd25519, AlgNone)
+	Curve25519MlKem768Ed25519Falcon  = CompoundKey(AlgCurve25519, AlgMlKem768, AlgEd25519, AlgFalcon)
+	Curve25519MlKem768Ed25519MlDsa65 = CompoundKey(AlgCurve25519, AlgMlKem768, AlgEd25519, AlgMlDsa65)
 )
 
 // RsaKey returns a KeyType for an RSA keypair with the given bit length.
